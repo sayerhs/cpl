@@ -129,6 +129,7 @@ class Struct(OrderedDict, MutableMapping):
 
        #. Preserves ordering of members as initialized
        #. Provides attribute and dictionary-style lookups
+       #. Read/write YAML formatted data
     """
 
     @classmethod
