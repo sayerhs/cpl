@@ -1,0 +1,19 @@
+# -*- mode: yaml -*-
+#
+# Caelus Python Conda environment configuration file
+#
+# Usage:
+#   conda env create -f <path_to_this_file>
+
+name: caelus-env
+
+dependencies:
+  - python=3
+  - pip
+  - six
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - ipython
+  - pyyaml
