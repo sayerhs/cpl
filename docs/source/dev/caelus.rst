@@ -9,4 +9,5 @@ Subpackages
 
 .. toctree::
 
+   caelus.config
    caelus.utils
