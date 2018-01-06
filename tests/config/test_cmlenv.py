@@ -33,6 +33,7 @@ def mock_get_config():
 
 @pytest.fixture(scope="module")
 def caelus_directory():
+    """Temporary Caelus root directory for testing"""
     ostype = "windows" if os.name == 'nt' else os.uname()[0].lower()
     root_dir = tempfile.mkdtemp()
     os.makedirs(os.path.join(
@@ -49,6 +50,7 @@ def caelus_directory():
 
 @pytest.fixture(autouse=True)
 def no_get_config(monkeypatch, caelus_directory):
+    """Mock CaelusCfg object for testing"""
     monkeypatch.setattr(cmlenv, "get_config", mock_get_config())
     cfg = cmlenv.get_config()
     cfg.caelus.caelus_cml.versions[0].path = os.path.join(
