@@ -46,7 +46,7 @@ def discover_versions(root=None):
                                 path=cpath)
 
     rpath = root or get_caelus_root()
-    cdirs = glob.glob(os.path.join(rpath, "caelus-*"))
+    cdirs = glob.glob(os.path.join(rpath, "[Cc]aelus-*"))
     return list(path_to_cfg(cdirs))
 
 def _filter_invalid_versions(cml_cfg):
