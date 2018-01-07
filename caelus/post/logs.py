@@ -28,15 +28,6 @@ class LogProcessor(object):
         completion=r"^End$",
     )
 
-    #: Printf style format strings for outputs
-    fmt_strings = dict(
-        residual="%15.5f %5d %15.6e %15.6e %5d\n",
-        courant="%15.5f %15.5e %15.5e\n",
-        continuity="%15.5f %5d %15.6e %15.6e %15.6e\n",
-        bounding="%15.5f %5d %15.6e %15.6e %15.6e\n",
-        exec_time="%15.5f %15.5f %15.5f\n",
-    )
-
     def __init__(self, logfile,
                  case_dir=None,
                  logs_dir="logs"):
@@ -120,6 +111,7 @@ class LogProcessor(object):
         while True:
             rexp = (yield)
             self.time = float(rexp.group(1))
+            self.time_str = rexp.group(1)
             # Reset subIteration counters
             for k in self.corrs:
                 self.corrs[k] = 0
@@ -141,21 +133,18 @@ class LogProcessor(object):
             return self.res_files[field]
         # end get_file
 
-        res_fmt = self.fmt_strings['residual']
         try:
             while True:
                 rexp = (yield)
                 solver = rexp.group(1)       # e.g., PCB, GAMG, etc.
                 field = rexp.group(2)        # Ux, Uy, p, etc.
-                ires = float(rexp.group(3))  # Initial residual
-                fres = float(rexp.group(4))  # Final residual
-                iters = int(rexp.group(5))   # No Iterations
 
                 icorr = self.corrs.get(field, 0) + 1
                 self.corrs[field] = icorr
                 fh = get_file(field, solver)
-                fh.write(res_fmt%(
-                    self.time, icorr, ires, fres, iters))
+                fh.write(
+                    self.time_str + "\t%d\t"%icorr +
+                    "\t".join([rexp.group(i) for i in range(3, 6)]) + "\n")
         except GeneratorExit:
             for fh in self.res_files.values():
                 if not fh.closed:
@@ -178,19 +167,16 @@ class LogProcessor(object):
             return self.bound_files[field]
         # end get_file
 
-        bnd_fmt = self.fmt_strings["bounding"]
         try:
             while True:
                 rexp = (yield)
                 field = "bounding_" + rexp.group(1)
-                bmin = rexp.group(2)
-                bmax = rexp.group(3)
-                bavg = rexp.group(4)
                 icorr = self.corrs.get(field, 0) + 1
                 self.corrs[field] = icorr
                 fh = get_file(field)
-                fh.write(bnd_fmt%(
-                    self.time, icorr, bmin, bmax, bavg))
+                fh.write(
+                    self.time_str + "\t%d\t"%icorr +
+                    "\t".join(rexp.group(i) for i in range(2, 5)) + "\n")
         except GeneratorExit:
             for fh in self.bound_files.values():
                 if not fh.closed:
@@ -199,40 +185,35 @@ class LogProcessor(object):
     @coroutine
     def continuity_processor(self):
         """Process continuity error lines from log file"""
-        cont_err_fmt = self.fmt_strings['continuity']
         with open(join(self.logs_dir, "continuity_errors.dat"), 'w') as fh:
             fh.write("Time SubIteration LocalError GlobalError CumulativeError\n")
             while True:
                 rexp = (yield)
-                lce, gce, cce = [float(x) for x in rexp.groups()]
                 icorr = self.corrs.get('continuity', 0) + 1
                 self.corrs['continuity'] = icorr
-                fh.write(cont_err_fmt%(
-                    self.time, icorr, lce, gce, cce))
+                fh.write(
+                    self.time_str + "\t%d\t"%icorr +
+                    "\t".join(x for x in rexp.groups()) + "\n")
 
     @coroutine
     def exec_time_processor(self):
         """Process execution/clock time lines"""
-        exec_time_fmt = self.fmt_strings['exec_time']
         with open(join(self.logs_dir, "clock_time.dat"), 'w') as fh:
             fh.write("Time ExecutionTime ClockTime\n")
             while True:
                 rexp = (yield)
-                etime, ctime = [float(x) for x in rexp.groups()]
-                fh.write(exec_time_fmt%(
-                    self.time, etime, ctime))
+                fh.write(self.time_str + "\t" +
+                         "\t".join(x for x in rexp.groups()) + "\n")
 
     @coroutine
     def courant_processor(self):
         """Process Courant Number lines"""
-        courant_fmt = self.fmt_strings['courant']
         with open(join(self.logs_dir, "courant.dat"), 'w') as fh:
             fh.write("Time CoMean CoMax\n")
             while True:
                 rexp = (yield)
-                cmean, cmax = [float(x) for x in rexp.groups()]
-                fh.write(courant_fmt%(
-                    self.time, cmean, cmax))
+                fh.write(self.time_str + "\t" +
+                         "\t".join(x for x in rexp.groups()) + "\n")
 
     @coroutine
     def convergence_processor(self):
