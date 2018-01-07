@@ -21,23 +21,21 @@ class LogProcessor(object):
         time=r"^Time = (\S+)",
         courant=r"^Courant Number mean: (\S+) max: (\S+)",
         residual=r"(\S+): *Solving for (\S+), Initial residual = (\S+), Final residual = (\S+), No Iterations (\S+)",
+        bounding=r"^\s+bounding (\S+), min:\s*(\S+)\s+max:\s*(\S+)\s+average:\s*(\S+)",
         continuity=r"time step continuity errors : sum local = (\S+), global = (\S+), cumulative = (\S+)",
         exec_time=r"ExecutionTime = (\S+) s  ClockTime = (\S+) s",
         convergence=r"(\S+) solution converged in (\S+) iterations",
         completion=r"^End$",
     )
 
-    #: Format for outputs of residuals
-    res_fmt = "%15.5f %5d %15.6e %15.6e %5d\n"
-
-    #: Format for output of continuity errors
-    cont_err_fmt = "%15.5f %5d %15.6e %15.6e %15.6e\n"
-
-    #: Execution/clock time formatter
-    exec_time_fmt = "%15.5f %15.5f %15.5f\n"
-
-    #: Courant number formatter
-    courant_fmt = "%15.5f %15.5e %15.5e\n"
+    #: Printf style format strings for outputs
+    fmt_strings = dict(
+        residual="%15.5f %5d %15.6e %15.6e %5d\n",
+        courant="%15.5f %15.5e %15.5e\n",
+        continuity="%15.5f %5d %15.6e %15.6e %15.6e\n",
+        bounding="%15.5f %5d %15.6e %15.6e %15.6e\n",
+        exec_time="%15.5f %15.5f %15.5f\n",
+    )
 
     def __init__(self, logfile,
                  case_dir=None,
@@ -60,12 +58,17 @@ class LogProcessor(object):
 
         #: Track the latest time that was processed by the utility
         self.time = 0.0
-        #: (variable, corrector) pairs tracking the number of predictor
-        #: correctors for each flow variable
+        #: (variable, subIteration) pairs tracking the number of predictor
+        #: subIterations for each flow variable
         self.corrs = {}
 
         #: Open file handles for the residual outputs
-        self.file_handles = OrderedDict()
+        self.res_files = OrderedDict()
+        #: Open file handles for bounding outputs
+        self.bound_files = OrderedDict()
+
+        #: List of user-defined rules to process
+        self._user_rules = []
 
         #: Flag indicating convergence message in logs
         self.converged = False
@@ -76,11 +79,23 @@ class LogProcessor(object):
 
     def __call__(self, watch=False):
         """Process log file"""
-        patterns = [grep(*x) for x in self._init_builtins()]
+        pat_builtin = [grep(*x) for x in self._init_builtins()]
+        patterns = pat_builtin + self._user_rules
         if watch:
             self._watch_file(patterns)
         else:
             self._process_file(patterns)
+
+    def add_rule(self, regexp, actions):
+        """Add a user-defined rule for processing
+
+        Args:
+            regexp (str): A string that can be compiled into a regexp
+            action (func): A coroutine that can consume matching patterns
+        """
+        act_list = actions if hasattr(actions, "append") else [actions]
+        self._user_rules.append(
+            grep(regexp, act_list))
 
     def _init_builtins(self):
         """Helper function to initialize builtin patterns"""
@@ -105,7 +120,7 @@ class LogProcessor(object):
         while True:
             rexp = (yield)
             self.time = float(rexp.group(1))
-            # Reset corrector counters
+            # Reset subIteration counters
             for k in self.corrs:
                 self.corrs[k] = 0
 
@@ -118,14 +133,15 @@ class LogProcessor(object):
             On first invocation, it creates the file with headers. On
             subsequent invocations it just returns the relevant file handle.
             """
-            if not field in self.file_handles:
+            if not field in self.res_files:
                 fh = open(join(self.logs_dir, field+".dat"), 'w')
                 fh.write("# Field: %s; Solver: %s\n"%(field, solver))
-                fh.write("Time Corrector InitialResidual FinalResidual NoIterations\n")
-                self.file_handles[field] = fh
-            return self.file_handles[field]
+                fh.write("Time SubIteration InitialResidual FinalResidual NoIterations\n")
+                self.res_files[field] = fh
+            return self.res_files[field]
         # end get_file
 
+        res_fmt = self.fmt_strings['residual']
         try:
             while True:
                 rexp = (yield)
@@ -138,45 +154,84 @@ class LogProcessor(object):
                 icorr = self.corrs.get(field, 0) + 1
                 self.corrs[field] = icorr
                 fh = get_file(field, solver)
-                fh.write(self.res_fmt%(
+                fh.write(res_fmt%(
                     self.time, icorr, ires, fres, iters))
         except GeneratorExit:
-            for fh in self.file_handles.values():
-                fh.close()
+            for fh in self.res_files.values():
+                if not fh.closed:
+                    fh.close()
+
+    @coroutine
+    def bounding_processor(self):
+        """Process the bounding lines"""
+        def get_file(field):
+            """Helper method to get the file handle for a field.
+
+            On first invocation, it creates the file with headers. On
+            subsequent invocations it just returns the relevant file handle.
+            """
+            if not field in self.bound_files:
+                fh = open(join(self.logs_dir, field+".dat"), 'w')
+                fh.write("# Bounding Field: %s\n"%(field))
+                fh.write("Time SubIteration Min Max Average\n")
+                self.bound_files[field] = fh
+            return self.bound_files[field]
+        # end get_file
+
+        bnd_fmt = self.fmt_strings["bounding"]
+        try:
+            while True:
+                rexp = (yield)
+                field = "bounding_" + rexp.group(1)
+                bmin = rexp.group(2)
+                bmax = rexp.group(3)
+                bavg = rexp.group(4)
+                icorr = self.corrs.get(field, 0) + 1
+                self.corrs[field] = icorr
+                fh = get_file(field)
+                fh.write(bnd_fmt%(
+                    self.time, icorr, bmin, bmax, bavg))
+        except GeneratorExit:
+            for fh in self.bound_files.values():
+                if not fh.closed:
+                    fh.close()
 
     @coroutine
     def continuity_processor(self):
         """Process continuity error lines from log file"""
+        cont_err_fmt = self.fmt_strings['continuity']
         with open(join(self.logs_dir, "continuity_errors.dat"), 'w') as fh:
-            fh.write("Time Corrector LocalError GlobalError CumulativeError\n")
+            fh.write("Time SubIteration LocalError GlobalError CumulativeError\n")
             while True:
                 rexp = (yield)
                 lce, gce, cce = [float(x) for x in rexp.groups()]
                 icorr = self.corrs.get('continuity', 0) + 1
                 self.corrs['continuity'] = icorr
-                fh.write(self.cont_err_fmt%(
+                fh.write(cont_err_fmt%(
                     self.time, icorr, lce, gce, cce))
 
     @coroutine
     def exec_time_processor(self):
         """Process execution/clock time lines"""
+        exec_time_fmt = self.fmt_strings['exec_time']
         with open(join(self.logs_dir, "clock_time.dat"), 'w') as fh:
             fh.write("Time ExecutionTime ClockTime\n")
             while True:
                 rexp = (yield)
                 etime, ctime = [float(x) for x in rexp.groups()]
-                fh.write(self.exec_time_fmt%(
+                fh.write(exec_time_fmt%(
                     self.time, etime, ctime))
 
     @coroutine
     def courant_processor(self):
         """Process Courant Number lines"""
+        courant_fmt = self.fmt_strings['courant']
         with open(join(self.logs_dir, "courant.dat"), 'w') as fh:
             fh.write("Time CoMean CoMax\n")
             while True:
                 rexp = (yield)
                 cmean, cmax = [float(x) for x in rexp.groups()]
-                fh.write(self.courant_fmt%(
+                fh.write(courant_fmt%(
                     self.time, cmean, cmax))
 
     @coroutine
