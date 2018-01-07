@@ -6,6 +6,7 @@ Miscellaneous OS utilities
 """
 
 import os
+from contextlib import contextmanager
 
 def ostype():
     """String indicating the operating system type
@@ -48,3 +49,25 @@ def ensure_directory(dname):
     if not os.path.exists(abs_dir):
         os.makedirs(abs_dir)
     return abs_dir
+
+@contextmanager
+def set_work_dir(dname, create=False):
+    """A with-block to execute code in a given directory.
+
+    Args:
+        dname (path): Path to the working directory.
+        create (bool): If true, directory is created prior to execution
+
+    Returns:
+        path: Absolute path to the execution directory
+    """
+    abs_dir = abspath(dname)
+    if create:
+        ensure_directory(abs_dir)
+
+    orig_dir = os.getcwd()
+    try:
+        os.chdir(abs_dir)
+        yield abs_dir
+    finally:
+        os.chdir(orig_dir)
