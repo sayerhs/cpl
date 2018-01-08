@@ -44,8 +44,8 @@ def get_user_home():
 
 def get_appdata_dir():
     """Return the path to the Windows AppData directory"""
-    if "%AppData%" in os.environ:
-        return pth.join(os.environ["%AppData%"], "Caelus")
+    if "AppData" in os.environ:
+        return pth.join(os.environ["AppData"], "Caelus")
     return None
 
 # Adapted from matplotlib source code
