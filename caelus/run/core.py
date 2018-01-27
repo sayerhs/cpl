@@ -10,6 +10,7 @@ import os
 import subprocess
 import shutil
 import logging
+import glob
 import shlex
 from ..utils import osutils
 from ..config.cmlenv import cml_get_latest_version
@@ -38,13 +39,15 @@ def caelus_execute(cmd, env=None, stdout=sys.stdout, stderr=sys.stderr):
         subprocess.Popen : The task instance
     """
     renv = env or cml_get_latest_version()
+    print (cmd)
     cmd_popen = cmd if isinstance(cmd, list) else shlex.split(cmd)
     task = subprocess.Popen(
         cmd_popen, stdout=stdout, stderr=stderr, env=renv.environ)
     return task
 
 def run_cml_exe(cml_exe, casedir=None, env=None,
-                logfile=None, wait=True):
+                logfile=None, wait=True,
+                cml_exe_args="", mpi_args=""):
     """Run a CML executable in the given case directory.
 
     Args:
@@ -62,9 +65,12 @@ def run_cml_exe(cml_exe, casedir=None, env=None,
     cdir = casedir or os.getcwd()
     with osutils.set_work_dir(cdir):
         logf = logfile or "%s.log"%cml_exe
+        cml_cmd = cml_exe + " " + cml_exe_args
+        if mpi_args:
+            cml_cmd = "mpiexec " + mpi_args + cml_cmd
         with open(logf, 'w') as fh:
             task = caelus_execute(
-                cml_exe, env, stdout=fh, stderr=subprocess.STDOUT)
+                cml_cmd, env, stdout=fh, stderr=subprocess.STDOUT)
             if wait:
                 status = task.wait()
                 if status != 0:
@@ -223,3 +229,10 @@ def clone_case(casedir,
     _lgr.info("Cloned directory: %s; template directory: %s",
               absdir, tmpl_dir)
     return absdir
+
+def get_mpi_size(casedir):
+    """Determine the number of MPI ranks to run"""
+    #TODO: Implement decomposeParDict options. How do we handle
+    #redistributePar?
+    with osutils.set_work_dir(casedir):
+        return len(glob.glob("processor*"))
