@@ -136,6 +136,9 @@ class CMLEnv(object):
             self._build_dir = build_dir
             self._build_option = os.path.basename(build_dir)
 
+    def __repr__(self):
+        return "<Caelus v%s>"%(self.version)
+
     @property
     def root(self):
         """Return the root path for the Caelus install
@@ -179,8 +182,29 @@ class CMLEnv(object):
     def mpi_dir(self):
         """Return the MPI directory for this installation"""
         if not hasattr(self, "_mpi_dir"):
-            self._mpi_dir = _determine_mpi_dir(self.project_dir)
+            mpi_dir = self._cfg.get("mpi_root", None)
+            if not mpi_dir:
+                mpi_dir = _determine_mpi_dir(self.project_dir)
+            self._mpi_dir = mpi_dir
         return self._mpi_dir
+
+    @property
+    def mpi_libdir(self):
+        """Return the MPI library path for this installation"""
+        if not hasattr(self, "_mpi_libdir"):
+            self._mpi_libdir = self._cfg.get(
+                "mpi_lib_path",
+                os.path.join(self.mpi_dir, "lib"))
+        return self._mpi_libdir
+
+    @property
+    def mpi_bindir(self):
+        """Return the MPI executables path for this installation"""
+        if not hasattr(self, "_mpi_bindir"):
+            self._mpi_bindir = self._cfg.get(
+                "mpi_bin_path",
+                os.path.join(self.mpi_dir, "bin"))
+        return self._mpi_bindir
 
     def _generate_environment(self):
         """Return an environment suitable for executing programs"""
@@ -194,7 +218,7 @@ class CMLEnv(object):
             self.project_dir, "external")
         senv['PATH'] = (
             self.bin_dir + os.pathsep +
-            os.path.join(self.mpi_dir, "bin") + os.pathsep +
+            self.mpi_bindir + os.pathsep +
             os.environ.get('PATH'))
         senv['MPI_BUFFER_SIZE'] = "20000000"
         senv['OPAL_PREFIX'] = self.mpi_dir
@@ -204,7 +228,7 @@ class CMLEnv(object):
             lib_var = 'DYLD_FALLBACK_LIBRARY_PATH'
         senv[lib_var] = (
             self.lib_dir + os.pathsep +
-            os.path.join(self.mpi_dir, "lib") + os.pathsep +
+            self.mpi_libdir + os.pathsep +
             os.environ.get(lib_var, ''))
         return senv
 
