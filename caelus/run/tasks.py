@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """\
-Caelus Actions Manager
+Caelus Tasks Manager
 ----------------------
 """
 
@@ -18,8 +18,8 @@ from ..config.cmlenv import cml_get_version
 
 _lgr = logging.getLogger(__name__)
 
-class ActionsMeta(type):
-    """Metaclass to track available actions"""
+class TasksMeta(type):
+    """Metaclass to track available tasks"""
 
     def __new__(mcls, name, bases, cdict):
         act_map = OrderedDict()
@@ -27,79 +27,80 @@ class ActionsMeta(type):
             if k.startswith("cmd_"):
                 name = k[4:]
                 act_map[name] = value
-        cdict["actions_map"] = act_map
-        cls = super(ActionsMeta, mcls).__new__(mcls, name, bases, cdict)
+        cdict["task_map"] = act_map
+        cls = super(TasksMeta, mcls).__new__(mcls, name, bases, cdict)
         return cls
 
-@six.add_metaclass(ActionsMeta)
-class CaelusActions(object):
-    """Interface for Caelus Actions Manager"""
+@six.add_metaclass(TasksMeta)
+class Tasks(object):
+    """Interface for Caelus Task Manager"""
 
     def __init__(self):
-        #: List of actions that must be performed
-        self.actions = []
-        #: File that was used to load actions
-        self.actions_file = "None"
-        #: Directory where the actions are to be executed
+        #: List of tasks that must be performed
+        self.tasks = []
+        #: File that was used to load tasks
+        self.task_file = "None"
+        #: Directory where the tasks are to be executed
         self.case_dir = None
-        #: Caelus environment used when executing actions
+        #: Caelus environment used when executing tasks
         self.env = None
 
     @classmethod
     def load(cls,
-             actions_file="caelus_actions.yaml"):
-        """Load actions from a YAML file.
+             task_file="caelus_tasks.yaml",
+             task_node="tasks"):
+        """Load tasks from a YAML file.
 
         If ``exedir is None`` then the execution directory is set to the
-        directory where the actions file is found.
+        directory where the tasks file is found.
 
         Args:
-            actions_file (filename): Path to the YAML file
+            task_file (filename): Path to the YAML file
         """
         self = cls.__new__(cls)
-        absfile = osutils.abspath(actions_file)
+        absfile = osutils.abspath(task_file)
         act_file = Struct.load_yaml(absfile)
-        if "actions" not in act_file:
-            raise KeyError("Cannot find actions list in file: " +
-                           actions_file)
-        self.actions = act_file["actions"]
-        self.actions_file = absfile
-        _lgr.info("Loaded actions from: %s", absfile)
+        if "tasks" not in act_file:
+            raise KeyError("Cannot find tasks list in file: " +
+                           task_file)
+        self.tasks = act_file[task_node]
+        self.task_file = absfile
+        _lgr.info("Loaded tasks from: %s", absfile)
         return self
 
     def __call__(self, case_dir=None, env=None):
-        """Execute actions """
-        self._validate_actions()
+        """Execute tasks """
+        self._validate_tasks()
         self.case_dir = case_dir or os.getcwd()
         self.env = env or cml_get_version()
-        act_map = self.actions_map
-        num_actions = len(self.actions)
-        _lgr.info("Begin executing actions in %s", self.case_dir)
+        act_map = self.task_map
+        num_tasks = len(self.tasks)
+        _lgr.info("Begin executing tasks in %s", self.case_dir)
         with osutils.set_work_dir(self.case_dir):
-            for act in self.actions:
+            for act in self.tasks:
                 for key in act:
                     act_map[key](self, act[key])
-        _lgr.info("Successfully executed %d actions in %s",
-                  num_actions, self.case_dir)
+        _lgr.info("Successfully executed %d tasks in %s",
+                  num_tasks, self.case_dir)
 
-    def _validate_actions(self):
-        """Validate actions provided by the user before executing"""
-        invalid_actions = []
-        for act in self.actions:
+    def _validate_tasks(self):
+        """Validate tasks provided by the user before executing"""
+        invalid_tasks = []
+        for act in self.tasks:
             for key in act:
-                if key not in self.actions_map:
-                    invalid_actions.append(key)
-        if invalid_actions:
-            print("Invalid actions detected: ")
-            for act in invalid_actions:
+                if key not in self.task_map:
+                    invalid_tasks.append(key)
+        if invalid_tasks:
+            print("Invalid tasks detected: ")
+            for act in invalid_tasks:
                 print("  - " + act)
-            print("Valid actions are: ")
-            for key, value in self.actions_map.items():
+            print("Valid tasks are: ")
+            for key, value in self.task_map.items():
                 docstr = value.__doc__
                 desc = (docstr.strip().split("\n")[0]
                         if docstr else "No help description.")
                 print("  - %s - %s"%(key, desc))
-            raise RuntimeError("Invalid actions provided")
+            raise RuntimeError("Invalid tasks provided")
 
     def cmd_run_command(self, options):
         """Execute a Caelus CML program"""
@@ -123,14 +124,16 @@ class CaelusActions(object):
             raise RuntimeError("Error executing command: %s", cml_exe)
 
     def cmd_copy_tree(self, options):
-        """General copy action"""
+        """Recursively copy a given directory to the destination."""
         srcdir = options.src
         destdir = options.dest
-        ignore_pat = options.get("ignore_patters", None)
+        ignore_pat = options.get("ignore_patterns", None)
+        symlinks = options.get("preserve_symlinks", False)
         ignore_func = None
         if ignore_pat:
             ignore_func = shutil.ignore_patterns(*ignore_pat)
-        shutil.copytree(srcdir, destdir, ignore=ignore_func)
+        shutil.copytree(srcdir, destdir,
+                        symlinks=symlinks, ignore=ignore_func)
 
     def cmd_clean_case(self, options):
         """Clean a case directory"""
