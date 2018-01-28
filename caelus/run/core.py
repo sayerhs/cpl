@@ -39,7 +39,6 @@ def caelus_execute(cmd, env=None, stdout=sys.stdout, stderr=sys.stderr):
         subprocess.Popen : The task instance
     """
     renv = env or cml_get_latest_version()
-    print (cmd)
     cmd_popen = cmd if isinstance(cmd, list) else shlex.split(cmd)
     task = subprocess.Popen(
         cmd_popen, stdout=stdout, stderr=stderr, env=renv.environ)
