@@ -40,6 +40,7 @@ def caelus_execute(cmd, env=None, stdout=sys.stdout, stderr=sys.stderr):
     """
     renv = env or cml_get_latest_version()
     cmd_popen = cmd if isinstance(cmd, list) else shlex.split(cmd)
+    _lgr.debug("Executing shell command: %s", ' '.join(cmd_popen))
     task = subprocess.Popen(
         cmd_popen, stdout=stdout, stderr=stderr, env=renv.environ)
     return task
@@ -65,7 +66,9 @@ def run_cml_exe(cml_exe, casedir=None, env=None,
     with osutils.set_work_dir(cdir):
         logf = logfile or "%s.log"%cml_exe
         cml_cmd = cml_exe + " " + cml_exe_args
-        if mpi_args:
+        # Ensure it is not a string with just spaces/tabs
+        mpargs = mpi_args.strip()
+        if mpargs:
             cml_cmd = "mpiexec " + mpi_args + cml_cmd
         with open(logf, 'w') as fh:
             task = caelus_execute(
@@ -74,7 +77,7 @@ def run_cml_exe(cml_exe, casedir=None, env=None,
                 status = task.wait()
                 if status != 0:
                     _lgr.error("Error running executable %s in %s",
-                               cml_exe, casedir)
+                               cml_exe, cdir)
                 return status
             else:
                 return task

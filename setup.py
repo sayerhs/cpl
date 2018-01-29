@@ -26,18 +26,26 @@ classifiers = [
 ]
 
 setup(
-    name = "caelus",
-    version = VERSION,
-    url = "http://www.caelus-cml.com",
-    license = "Apache License, Version 2.0",
-    description = "Caelus Python Library",
-    long_description = __doc__,
-    author = "Applied CCM",
-    maintainer = "Applied CCM",
-    include_package_data = True,
-    platforms = "any",
-    classifiers = classifiers,
-    packages = [
-        'caelus'
+    name="caelus",
+    version=VERSION,
+    url="http://www.caelus-cml.com",
+    license="Apache License, Version 2.0",
+    description="Caelus Python Library",
+    long_description=__doc__,
+    author="Applied CCM",
+    maintainer="Applied CCM",
+    include_package_data=True,
+    platforms="any",
+    classifiers=classifiers,
+    packages=[
+        'caelus',
+        'caelus.config',
+        'caelus.utils',
+        'caelus.post',
+        'caelus.run',
     ],
+    entry_points="""
+        [console_scripts]
+        caelus=caelus.scripts.caelus:main
+    """,
 )
