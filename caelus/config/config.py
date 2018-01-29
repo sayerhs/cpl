@@ -153,9 +153,7 @@ def configure_logging(log_cfg=None):
         dictConfig(lggr_cfg)
         logger = logging.getLogger(__name__)
         if log_to_file:
-            logger.info("Logging enabled to file: %s"%log_filename) # pylint: disable=logging-not-lazy
-        else:
-            logger.warn("Logging to file disabled.")
+            logger.info("Logging enabled to file: %s", log_filename)
 
 def _cfg_manager():
     """Configuration manager"""
@@ -173,7 +171,7 @@ def _cfg_manager():
                 ctmp = CaelusCfg.load_yaml(rcname)
                 cfg.merge(ctmp)
 
-        log_cfg = cfg.caelus.pop("logging")
+        log_cfg = cfg.caelus.logging
         configure_logging(log_cfg)
         logger = logging.getLogger(__name__)
         msg = ("Loaded configuration from files = %s"%rcfiles

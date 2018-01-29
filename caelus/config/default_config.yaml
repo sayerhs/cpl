@@ -4,7 +4,7 @@
 
 caelus:
   logging:
-    log_to_file: True
+    log_to_file: false
     log_file: null
 
     pylogger_options:
@@ -19,7 +19,13 @@ caelus:
           format: "%(asctime)s:%(name)s:%(levelname)s: %(message)s"
 
       handlers:
-        console:
+        console_caelus:
+          class: logging.StreamHandler
+          level: INFO
+          formatter: stdout
+          stream: "ext://sys.stdout"
+
+        console_script:
           class: logging.StreamHandler
           level: INFO
           formatter: stdout
@@ -36,12 +42,17 @@ caelus:
       loggers:
         caelus:
           level: DEBUG
-          handlers: [console]
+          handlers: [console_caelus]
+          propagate: no
+
+        caelus.scripts:
+          level: DEBUG
+          handlers: [console_script]
           propagate: no
 
       root:
         level: DEBUG
-        handlers: [console]
+        handlers: [console_caelus]
 
   # Configuration for Caelus CML
   caelus_cml:
