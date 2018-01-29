@@ -33,7 +33,18 @@ class TasksMeta(type):
 
 @six.add_metaclass(TasksMeta)
 class Tasks(object):
-    """Interface for Caelus Task Manager"""
+    """Caelus Tasks.
+
+    Tasks provides a simple automated workflow interface that provides various
+    pre-defined actions via a YAML file interface.
+
+    The tasks are defined as methods with a ``cmd_`` prefix and are
+    automaticaly converted to task names. Users can create additional tasks by
+    subclassing and adding additional methods with ``cmd_`` prefix. These
+    methods accept one argument ``options``, a dictionary containing parameters
+    provided by the user for that particular task.
+
+    """
 
     def __init__(self):
         #: List of tasks that must be performed

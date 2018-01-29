@@ -56,6 +56,8 @@ def run_cml_exe(cml_exe, casedir=None, env=None,
         env (CMLEnv): Environment for the Caelus version to use
         logfile (str): Filename for logging outputs (default: ``<cml_exe>.log``)
         wait (bool): If true, wait for the job to complete
+        cml_exe_args (str): Arguments passed to the executable
+        mpi_args (str): Extra MPI flags passed for parallel runs
 
     Returns:
         If wait is True, then it returns the status code for the completed job.
@@ -89,6 +91,9 @@ def is_caelus_casedir(root=None):
     ``system``, ``constant``, and ``system/controlDict`` exist. No check is
     performed to determine whether the case directory will actually run or if a
     mesh is present.
+
+    Args:
+        root (path): Top directory to start traversing (default: CWD)
     """
     casedir_entries = ["constant", "system",
                        os.path.join("system", "controlDict")]
@@ -101,6 +106,9 @@ def find_case_dirs(basedir):
 
     Args:
         basedir (path): Top-level directory to traverse
+
+    Yields:
+        Path to the case directory
     """
     absdir = osutils.abspath(basedir)
     # is the root directory itself a case directory?
@@ -116,7 +124,7 @@ def find_case_dirs(basedir):
 
 def find_caelus_recipe_dirs(
         basedir,
-        action_file="caelus_actions.yaml"):
+        action_file="caelus_tasks.yaml"):
     """Return case directories that contain action files.
 
     A case directory with action file is determined if the directory succeeds
@@ -125,7 +133,7 @@ def find_caelus_recipe_dirs(
 
     Args:
         basedir (path): Top-level directory to traverse
-        action_file (filename): Default is ``caelus_actions.yaml``
+        action_file (filename): Default is ``caelus_tasks.yaml``
 
     Yields:
         Path to the case directory with action files
@@ -137,7 +145,13 @@ def find_caelus_recipe_dirs(
 def clean_polymesh(casedir,
                    region=None,
                    preserve_patterns=None):
-    """Clean the polyMesh from the given case directory"""
+    """Clean the polyMesh from the given case directory.
+
+    Args:
+        casedir (path): Path to the case directory
+        region (str): Mesh region to delete
+        preserve_patterns (list): Shell wildcard patterns of files to preserve
+    """
     ppatterns = preserve_patterns or ["blockMeshDict"]
     absdir = osutils.abspath(casedir)
     if not is_caelus_casedir(absdir):
@@ -166,6 +180,7 @@ def clean_casedir(casedir,
         casedir (path): Absolute path to a case directory.
         preserve_extra (list): List of shell wildcard patterns to preserve
         purge_mesh (bool): If true, also removes mesh from constant/polyMesh
+        preserve_zero (bool): If False, removes the 0 directory
     """
     base_patterns = ["system", "constant", "*.yaml", "*.yml", "*.py"]
     zero_pat = ["0"] if preserve_zero else []

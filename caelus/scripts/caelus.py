@@ -3,6 +3,7 @@
 """\
 Caelus command
 --------------
+
 """
 
 import os
@@ -17,7 +18,22 @@ from ..post.logs import LogProcessor
 _lgr = logging.getLogger(__name__)
 
 class CaelusCmd(CaelusSubCmdScript):
-    """Top-level Caelus interface"""
+    """CLI interface to Caelus Python Library.
+
+    This class provides command-line access to various features implemented
+    within the Caelus Python Library without the need for writing custom
+    scripts. Common tasks such as cloning a case directory, executing mesh and
+    solver executables, automating workflow via tasks, cleaning run
+    directories, etc. can be accessed via sub-commands implemented within this
+    class.
+
+    Tasks defined:
+        - clone - Clone a case directory
+        - tasks - Execute workflow from a Tasks file
+        - run   - Run a Caelus executable in serial or parallel
+        - logs  - Process a log file and extract residuals
+        - clean - Clean a case directory
+    """
 
     description = "Caelus Python Utility Interface"
 
@@ -28,7 +44,7 @@ class CaelusCmd(CaelusSubCmdScript):
         clone = subparsers.add_parser(
             "clone",
             description="Clone a case directory into a new folder.",
-            help="Clone case directory")
+            help="clone case directory")
         tasks = subparsers.add_parser(
             "tasks",
             description="Run pre-defined tasks within a case directory "
@@ -41,7 +57,7 @@ class CaelusCmd(CaelusSubCmdScript):
         logs = subparsers.add_parser(
             "logs",
             description="Process logfiles for a Caelus run",
-            help="Process the solver logs for a Caelus run")
+            help="process the solver logs for a Caelus run")
         clean = subparsers.add_parser(
             "clean",
             description="Clean a case directory",
@@ -72,37 +88,37 @@ class CaelusCmd(CaelusSubCmdScript):
         # Tasks action
         tasks.add_argument(
             '-f', '--file', default="caelus_tasks.yaml",
-            help="File containing tasks to execute (caelus_tasks.yaml)")
+            help="file containing tasks to execute (caelus_tasks.yaml)")
         tasks.set_defaults(func=self.run_tasks)
 
         # Run action
         run.add_argument(
             '-p', '--parallel', action='store_true',
-            help="Run in parallel")
+            help="run in parallel")
         run.add_argument(
             '-l', '--log-file', default=None,
-            help="Filename to redirect command output")
+            help="filename to redirect command output")
         run.add_argument(
             '-d', '--case-dir', default=os.getcwd(),
             help="path to the case directory")
         run.add_argument(
             'cmd_name',
-            help="Name of the Caelus executable")
+            help="name of the Caelus executable")
         run.add_argument(
             'cmd_args', nargs='*',
-            help="Additional arguments passed to command")
+            help="additional arguments passed to command")
         run.set_defaults(func=self.run_cmd)
 
         # Logs action
         logs.add_argument(
             '-l', '--logs-dir', default="logs",
-            help="Directory where logs are output (default: logs)")
+            help="directory where logs are output (default: logs)")
         logs.add_argument(
             '-d', '--case-dir', default=os.getcwd(),
             help="path to the case directory")
         logs.add_argument(
             "log_file",
-            help="Log file (e.g., simpleSolver.log)")
+            help="log file (e.g., simpleSolver.log)")
         logs.set_defaults(func=self.process_logs)
 
         # Clean action
@@ -111,13 +127,13 @@ class CaelusCmd(CaelusSubCmdScript):
             help="path to the case directory")
         clean.add_argument(
             '-m', '--clean-mesh', action='store_true',
-            help="Remove polyMesh directory")
+            help="remove polyMesh directory")
         clean.add_argument(
             '-z', '--clean-zero', action='store_true',
-            help="Remove 0 directory")
+            help="remove 0 directory")
         clean.add_argument(
             '-p', '--preserve', action='append',
-            help="Shell wildcard patterns of extra files to preserve")
+            help="shell wildcard patterns of extra files to preserve")
         clean.set_defaults(func=self.clean_case)
 
     def run_tasks(self):
