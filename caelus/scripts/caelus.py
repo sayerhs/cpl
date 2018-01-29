@@ -11,7 +11,7 @@ from ..utils import osutils
 from ..config.cmlenv import cml_get_version
 from .core import CaelusSubCmdScript
 from ..run.tasks import Tasks
-from ..run.core import clone_case, get_mpi_size, run_cml_exe
+from ..run.core import clone_case, get_mpi_size, run_cml_exe, clean_casedir
 from ..post.logs import LogProcessor
 
 _lgr = logging.getLogger(__name__)
@@ -42,6 +42,10 @@ class CaelusCmd(CaelusSubCmdScript):
             "logs",
             description="Process logfiles for a Caelus run",
             help="Process the solver logs for a Caelus run")
+        clean = subparsers.add_parser(
+            "clean",
+            description="Clean a case directory",
+            help="clean case directory")
 
         # Clone action
         clone.add_argument(
@@ -101,6 +105,21 @@ class CaelusCmd(CaelusSubCmdScript):
             help="Log file (e.g., simpleSolver.log)")
         logs.set_defaults(func=self.process_logs)
 
+        # Clean action
+        clean.add_argument(
+            '-d', '--case-dir', default=os.getcwd(),
+            help="path to the case directory")
+        clean.add_argument(
+            '-m', '--clean-mesh', action='store_true',
+            help="Remove polyMesh directory")
+        clean.add_argument(
+            '-z', '--clean-zero', action='store_true',
+            help="Remove 0 directory")
+        clean.add_argument(
+            '-p', '--preserve', action='append',
+            help="Shell wildcard patterns of extra files to preserve")
+        clean.set_defaults(func=self.clean_case)
+
     def run_tasks(self):
         """Run tasks"""
         args = self.args
@@ -132,13 +151,14 @@ class CaelusCmd(CaelusSubCmdScript):
                       cml_exe, num_ranks)
         else:
             _lgr.info("Executing %s in serial mode", cml_exe)
-        status = run_cml_exe(
-            cml_exe, env=cenv, logfile=log_file,
-            cml_exe_args=exe_args, mpi_args=mpi_args)
-        if status != 0:
-            _lgr.error("Error executing command; see %s for details",
-                       log_file)
-        self.parser.exit(status)
+        with osutils.set_work_dir(args.case_dir):
+            status = run_cml_exe(
+                cml_exe, env=cenv, logfile=log_file,
+                cml_exe_args=exe_args, mpi_args=mpi_args)
+            if status != 0:
+                _lgr.error("Error executing command; see %s for details",
+                           log_file)
+                self.parser.exit(status)
 
     def clone_case(self):
         """Clone a case directory"""
@@ -180,6 +200,16 @@ class CaelusCmd(CaelusSubCmdScript):
             logs_dir=args.logs_dir)
         clog()
         _lgr.info("%s processed to %s", args.log_file, args.logs_dir)
+
+    def clean_case(self):
+        """Clean a case directory"""
+        args = self.args
+        purge_mesh = args.clean_mesh
+        preserve_zero = (not args.clean_zero)
+        clean_casedir(args.case_dir,
+                      preserve_zero=preserve_zero,
+                      purge_mesh=purge_mesh,
+                      preserve_extra=args.preserve)
 
 def main():
     """Run caelus command"""
