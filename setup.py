@@ -47,5 +47,6 @@ setup(
     entry_points="""
         [console_scripts]
         caelus=caelus.scripts.caelus:main
+        caelus_tutorials=caelus.scripts.caelus_tutorials:main
     """,
 )

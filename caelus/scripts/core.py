@@ -28,6 +28,9 @@ class CaelusScriptBase(object):
     #: Log file
     log_file = "caelus_cli.log"
 
+    script_levels = ["INFO", "DEBUG"]
+    lib_levels = ["INFO", "DEBUG"]
+
     def __init__(self, name=None, args=None):
         """
         Args:
@@ -79,12 +82,13 @@ class CaelusScriptBase(object):
             log_file (path): Filename to log
             verbose_level (int): Level of verbosity
         """
-        script_levels = ["INFO", "DEBUG"]
+        script_levels = self.script_levels
+        lib_levels = self.lib_levels
         cfg = get_config()
         log_cfg = cfg.caelus.logging
         lggr_cfg = log_cfg.pylogger_options
         lggr_cfg.handlers.console_caelus.level = (
-            script_levels[min(verbose_level, 1)])
+            lib_levels[min(verbose_level, 1)])
         lggr_cfg.handlers.console_script.level = (
             script_levels[min(verbose_level, 1)])
         lggr_cfg.loggers["caelus.scripts"].handlers.append("log_file")
