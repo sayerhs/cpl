@@ -29,7 +29,20 @@ def username():
 
 def user_home_dir():
     """Return the absolute path of the user's home directory"""
-    return os.path.expanduser("~")
+    try:
+        path = os.path.expanduser("~")
+    except ImportError:
+        pass
+    else:
+        if os.path.isdir(path):
+            return path
+
+    for envvar in "HOME USERPROFILE".split():
+        path = os.environ.get(envvar)
+        if path is not None and os.path.isdir(path):
+            return path
+    return None
+
 
 def abspath(pname):
     """Return the absolute path of the directory.

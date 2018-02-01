@@ -21,6 +21,7 @@ import platform
 import logging
 from logging.config import dictConfig
 from ..utils.struct import Struct
+from ..utils import osutils
 
 _rcfile_default = "caelus.yaml"
 _rcsys_var = "CAELUSRC_SYSTEM"
@@ -33,32 +34,10 @@ def get_caelus_root():
             if "windows" in sysname else
             pth.expanduser('~/Caelus/'))
 
-def get_user_home():
-    """Return the user's home directory
-
-    Returns:
-        path: Absolute path to the home directory, or None
-    """
-    home = pth.expanduser("~")
-    return home if pth.isdir(home) else None
-
 def get_appdata_dir():
     """Return the path to the Windows AppData directory"""
     if "AppData" in os.environ:
         return pth.join(os.environ["AppData"], "Caelus")
-    return None
-
-# Adapted from matplotlib source code
-def get_xdg_cfg_dir():
-    """Return the XDG configuration directory"""
-    home = get_user_home()
-    if not home:
-        return None
-
-    xdgdir = os.environ.get("XDG_CONFIG_HOME",
-                            pth.join(home, ".config"))
-    if pth.isdir(xdgdir):
-        return xdgdir
     return None
 
 class CaelusCfg(Struct): # pylint: disable=too-many-ancestors
@@ -103,6 +82,12 @@ def search_cfg_files():
                 rcfiles.append(rcfile)
 
     home = get_caelus_root()
+    if home:
+        rcfile = pth.join(home, "."+_rcfile_default)
+        if pth.exists(rcfile):
+            rcfiles.append(rcfile)
+
+    home = osutils.user_home_dir()
     if home:
         rcfile = pth.join(home, "."+_rcfile_default)
         if pth.exists(rcfile):
