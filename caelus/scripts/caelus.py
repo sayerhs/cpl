@@ -8,6 +8,7 @@ Caelus command
 
 import os
 import logging
+from collections import OrderedDict
 from ..utils import osutils
 from ..config.cmlenv import cml_get_version
 from .core import CaelusSubCmdScript
@@ -16,6 +17,83 @@ from ..run.core import clone_case, get_mpi_size, run_cml_exe, clean_casedir
 from ..post.logs import LogProcessor
 
 _lgr = logging.getLogger(__name__)
+
+def populate_environment(cenv):
+    """Populate environment used for sourcing in shells"""
+
+    ostype = osutils.ostype()
+    varnames = """project project_dir caelus_project_dir
+        build_option external_dir mpi_buffer_size
+        opal_prefix""".upper().split()
+
+    env = OrderedDict()
+    env["PROJECT_NAME"] = "Caelus"
+    env["PROJECT_VERSION"] = cenv.version
+    env["PROJECT_VER"] = cenv.version
+
+    for evar in varnames:
+        env[evar] = cenv.environ[evar]
+
+    env["PATH"] = (
+        cenv.bin_dir + os.pathsep +
+        cenv.mpi_bindir + os.pathsep + "$PATH")
+    lib_path = ("LD_LIBRARY_PATH" if ostype != "darwin"
+                else "DYLD_FALLBACK_LIBRARY_PATH")
+    env[lib_path] = (
+        cenv.lib_dir + os.pathsep +
+        cenv.mpi_libdir + os.pathsep +
+        "$%s"%lib_path)
+    env["OMP"] = False
+    env["MPI_LIB_PATH"] = cenv.mpi_libdir
+    env["BIN_PLATFORM_INSTALL"] = cenv.bin_dir
+    env["LIB_PLATFORM_INSTALL"] = cenv.lib_dir
+    env["SCONSFLAGS"] = "--site-dir=%s/site_scons"%cenv.project_dir
+
+    env["LIB_SRC"] = os.path.normpath(os.path.join(
+        cenv.project_dir, "src", "libraries"))
+    env["CAELUS_APP"] = os.path.normpath(os.path.join(
+        cenv.project_dir, "src", "applications"))
+    env["CAELUS_SOLVERS"] = os.path.normpath(os.path.join(
+        cenv.project_dir, "src", "applications", "solvers"))
+    env["CAELUS_UTILITIES"] = os.path.normpath(os.path.join(
+        cenv.project_dir, "src", "applications", "utilities"))
+    env["CAELUS_TUTORIALS"] = os.path.normpath(os.path.join(
+        cenv.project_dir, "tutorials"))
+    return env
+
+def write_unix_env(env):
+    """Write out unix environment files"""
+    bash_fmt = 'export %s="%s"\n'
+    csh_fmt = 'setenv %s "%s"\n'
+    with open("caelus-bashrc", 'w') as fh:
+        fh.write("#!/bin/bash\n")
+        fh.write("#\n# Bash configuration file for %s\n\n"%env["PROJECT"])
+        for key, value in env.items():
+            fh.write(bash_fmt%(key, value))
+    _lgr.info("Bash environment file written to: %s",
+              os.path.join(os.getcwd(), "caelus-bashrc"))
+    with open("caelus-cshrc", 'w') as fh:
+        fh.write("#!/bin/csh\n")
+        fh.write("#\n# csh configuration file for %s\n\n"%env["PROJECT"])
+        for key, value in env.items():
+            fh.write(csh_fmt%(key, value))
+    _lgr.info("Csh environment file written to: %s",
+              os.path.join(os.getcwd(), "caelus-cshrc"))
+
+def write_windows_env(env):
+    """Write out unix environment files"""
+    header = """
+REM Caelus run environment
+@echo off
+
+"""
+    cmd_fmt = '@set %s=%s\n'
+    with open("caelus-environment.cmd", 'w') as fh:
+        fh.write(header)
+        for key, value in env.items():
+            fh.write(cmd_fmt%(key, value))
+    _lgr.info("Environment file written to: %s",
+              os.path.join(os.getcwd(), "caelus-environment.cmd"))
 
 class CaelusCmd(CaelusSubCmdScript):
     """CLI interface to Caelus Python Library.
@@ -41,6 +119,11 @@ class CaelusCmd(CaelusSubCmdScript):
         """Setup sub-commands for the Caelus application"""
         super(CaelusCmd, self).cli_options()
         subparsers = self.subparsers
+        env = subparsers.add_parser(
+            "env",
+            description="Write environment variables that can be "
+            "sourced into the SHELL environment",
+            help="write shell environment file")
         clone = subparsers.add_parser(
             "clone",
             description="Clone a case directory into a new folder.",
@@ -62,6 +145,12 @@ class CaelusCmd(CaelusSubCmdScript):
             "clean",
             description="Clean a case directory",
             help="clean case directory")
+
+        # Env action
+        env.add_argument(
+            '-d', '--write-dir', default=None,
+            help="Path where the environment files are written")
+        env.set_defaults(func=self.write_env)
 
         # Clone action
         clone.add_argument(
@@ -135,6 +224,26 @@ class CaelusCmd(CaelusSubCmdScript):
             '-p', '--preserve', action='append',
             help="shell wildcard patterns of extra files to preserve")
         clean.set_defaults(func=self.clean_case)
+
+    def write_env(self):
+        """Write out the environment file"""
+        args = self.args
+        write_dir = args.write_dir
+        cenv = cml_get_version()
+        if not (write_dir and
+                os.path.exists(write_dir) and
+                os.path.isdir(write_dir)):
+            _lgr.error("Directory does not exist: %s", write_dir)
+            self.parser.exit(1)
+        if write_dir is None:
+            write_dir = os.path.join(
+                cenv.project_dir, "etc")
+        with osutils.set_work_dir(write_dir):
+            env = populate_environment(cenv)
+            if osutils.ostype() == "windows":
+                write_windows_env(env)
+            else:
+                write_unix_env(env)
 
     def run_tasks(self):
         """Run tasks"""
