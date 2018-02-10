@@ -23,6 +23,7 @@ import logging
 from logging.config import dictConfig
 from ..utils.struct import Struct
 from ..utils import osutils
+from ..version import version
 
 _rcfile_default = "caelus.yaml"
 _rcsys_var = "CAELUSRC_SYSTEM"
@@ -31,7 +32,7 @@ _rcfile_var = "CAELUSRC"
 _config_banner = """\
 # -*- mode: yaml -*-
 #
-# Caelus Python Library (CPL)
+# Caelus Python Library (CPL) %(version)s
 #
 # Auto-generated on: %(timestamp)s
 #
@@ -67,7 +68,8 @@ class CaelusCfg(Struct): # pylint: disable=too-many-ancestors
             fh (handle): An open file handle
         """
         fh.write(_config_banner%{
-            'timestamp': osutils.timestamp()
+            'timestamp': osutils.timestamp(),
+            'version': version,
         })
         self.to_yaml(fh)
         fh.write("\n\n")

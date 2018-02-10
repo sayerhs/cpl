@@ -10,6 +10,7 @@ Defines the base classes that are used to build the CLI scripts.
 import logging
 import argparse
 from ..config.config import get_config, configure_logging, rcfiles_loaded
+from ..version import version
 
 _lgr = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class CaelusScriptBase(object):
     #: Description of the CLI app used in help messages
     description = "Caelus CLI Application"
     #: Epilog for help messages
-    epilog = "Caelus Python Library"
+    epilog = "Caelus Python Library %s"%version
     #: Log file
     log_file = "caelus_cli.log"
 
@@ -110,13 +111,11 @@ class CaelusScriptBase(object):
 class CaelusSubCmdScript(CaelusScriptBase):
     """A CLI app with sub-commands."""
 
-    epilog = "Use -h with task to get additional help for sub-commands."
-
     def cli_options(self):
         """Setup sub-parsers."""
         super(CaelusSubCmdScript, self).cli_options()
         self.subparsers = self.parser.add_subparsers(
-            help="Choose from one of the following sub-commands")
+            help="Choose from one of the following sub-commands; use -h to see sub-command options")
 
     def __call__(self):
         """Execute sub-command"""
