@@ -9,7 +9,7 @@ Defines the base classes that are used to build the CLI scripts.
 
 import logging
 import argparse
-from ..config.config import get_config, configure_logging
+from ..config.config import get_config, configure_logging, rcfiles_loaded
 
 _lgr = logging.getLogger(__name__)
 
@@ -84,19 +84,25 @@ class CaelusScriptBase(object):
         """
         script_levels = self.script_levels
         lib_levels = self.lib_levels
-        cfg = get_config()
+        cfg = get_config(init_logging=False)
         log_cfg = cfg.caelus.logging
         lggr_cfg = log_cfg.pylogger_options
         lggr_cfg.handlers.console_caelus.level = (
-            lib_levels[min(verbose_level, 1)])
+            lib_levels[min(verbose_level, len(lib_levels)-1)])
         lggr_cfg.handlers.console_script.level = (
-            script_levels[min(verbose_level, 1)])
+            script_levels[min(verbose_level, len(script_levels)-1)])
         lggr_cfg.loggers["caelus.scripts"].handlers.append("log_file")
         if log_to_file:
             log_cfg.log_to_file = log_to_file
             log_cfg.log_file = (
                 log_file or log_cfg.log_file or self.log_file)
         configure_logging(log_cfg)
+
+        rcfiles = rcfiles_loaded()
+        msg = ("Loaded configuration from files = %s"%rcfiles
+               if rcfiles else
+               "No configuration found; using defaults.")
+        _lgr.debug(msg)
         if not log_to_file:
             _lgr.warning("Logging to file disabled.")
 

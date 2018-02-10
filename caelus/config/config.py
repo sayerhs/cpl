@@ -140,32 +140,40 @@ def configure_logging(log_cfg=None):
         if log_to_file:
             logger.info("Logging enabled to file: %s", log_filename)
 
+def get_default_config():
+    """Return a fresh instance of the default configuration"""
+    cdir = pth.dirname(__file__)
+    default_yaml = pth.join(cdir, "default_config.yaml")
+    cfg = CaelusCfg.load_yaml(default_yaml)
+    return cfg
+
 def _cfg_manager():
     """Configuration manager"""
+    config_files = [None]
     cfg = [None]
 
-    def _init_config(load_files=True):
+    def _init_config(base_cfg=None, init_logging=True):
         """Initialize configuration"""
-        cdir = pth.dirname(__file__)
-        default_yaml = pth.join(cdir, "default_config.yaml")
-        cfg = CaelusCfg.load_yaml(default_yaml)
+        cfg = base_cfg or get_default_config()
 
-        if load_files:
-            rcfiles = search_cfg_files()
-            for rcname in rcfiles:
-                ctmp = CaelusCfg.load_yaml(rcname)
-                cfg.merge(ctmp)
+        rcfiles = search_cfg_files()
+        for rcname in rcfiles:
+            ctmp = CaelusCfg.load_yaml(rcname)
+            cfg.merge(ctmp)
 
-        log_cfg = cfg.caelus.logging
-        configure_logging(log_cfg)
-        logger = logging.getLogger(__name__)
-        msg = ("Loaded configuration from files = %s"%rcfiles
+        if init_logging:
+            log_cfg = cfg.caelus.logging
+            configure_logging(log_cfg)
+            logger = logging.getLogger(__name__)
+            msg = ("Loaded configuration from files = %s"%rcfiles
                if rcfiles else
-               "No configuration found; using defaults.")
-        logger.debug(msg)
+                   "No configuration found; using defaults.")
+            logger.debug(msg)
+
+        config_files[0] = rcfiles
         return cfg
 
-    def _get_config():
+    def _get_config(base_cfg=None, init_logging=False):
         """Get the configuration object
 
         On the first call, initializes the configuration object by parsing all
@@ -173,11 +181,14 @@ def _cfg_manager():
         object that can be mutated by the user. The config dictionary can be
         reset by invoking :func:`~caelus.config.config.reload_config`.
 
+        Args:
+            base_cfg: A CMLEnv object to use instead of default
+
         Returns:
             CaelusCfg: The configuration dictionary
         """
         if cfg[0] is None:
-            cfg[0] = _init_config()
+            cfg[0] = _init_config(base_cfg, init_logging)
         return cfg[0]
 
     def _reset_default_config():
@@ -190,10 +201,10 @@ def _cfg_manager():
         Returns:
             CaelusCfg: The configuration dictionary
         """
-        cfg[0] = _init_config(False)
+        cfg[0] = get_default_config()
         return cfg[0]
 
-    def _reload_config():
+    def _reload_config(base_cfg=None):
         """Reset the configuration object
 
         Forces reloading of all the available configuration files and resets
@@ -201,12 +212,22 @@ def _cfg_manager():
 
         See also: :func:`~caelus.config.config.reset_default_config`
 
+        Args:
+            base_cfg: A CMLEnv object to use instead of default
+
         Returns:
             CaelusCfg: The configuration dictionary
         """
-        cfg[0] = _init_config()
+        cfg[0] = _init_config(base_cfg)
         return cfg[0]
 
-    return _get_config, _reload_config, _reset_default_config
+    def _rcfiles_loaded():
+        """Return a list of the configuration files that were loaded"""
+        return config_files[0]
 
-get_config, reload_config, reset_default_config = _cfg_manager()
+    return (_get_config, _reload_config,
+            _reset_default_config, _rcfiles_loaded)
+
+(get_config, reload_config,
+ reset_default_config,
+ rcfiles_loaded) = _cfg_manager()
