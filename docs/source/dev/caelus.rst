@@ -11,3 +11,6 @@ Subpackages
 
    caelus.config
    caelus.utils
+   caelus.run
+   caelus.post
+   caelus.scripts

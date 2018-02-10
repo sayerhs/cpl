@@ -213,7 +213,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'CaelusPythondoc'
+htmlhelp_basename = 'CPLdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -235,7 +235,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'CaelusPython.tex', u'Caelus Python Documentation',
+    (master_doc, 'CPL.tex', u'Caelus Python Documentation',
      u'Applied CCM', 'manual'),
 ]
 
@@ -279,8 +279,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'CaelusPython', u'Caelus Python Documentation',
-     author, 'CaelusPython', 'One line description of project.',
+    (master_doc, 'CPL', u'Caelus Python Documentation',
+     author, 'CPL', 'Python Interface to Caelus CML',
      'Miscellaneous'),
 ]
 

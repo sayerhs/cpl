@@ -8,3 +8,7 @@ caelus.utils -- Basic utilities
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. automodule:: caelus.utils.osutils
+   :members:
+   :show-inheritance:

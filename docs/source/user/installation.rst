@@ -1,9 +1,9 @@
 .. _installation:
 
-Installing PyCaelus
-===================
+Installing Caelus Python Library (CPL)
+======================================
 
-PyCaelus is a python package for use with `Caelus CML
+CPL is a python package for use with `Caelus CML
 <http://www.caelus-cml.com>`_ simulation suite. In addition to Caelus CML and
 python, it also requires several scientific python libraries:
 
@@ -15,9 +15,9 @@ To ease the process of installation of all the required dependencies, this user
 guide recommends the use of `Anaconda Python Distribution
 <http://docs.continuum.io/anaconda/index>`_. This distribution provides a
 comprehensive set of python packages necessary to get up and running with
-PyCaelus.
+CPL.
 
-The default installation instructions use Python v3.6. However, PyCaelus is
+The default installation instructions use Python v3.6. However, CPL is
 designed to work with both Python v2.7 and Py3k versions.
 
 Install Anaconda
@@ -43,7 +43,7 @@ Install Anaconda
    environment to be updated.
 
 
-Install PyCaleus
+Install CPL
 ----------------
 
 .. _install_dev_git:
@@ -51,24 +51,24 @@ Install PyCaleus
 Developer Source from Git
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#. Obtain the PyCaelus source from the public Git repository.
+#. Obtain the CPL source from the public Git repository.
 
    .. code-block:: bash
 
       # Change to directory where you want to develop/store sources
-      git clone https://bitbucket.org/appliedccm/caelus-python
-      cd caelus-python
+      git clone https://bitbucket.org/appliedccm/CPL
+      cd CPL
 
 #. Create a custom conda environment
 
    .. code-block:: bash
 
-      # Ensure working directory is caelus-python
+      # Ensure working directory is CPL
       conda env create -f environment.yaml
 
    .. note::
 
-      #. Developers interested in developing PyCaelus might want to install the
+      #. Developers interested in developing CPL might want to install the
          development environment available in :file:`etc/devenv.yaml`. This
          installs additional packages like ``sphinx`` for document generation,
          and ``pytest`` for running the test suite.
@@ -78,14 +78,14 @@ Developer Source from Git
          :file:`etc/devenv.yaml`. The user can change the name of the
          environment by using `-n <env_name>` option in the previous command.
 
-#. Activate the custom environment and install PyCaelus within this environment
+#. Activate the custom environment and install CPL within this environment
 
    .. code-block:: bash
 
       source activate caelus-env
       pip install .
 
-   For *editable* development versions of PyCaelus use ``pip install -e .``
+   For *editable* development versions of CPL use ``pip install -e .``
    instead.
 
 Building documentation
@@ -97,7 +97,7 @@ and sources.
 
 .. code-block:: bash
 
-   # Change working directory to caelus-python
+   # Change working directory to CPL
    cd docs/
 
    # Build HTML documentation
@@ -107,7 +107,7 @@ and sources.
 
    # Build PDF documentation
    make latexpdf
-   open build/latex/CaelusPython.pdf
+   open build/latex/CPL.pdf
 
 Running tests
 -------------

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """\
-Miscellaneous OS utilities
+Miscellaneous Utilities
+-----------------------
 
 """
 
