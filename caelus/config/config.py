@@ -15,6 +15,7 @@ also sets up logging (to both console as well as log files) during the
 initialization phase.
 """
 
+import sys
 import os
 import os.path as pth
 import platform
@@ -26,6 +27,16 @@ from ..utils import osutils
 _rcfile_default = "caelus.yaml"
 _rcsys_var = "CAELUSRC_SYSTEM"
 _rcfile_var = "CAELUSRC"
+
+_config_banner = """\
+# -*- mode: yaml -*-
+#
+# Caelus Python Library (CPL)
+#
+# Auto-generated on: %(timestamp)s
+#
+
+"""
 
 def get_caelus_root():
     """Get Caelus root directory"""
@@ -48,6 +59,18 @@ class CaelusCfg(Struct): # pylint: disable=too-many-ancestors
     instance of this class via the :func:`get_config` function instead of
     directly instantiating this class.
     """
+
+    def write_config(self, fh=sys.stdout):
+        """Write configuration to file or standard output.
+
+        Args:
+            fh (handle): An open file handle
+        """
+        fh.write(_config_banner%{
+            'timestamp': osutils.timestamp()
+        })
+        self.to_yaml(fh)
+        fh.write("\n\n")
 
 
 def search_cfg_files():

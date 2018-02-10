@@ -6,8 +6,10 @@ Caelus command
 
 """
 
+import sys
 import os
 import logging
+import shutil
 from collections import OrderedDict
 from ..utils import osutils
 from ..config.cmlenv import cml_get_version
@@ -120,6 +122,10 @@ class CaelusCmd(CaelusSubCmdScript):
         """Setup sub-commands for the Caelus application"""
         super(CaelusCmd, self).cli_options()
         subparsers = self.subparsers
+        cpl_config = subparsers.add_parser(
+            "cfg",
+            description="Dump CPL configuration",
+            help="Dump CPL configuration")
         env = subparsers.add_parser(
             "env",
             description="Write environment variables that can be "
@@ -146,6 +152,18 @@ class CaelusCmd(CaelusSubCmdScript):
             "clean",
             description="Clean a case directory",
             help="clean case directory")
+
+        # Configuration action
+        cpl_config.add_argument(
+            '-e', '--expert-mode', action='store_true',
+            help="Dump extra options for advanced use")
+        cpl_config.add_argument(
+            '-f', '--config-file', default=None,
+            help="Write to file instead of standard output")
+        cpl_config.add_argument(
+            '-b', '--no-backup', action='store_true',
+            help="Overwrite existing config without saving a backup")
+        cpl_config.set_defaults(func=self.write_config)
 
         # Env action
         env.add_argument(
@@ -225,6 +243,34 @@ class CaelusCmd(CaelusSubCmdScript):
             '-p', '--preserve', action='append',
             help="shell wildcard patterns of extra files to preserve")
         clean.set_defaults(func=self.clean_case)
+
+    def write_config(self):
+        """Dump the configuration file"""
+        args = self.args
+        expert_mode = args.expert_mode
+        cfg = self.cfg
+        log_cfg = cfg.caelus.logging
+        if not expert_mode:
+            _ = log_cfg.pop('pylogger_options')
+
+        # Backup existing configuration if necessary
+        if args.config_file and os.path.exists(args.config_file):
+            if not args.no_backup:
+                bak_file = osutils.backup_file(args.config_file)
+                shutil.copy(args.config_file, bak_file)
+                _lgr.info("Existing configuration saved to: %s", bak_file)
+            else:
+                _lgr.warning("Overwriting CPL existing configuration")
+
+        # Write the latest configuration
+        fh = open(args.config_file, 'w') if args.config_file else sys.stdout
+        try:
+            cfg.write_config(fh)
+        finally:
+            fh.close()
+        if args.config_file:
+            _lgr.info("CPL configuration written to file: %s",
+                      args.config_file)
 
     def write_env(self):
         """Write out the environment file"""
