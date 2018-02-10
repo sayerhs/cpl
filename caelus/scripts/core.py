@@ -92,8 +92,8 @@ class CaelusScriptBase(object):
         lggr_cfg.handlers.console_script.level = (
             script_levels[min(verbose_level, len(script_levels)-1)])
         lggr_cfg.loggers["caelus.scripts"].handlers.append("log_file")
+        log_cfg.log_to_file = log_to_file
         if log_to_file:
-            log_cfg.log_to_file = log_to_file
             log_cfg.log_file = (
                 log_file or log_cfg.log_file or self.log_file)
         configure_logging(log_cfg)
@@ -103,8 +103,9 @@ class CaelusScriptBase(object):
                if rcfiles else
                "No configuration found; using defaults.")
         _lgr.debug(msg)
-        if not log_to_file:
+        if not log_cfg.log_to_file:
             _lgr.warning("Logging to file disabled.")
+        self.cfg = cfg
 
 class CaelusSubCmdScript(CaelusScriptBase):
     """A CLI app with sub-commands."""
