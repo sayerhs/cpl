@@ -81,7 +81,7 @@ def write_unix_env(env):
               os.path.join(os.getcwd(), "caelus-cshrc"))
 
 def write_windows_env(env):
-    """Write out unix environment files"""
+    """Write out windows environment files"""
     header = """
 REM Caelus run environment
 @echo off
@@ -106,6 +106,7 @@ class CaelusCmd(CaelusSubCmdScript):
     class.
 
     Tasks defined:
+        - env   - Write shell environment files
         - clone - Clone a case directory
         - tasks - Execute workflow from a Tasks file
         - run   - Run a Caelus executable in serial or parallel
@@ -228,7 +229,7 @@ class CaelusCmd(CaelusSubCmdScript):
     def write_env(self):
         """Write out the environment file"""
         args = self.args
-        write_dir = args.write_dir
+        write_dir = args.write_dir or os.getcwd()
         cenv = cml_get_version()
         if not (write_dir and
                 os.path.exists(write_dir) and
