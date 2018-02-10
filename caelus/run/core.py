@@ -152,7 +152,9 @@ def clean_polymesh(casedir,
         region (str): Mesh region to delete
         preserve_patterns (list): Shell wildcard patterns of files to preserve
     """
-    ppatterns = preserve_patterns or ["blockMeshDict"]
+    ppatterns = ["blockMeshDict"]
+    if preserve_patterns:
+        ppatterns += preserve_patterns
     absdir = osutils.abspath(casedir)
     if not is_caelus_casedir(absdir):
         _lgr.error("Invalid case directory provided: %s", casedir)
