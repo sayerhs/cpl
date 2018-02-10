@@ -25,7 +25,7 @@ class CaelusScriptBase(object):
     #: Description of the CLI app used in help messages
     description = "Caelus CLI Application"
     #: Epilog for help messages
-    epilog = "Caelus Python Library %s"%version
+    epilog = "Caelus Python Library (CPL) %s"%version
     #: Log file
     log_file = "caelus_cli.log"
 
@@ -56,6 +56,9 @@ class CaelusScriptBase(object):
     def cli_options(self):
         """Setup the command line options and arguments"""
         parser = self.parser
+        parser.add_argument(
+            '--version', action='version',
+            version="Caelus Python Library (CPL) %s"%version)
         parser.add_argument('-v', '--verbose', action='count', default=0,
                             help="increase verbosity of logging. Default: No")
         dolog = parser.add_mutually_exclusive_group(required=False)
