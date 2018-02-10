@@ -108,7 +108,7 @@ def find_case_dirs(basedir):
         basedir (path): Top-level directory to traverse
 
     Yields:
-        Path to the case directory
+        Absolute path to the case directory
     """
     absdir = osutils.abspath(basedir)
     # is the root directory itself a case directory?
@@ -120,7 +120,7 @@ def find_case_dirs(basedir):
                 cdir = os.path.join(root, d)
                 if is_caelus_casedir(cdir):
                     dirs.remove(d)
-                    yield os.path.relpath(cdir, absdir)
+                    yield cdir
 
 def find_caelus_recipe_dirs(
         basedir,
