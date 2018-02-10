@@ -9,7 +9,9 @@ import os
 import fnmatch
 import shutil
 import logging
+from datetime import datetime
 from contextlib import contextmanager
+import pytz
 
 _lgr = logging.getLogger(__name__)
 
@@ -21,6 +23,36 @@ def ostype():
     """
     return ("windows" if os.name == 'nt' else
             os.uname()[0].lower())
+
+def timestamp(time_format=None, time_zone=pytz.utc):
+    """Return a formatted timestamp for embedding in files
+
+    Args:
+        time_format: A time formatter suitable for strftime
+        time_zone: Time zone used to generate timestamp (Default: UTC)
+
+    Returns:
+        str: A formatted time string
+    """
+    time_fmt = time_format or "%Y-%m-%d %H:%M:%S (%Z)"
+    return datetime.now(time_zone).strftime(time_fmt)
+
+def backup_file(fname, time_format=None, time_zone=pytz.utc):
+    """Given a filename return a timestamp based backup filename
+
+    Args:
+        time_format: A time formatter suitable for strftime
+        time_zone: Time zone used to generate timestamp (Default: UTC)
+
+    Returns:
+        str: A timestamped filename suitable for creating backups
+    """
+    bname = os.path.basename(fname)
+    name, ext = os.path.splitext(bname)
+    time_fmt = time_format or "%Y%m%d-%H%M%S-%Z"
+    tstamp = datetime.now(time_zone).strftime(time_fmt)
+    bak_name = name + "_" + tstamp + ext
+    return os.path.join(os.path.dirname(fname), bak_name)
 
 def username():
     """Return the username of the current user"""
