@@ -94,36 +94,6 @@ Install CPL
    For *editable* development versions of CPL use ``pip install -e .``
    instead.
 
-Building documentation
-----------------------
-
-A local version of this documentation can be built using sphinx. See
-:ref:`install_dev_git` for more details on installing the developer environment
-and sources.
-
-.. code-block:: bash
-
-   # Change working directory to CPL
-   cd docs/
-
-   # Build HTML documentation
-   make html
-   # View in browser
-   open build/html/index.html
-
-   # Build PDF documentation
-   make latexpdf
-   open build/latex/CPL.pdf
-
-Running tests
--------------
-
-The unit tests are written using `py.test
-<https://docs.pytest.org/en/latest/>`_. To run the tests executing
-:command:`py.test tests` from the top-level CPL directory. Note that this will
-require the user to have initialized the environment using
-:file:`etc/caelus2-dev.yml` (or :file:`etc/caelus3-dev.yml` for the Python v3.x
-version).
 
 Alternate Installation -- Virtualenv
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -209,3 +179,34 @@ Install CPL
    #. Use ``mkvirtualenv --python=PYTHON_EXE`` to customize the python
       interpreter used by the virutal environment instead of the default python
       found in your path.
+
+Building documentation
+~~~~~~~~~~~~~~~~~~~~~~
+
+A local version of this documentation can be built using sphinx. See
+:ref:`install_dev_git` for more details on installing the developer environment
+and sources.
+
+.. code-block:: bash
+
+   # Change working directory to CPL
+   cd docs/
+
+   # Build HTML documentation
+   make html
+   # View in browser
+   open build/html/index.html
+
+   # Build PDF documentation
+   make latexpdf
+   open build/latex/CPL.pdf
+
+Running tests
+~~~~~~~~~~~~~
+
+The unit tests are written using `py.test
+<https://docs.pytest.org/en/latest/>`_. To run the tests executing
+:command:`py.test tests` from the top-level CPL directory. Note that this will
+require the user to have initialized the environment using
+:file:`etc/caelus2-dev.yml` (or :file:`etc/caelus3-dev.yml` for the Python v3.x
+version).
