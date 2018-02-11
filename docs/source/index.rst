@@ -1,6 +1,6 @@
 
-Caelus Python 
-==============
+Caelus Python Library (CPL)
+===========================
 
 .. only:: html
 
@@ -21,6 +21,7 @@ User Manual
    :maxdepth: 3
 
    user/installation
+   user/configuration
 
 
 Developer Manual

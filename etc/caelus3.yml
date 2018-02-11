@@ -1,0 +1,22 @@
+# -*- mode: yaml -*-
+#
+# Caelus Python Library (CPL) Anaconda environment
+#
+# For use with Python v3.x
+#
+# Usage:
+#    conda env create -f etc/caelus3.yml
+#
+
+name: caelus3
+
+dependencies:
+  - python=3
+  - pip
+  - six
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - pyyaml
+  - pytz

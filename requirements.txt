@@ -1,0 +1,19 @@
+#
+# Caelus Python Library (CPL) pip requirements file
+#
+# Development environment version
+#
+
+#### Core packages for CPL
+pip
+six
+numpy
+scipy
+pandas
+matplotlib
+PyYAML
+pytz
+#### Additional packages for development
+pytest
+pylint
+Sphinx

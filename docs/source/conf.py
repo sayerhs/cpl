@@ -38,6 +38,7 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
+    'sphinx.ext.extlinks',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -366,6 +367,20 @@ epub_exclude_files = ['search.html']
 # If false, no index is generated.
 #epub_use_index = True
 
+autodoc_member_order = 'groupwise'
+autoclass_content = 'both'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}
+
+extlinks = {
+    'pythonlib': ('http://docs.python.org/library/%s', ''),
+    'matplotlib': ('http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.%s', ''),
+    'numpy': ('http://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html', ''),
+}
+
+def setup(app):
+    """Customizations"""
+    app.add_object_type("confval", "confval",
+                        objname="CPL configuration value",
+                        indextemplate="pair: %s; CPL configuration value")

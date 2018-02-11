@@ -1,0 +1,22 @@
+# -*- mode: yaml -*-
+#
+# Caelus Python Library (CPL) Anaconda environment
+#
+# For use with Python v2.7.x
+#
+# Usage:
+#    conda env create -f etc/caelus2.yml
+#
+
+name: caelus2
+
+dependencies:
+  - python=2.7
+  - pip
+  - six
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - pyyaml
+  - pytz
