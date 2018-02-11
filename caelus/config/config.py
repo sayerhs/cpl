@@ -47,9 +47,9 @@ def get_caelus_root():
             pth.expanduser('~/Caelus/'))
 
 def get_appdata_dir():
-    """Return the path to the Windows AppData directory"""
-    if "AppData" in os.environ:
-        return pth.join(os.environ["AppData"], "Caelus")
+    """Return the path to the Windows APPDATA directory"""
+    if "APPDATA" in os.environ:
+        return pth.join(os.environ["APPDATA"], "Caelus")
     return None
 
 class CaelusCfg(Struct): # pylint: disable=too-many-ancestors
@@ -83,7 +83,7 @@ def search_cfg_files():
       - The path pointed by :envvar:`CAELUSRC_SYSTEM`
 
       - The user's home directory :file:`~/Caelus/.caelus.yaml` on Unix-like
-        systems, and :file:`%AppData%/caelus.yaml` on Windows systems.
+        systems, and :file:`%APPDATA%/caelus.yaml` on Windows systems.
 
       - The path pointed by :envvar:`CAELUSRC`, if defined.
 
