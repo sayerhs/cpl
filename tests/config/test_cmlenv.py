@@ -6,7 +6,7 @@ import tempfile
 import shutil
 import pytest
 
-from caelus.config import cmlenv
+from caelus.config import cmlenv, config
 
 dummy_config = """
 caelus:
@@ -31,6 +31,9 @@ def mock_get_config():
         return cfg
     return _cfg
 
+def teardown_module(module):
+    cmlenv.cml_reset_versions()
+
 @pytest.fixture(scope="module")
 def caelus_directory():
     """Temporary Caelus root directory for testing"""
@@ -51,7 +54,11 @@ def caelus_directory():
 @pytest.fixture(autouse=True)
 def no_get_config(monkeypatch, caelus_directory):
     """Mock CaelusCfg object for testing"""
+    monkeypatch.setattr(config, "get_config", mock_get_config())
     monkeypatch.setattr(cmlenv, "get_config", mock_get_config())
+    cfg = config.get_config()
+    cfg.caelus.caelus_cml.versions[0].path = os.path.join(
+        caelus_directory, "caelus-10.11")
     cfg = cmlenv.get_config()
     cfg.caelus.caelus_cml.versions[0].path = os.path.join(
         caelus_directory, "caelus-10.11")
@@ -78,10 +85,12 @@ def test_get_latest_version():
     # directory created for other tests.
     cver = cmlenv.cml_get_latest_version()
     assert cver.version == "10.11"
+    cmlenv.cml_reset_versions()
 
 def test_get_version():
     # ALERT: This is testing the configuration object, not the temporary
     # directory created for other tests.
     cmlenv.cml_get_version("10.11")
     with pytest.raises(KeyError):
-        cmlenv.cml_get_version("7.04")
+        cmlenv.cml_get_version("3.84")
+    cmlenv.cml_reset_versions()

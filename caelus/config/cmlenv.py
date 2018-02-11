@@ -252,8 +252,7 @@ def _cml_env_mgr():
             cml_filtered = list(_filter_invalid_versions(cml_opts))
             if cml_opts and not cml_filtered:
                 _lgr.warning(
-                    "No valid versions provided; check configuration file."
-                    " Attempting to discover installed versions.")
+                    "No valid versions provided; check configuration file.")
             for cml in cml_filtered:
                 cenv = CMLEnv(cml)
                 cml_versions[cenv.version] = cenv
@@ -295,7 +294,8 @@ def _cml_env_mgr():
         else:
             _init_cml_versions()
         cfg = get_config()
-        vkey = version or cfg.caelus.caelus_cml.get("default", "")
+        vkey = version or cfg.caelus.caelus_cml.get("default",
+                                                    "latest")
         if vkey == "latest":
             return _get_latest_version()
         if not vkey in cml_versions:
@@ -303,6 +303,14 @@ def _cml_env_mgr():
         else:
             return cml_versions[vkey]
 
-    return _get_latest_version, _get_version
+    def _cml_reset_versions():
+        keys = list(cml_versions.keys())
+        for key in keys:
+            cml_versions.pop(key)
+        did_init[0] = False
 
-cml_get_latest_version, cml_get_version = _cml_env_mgr()
+    return _get_latest_version, _get_version, _cml_reset_versions
+
+(cml_get_latest_version,
+ cml_get_version,
+ cml_reset_versions) = _cml_env_mgr()
