@@ -22,6 +22,7 @@ User Manual
 
    user/installation
    user/configuration
+   user/cli_apps
 
 
 Developer Manual

@@ -1,0 +1,35 @@
+# -*- mode: yaml -*-
+#
+# Sample CPL configuration file
+#
+
+# Root CPL configuration node
+caelus:
+  # Control logging of CPL library
+  logging:
+    log_to_file: true
+    log_file: ~/Caelus/cpl.log
+
+  # Configuration for Caelus CML
+  caelus_cml:
+    # Pick the development version of CML available; use "latest" to choose the
+    # latest version available.
+    default: "7.04"
+
+    # Versions that can be used with CPL
+    versions:
+      - version: "6.10"
+        path: ~/Caelus/caelus-6.10
+
+      - version: "7.04"
+        path: ~/Caelus/caelus-7.04
+
+      - version: "dev-clang"
+        path: ~/Caelus/caelus-contributors   # Use latest git repository
+        mpi_path: /usr/local/openmpi         # Use system OpenMPI
+        build_option: "linux64clang++DPOpt"  # Use the LLVM version
+
+      - version: "dev-gcc"
+        path: ~/Caelus/caelus-contributors   # Use latest git repository
+        mpi_path: /usr/local/openmpi         # Use system OpenMPI
+        build_option: "linux64gcc++DPOpt"    # Use the GCC version
