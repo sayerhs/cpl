@@ -49,7 +49,7 @@ def get_caelus_root():
 def get_appdata_dir():
     """Return the path to the Windows APPDATA directory"""
     if "APPDATA" in os.environ:
-        return pth.join(os.environ["APPDATA"], "Caelus")
+        return pth.join(os.environ["APPDATA"])
     return None
 
 class CaelusCfg(Struct): # pylint: disable=too-many-ancestors
