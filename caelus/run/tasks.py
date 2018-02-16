@@ -125,7 +125,11 @@ class Tasks(object):
             num_ranks = options.get("num_ranks",
                                     run_cmds.get_mpi_size(self.case_dir))
             mpi_extra_args = options.get("mpi_extra_args", "")
-            mpi_args = " -np %d %s"%(num_ranks, mpi_extra_args)
+            ostype = osutils.ostype()
+            if ostype == "windows":
+                mpi_args = " -localonly %d %s"%(num_ranks, mpi_extra_args)
+            else:
+                mpi_args = " -np %d %s"%(num_ranks, mpi_extra_args)
             exe_args = " -parallel " + exe_args
         _lgr.info("Executing command: %s", cml_exe)
         status = run_cmds.run_cml_exe(
