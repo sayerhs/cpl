@@ -171,7 +171,14 @@ class CMLEnv(object):
     @property
     def bin_dir(self):
         """Return the bin directory for executable"""
-        return os.path.join(self.build_dir, "bin")
+        ostype = osutils.ostype()
+        if ostype == "windows":
+            return (
+                self.lib_dir + os.pathsep +
+                self.mpi_libdir + os.pathsep +
+                os.path.join(self.build_dir, "bin"))
+        else:
+            return os.path.join(self.build_dir, "bin")
 
     @property
     def lib_dir(self):
