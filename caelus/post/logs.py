@@ -21,7 +21,7 @@ class LogProcessor(object):
         time=r"^Time = (\S+)",
         courant=r"^Courant Number mean: (\S+) max: (\S+)",
         residual=r"(\S+): *Solving for (\S+), Initial residual = (\S+), Final residual = (\S+), No Iterations (\S+)",
-        bounding=r"^\s+bounding (\S+), min:\s*(\S+)\s+max:\s*(\S+)\s+average:\s*(\S+)",
+        bounding=r"^bounding (\S+), min:\s*(\S+)\s+max:\s*(\S+)\s+average:\s*(\S+)",
         continuity=r"time step continuity errors : sum local = (\S+), global = (\S+), cumulative = (\S+)",
         exec_time=r"ExecutionTime = (\S+) s  ClockTime = (\S+) s",
         convergence=r"(\S+) solution converged in (\S+) iterations",
@@ -160,7 +160,7 @@ class LogProcessor(object):
             subsequent invocations it just returns the relevant file handle.
             """
             if not field in self.bound_files:
-                fh = open(join(self.logs_dir, field+".dat"), 'w')
+                fh = open(join(self.logs_dir, "bounding_"+field+".dat"), 'w')
                 fh.write("# Bounding Field: %s\n"%(field))
                 fh.write("Time SubIteration Min Max Average\n")
                 self.bound_files[field] = fh
@@ -170,9 +170,8 @@ class LogProcessor(object):
         try:
             while True:
                 rexp = (yield)
-                field = "bounding_" + rexp.group(1)
-                icorr = self.corrs.get(field, 0) + 1
-                self.corrs[field] = icorr
+                field = rexp.group(1)
+                icorr = self.corrs.get(field, 0)
                 fh = get_file(field)
                 fh.write(
                     self.time_str + "\t%d\t"%icorr +
