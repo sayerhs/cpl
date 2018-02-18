@@ -15,7 +15,8 @@ from ..utils import osutils
 from ..config.cmlenv import cml_get_version
 from .core import CaelusSubCmdScript
 from ..run.tasks import Tasks
-from ..run.core import clone_case, get_mpi_size, run_cml_exe, clean_casedir
+from ..run.core import clone_case, get_mpi_size, clean_casedir
+from ..run import cmd
 from ..post.logs import LogProcessor
 
 _lgr = logging.getLogger(__name__)
@@ -303,34 +304,27 @@ class CaelusCmd(CaelusSubCmdScript):
 
     def run_cmd(self):
         """Run a Caelus executable"""
-        # TODO: Remove duplication between this function and
-        # Tasks.cmd_run_command method.
         args = self.args
         cenv = cml_get_version()
-        parallel = args.parallel
-        cml_exe = args.cmd_name
-        exe_args = ' '.join(args.cmd_args)
-        exe_base, _ = os.path.splitext(os.path.basename(cml_exe))
-        log_file = args.log_file or exe_base + ".log"
-        mpi_args = " "
-        num_ranks = 0
-        if parallel:
-            num_ranks = get_mpi_size(args.case_dir)
-            mpi_args = " -np %d "%num_ranks
-            exe_args = " -parallel " + exe_args
-        if parallel:
+        cml_cmd = cmd.CaelusCmd(
+            args.cmd_name, casedir=args.case_dir,
+            cml_env=cenv, output_file=args.log_file)
+        cml_cmd.cml_exe_args = ' '.join(args.cmd_args)
+        cml_cmd.parallel = args.parallel
+        if args.parallel:
+            cml_cmd.num_mpi_ranks = get_mpi_size(args.case_dir)
             _lgr.info("Executing %s in parallel on %d ranks",
-                      cml_exe, num_ranks)
+                      args.cmd_name, cml_cmd.num_mpi_ranks)
         else:
-            _lgr.info("Executing %s in serial mode", cml_exe)
-        with osutils.set_work_dir(args.case_dir):
-            status = run_cml_exe(
-                cml_exe, env=cenv, logfile=log_file,
-                cml_exe_args=exe_args, mpi_args=mpi_args)
-            if status != 0:
-                _lgr.error("Error executing command; see %s for details",
-                           log_file)
-                self.parser.exit(status)
+            _lgr.info("Executing %s in serial mode", args.cmd_name)
+        status = cml_cmd()
+        if status != 0:
+            _lgr.error("Error executing command; see %s for details",
+                       cml_cmd.output_file)
+            self.parser.exit(status)
+        else:
+            _lgr.info("Command executed successfully; see %s for output",
+                      cml_cmd.output_file)
 
     def clone_case(self):
         """Clone a case directory"""

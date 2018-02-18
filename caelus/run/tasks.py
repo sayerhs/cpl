@@ -15,6 +15,7 @@ from ..utils.struct import Struct
 from . import core as run_cmds
 from ..post.logs import LogProcessor
 from ..config.cmlenv import cml_get_version
+from .cmd import CaelusCmd
 
 _lgr = logging.getLogger(__name__)
 
@@ -114,29 +115,26 @@ class Tasks(object):
             raise RuntimeError("Invalid tasks provided")
 
     def cmd_run_command(self, options):
-        """Execute a Caelus CML program"""
+        """Execute a Caelus CML binary."""
         cml_exe = options.cmd_name
-        exe_args = options.get("cmd_args", "")
-        exe_base, _ = os.path.splitext(os.path.basename(cml_exe))
-        log_file = options.get("log_file", exe_base + ".log")
+        log_file = options.get("log_file", None)
+        cml_cmd = CaelusCmd(cml_exe,
+                            casedir=self.case_dir,
+                            cml_env=self.env,
+                            output_file=log_file)
         parallel = options.get("parallel", False)
-        mpi_args = ""
+        cml_cmd.cml_exe_args = options.get("cmd_args", "")
+        cml_cmd.parallel = parallel
         if parallel:
-            num_ranks = options.get("num_ranks",
-                                    run_cmds.get_mpi_size(self.case_dir))
-            mpi_extra_args = options.get("mpi_extra_args", "")
-            ostype = osutils.ostype()
-            if ostype == "windows":
-                mpi_args = " -localonly %d %s"%(num_ranks, mpi_extra_args)
-            else:
-                mpi_args = " -np %d %s"%(num_ranks, mpi_extra_args)
-            exe_args = " -parallel " + exe_args
+            cml_cmd.num_mpi_ranks = options.get(
+                "num_ranks", run_cmds.get_mpi_size(self.case_dir))
+            cml_cmd.mpi_extra_args = options.get(
+                "mpi_extra_args", "")
         _lgr.info("Executing command: %s", cml_exe)
-        status = run_cmds.run_cml_exe(
-            cml_exe, env=self.env, logfile=log_file,
-            cml_exe_args=exe_args, mpi_args=mpi_args)
+        status = cml_cmd()
         if status != 0:
-            raise RuntimeError("Error executing command: %s", cml_exe)
+            raise RuntimeError(
+                "Error executing command: %s", cml_exe)
 
     def cmd_copy_tree(self, options):
         """Recursively copy a given directory to the destination."""

@@ -3,20 +3,7 @@
 
 import os
 import shutil
-import pytest
 from caelus.run import core as rcore
-from caelus.config.cmlenv import cml_get_version
-from caelus.utils import osutils
-
-def has_cml(exe_name="blockMesh"):
-    try:
-        env = cml_get_version()
-        bindir = env.bin_dir
-        return os.path.exists(
-            os.path.join(bindir, exe_name))
-    except: # pylint: disable=bare-except
-        return False
-
 
 def test_is_caelus_casedir(template_casedir):
     root = str(template_casedir)
@@ -152,14 +139,3 @@ def test_find_caelus_recipe_dirs(tmpdir, template_casedir):
     rdirs = list(rcore.find_caelus_recipe_dirs(
         str(tmpdir), fname))
     assert len(rdirs) == 3
-
-@pytest.mark.skipif(has_cml("blockMesh") is False,
-                    reason="Cannot find CML executables")
-def test_caelus_execute(test_casedir):
-    env = cml_get_version()
-    with osutils.set_work_dir(str(test_casedir)):
-        rcore.run_cml_exe(
-            "blockMesh",
-            env=env,
-            cml_exe_args="-help")
-        assert os.path.exists("blockMesh.log")
