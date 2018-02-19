@@ -17,7 +17,8 @@ from .core import CaelusSubCmdScript
 from ..run.tasks import Tasks
 from ..run.core import clone_case, get_mpi_size, clean_casedir
 from ..run import cmd
-from ..post.logs import LogProcessor
+from ..post.logs import SolverLog
+from ..post.plots import CaelusPlot
 
 _lgr = logging.getLogger(__name__)
 
@@ -226,6 +227,19 @@ class CaelusCmd(CaelusSubCmdScript):
             '-d', '--case-dir', default=os.getcwd(),
             help="path to the case directory")
         logs.add_argument(
+            '-p', '--plot-residuals', action='store_true',
+            help="generate residual time-history plots")
+        logs.add_argument(
+            '-f', '--plot-file', default="residuals.png",
+            help="file where plot is saved")
+        fields_pat = logs.add_mutually_exclusive_group(required=False)
+        fields_pat.add_argument(
+            '-i', '--include-patterns', action='append',
+            help="plot residuals for given fields")
+        fields_pat.add_argument(
+            '-e', '--exclude-patterns', action='append',
+            help="exclude residuals for these fields")
+        logs.add_argument(
             "log_file",
             help="log file (e.g., simpleSolver.log)")
         logs.set_defaults(func=self.process_logs)
@@ -360,12 +374,24 @@ class CaelusCmd(CaelusSubCmdScript):
         fname = os.path.join(args.case_dir, args.log_file)
         if not os.path.exists(fname):
             _lgr.fatal("Cannot find log file: %s", fname)
-        clog = LogProcessor(
-            args.log_file,
+        clog = SolverLog(
             case_dir=osutils.abspath(args.case_dir),
-            logs_dir=args.logs_dir)
-        clog()
+            logs_dir=args.logs_dir,
+            logfile=args.log_file)
         _lgr.info("%s processed to %s", args.log_file, args.logs_dir)
+        if args.plot_residuals:
+            fields = set(clog.fields)
+            if args.exclude_patterns:
+                fields.difference_update(set(args.exclude_patterns))
+            if args.include_patterns:
+                fields.intersection_update(set(args.include_patterns))
+            plot = CaelusPlot(clog.casedir)
+            dname, fname = os.path.split(args.plot_file)
+            plot.plotdir = dname or os.getcwd()
+            plot.plot_residuals_hist(plotfile=fname,
+                                     fields=fields)
+            _lgr.info("Residual time history saved to %s",
+                      args.plot_file)
 
     def clean_case(self):
         """Clean a case directory"""
