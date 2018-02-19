@@ -21,17 +21,28 @@ from .cmd import CaelusCmd
 _lgr = logging.getLogger(__name__)
 
 class TasksMeta(type):
-    """Metaclass to track available tasks"""
+    """Process available tasks within each Tasks class.
 
-    def __new__(mcls, name, bases, cdict):
-        act_map = OrderedDict()
-        for k, value in cdict.items():
-            if k.startswith("cmd_"):
-                name = k[4:]
-                act_map[name] = value
-        cdict["task_map"] = act_map
-        cls = super(TasksMeta, mcls).__new__(mcls, name, bases, cdict)
-        return cls
+    :class:`TasksMeta` is a metaclass that automates the process of creating a
+    lookup table for tasks that have been implemented within the :class:`Tasks`
+    and any of its subclasses. Upon initialization of the class, it populates a
+    class attribute ``task_map`` that contains a mapping between the task name
+    (used in the tasks YAML file) and the corresponding method executed by the
+    Tasks class executed.
+
+    """
+
+    def __init__(cls, name, bases, cdict):
+        super(TasksMeta, cls).__init__(name, bases, cdict)
+        parent = super(cls, cls)
+        task_map = (OrderedDict(parent.task_map)
+                    if hasattr(parent, "task_map")
+                    else OrderedDict())
+        for key, value in cdict.items():
+            if key.startswith("cmd_"):
+                fname = key[4:]
+                task_map[fname] = value
+        cls.task_map = task_map
 
 @six.add_metaclass(TasksMeta)
 class Tasks(object):
