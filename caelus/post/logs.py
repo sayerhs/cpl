@@ -3,6 +3,21 @@
 """\
 Caelus Log Analyzer
 -------------------
+
+This module provides utilities to parse and extract information from solver
+outputs (log files) that can be used to monitor and analyze the convergence of
+runs. It implements the :class:`SolverLog` class that can be used to access
+time histories of residuals for various fields of interest.
+
+Example:
+    >>> logs = SolverLog()
+    >>> print ("Available fields: ", logs.fields)
+    >>> ux_residuals = logs.residual("Ux")
+
+The actual extraction of the logs is performed by :class:`LogProcessor` which
+uses regular expressions to match lines of interest and convert them into
+tabular files suitable for loading with ``numpy.loadtxt`` or
+``pandas.read_table``.
 """
 
 import os
@@ -18,9 +33,13 @@ from ..utils.coroutines import coroutine, grep
 class LogProcessor(object):
     """Process the log file and extract information for analysis.
 
+    This is a low-level utility to parse log files and extract information
+    using regular expressions from the log file. Users should interact with
+    solver output using the :class:`SolverLog` class.
     """
 
-    #: Regular expressions that most common lines of interest within a log file
+    # Regular expressions that match common lines of interest in a CML solver
+    # output
     expressions = dict(
         time=r"^Time = (\S+)",
         courant=r"^Courant Number mean: (\S+) max: (\S+)",
@@ -253,7 +272,12 @@ class LogProcessor(object):
             self.solve_completed = True
 
 class SolverLog(object):
-    """Caelus solver log file interface"""
+    """Caelus solver log file interface.
+
+    :class:`SolverLog` extracts information from solver outputs and allows
+    interaction with the log data as ``numpy.ndarray`` or ``pandas.Dataframe``
+    objects.
+    """
 
     def __init__(self, case_dir=None,
                  logs_dir="logs", force_reload=False,
@@ -267,6 +291,11 @@ class SolverLog(object):
                                  the logs were processed previously.
 
             logfile (file): If force_reload, then log file to process
+
+        Raises:
+            RuntimeError: An error is raised if no logs directory is available
+                and the user has not provided a logfile that can be processed
+                on the fly during initialization.
         """
         self.casedir = case_dir or os.getcwd()
         self.logs_dir = os.path.join(self.casedir, logs_dir)

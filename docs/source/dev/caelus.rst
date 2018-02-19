@@ -2,9 +2,6 @@
 Caelus Python API
 =================
 
-Subpackages
------------
-
 .. module:: caelus
 
 .. toctree::

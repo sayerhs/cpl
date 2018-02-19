@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
-"""\
-Caelus Post-processing Utilities
---------------------------------
+"""
+Provides log analysis and plotting utilities
 
-Collection of post-processing utilities
+.. currentmodule: caelus.post
+.. autosummary::
+   :nosignatures:
+
+   ~logs.SolverLog
+   ~plots.CaelusPlot
 """

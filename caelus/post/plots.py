@@ -4,6 +4,8 @@
 Caelus Plotting Utilities
 -------------------------
 
+This module provides the capability to plot various quantities of interest
+using matplotlib through :class:`CaelusPlot`.
 """
 
 import os
@@ -54,7 +56,13 @@ def make_plot_method(func):
     return plot_wrapper
 
 class PlotsMeta(type):
-    """Metaclass to automatically add plot functions"""
+    """Provide interactive and non-interactive versions of plot methods.
+
+    This metaclass automatically wraps methods starting with ``_plot`` such
+    that these methods can be used in both interactive and non-interactive
+    modes. Non-interactive modes are automatically enabled if the user provides
+    a file name to save the resulting figure.
+    """
 
     def __new__(mcls, name, bases, cdict):
         keys = list(cdict.keys())
@@ -66,7 +74,7 @@ class PlotsMeta(type):
 
 @six.add_metaclass(PlotsMeta)
 class CaelusPlot(object):
-    """Caelus Data Plotting
+    """Caelus Data Plotting Interface
 
     Currently implemented:
         - Plot residual time history
@@ -77,12 +85,14 @@ class CaelusPlot(object):
         """
         Args:
             casedir (path): Path to the case directory
+            plotdir (path): Directory where figures are saved
         """
+        #: Path to the case directory
         self.casedir = casedir or os.getcwd()
         #: Path to plots output directory
         self.plotdir = os.path.join(self.casedir, plotdir)
 
-        #: Instance of :ref:`~caelus.post.logs.SolverLog`
+        #: Instance of :class:`~caelus.post.logs.SolverLog`
         self.solver_log = None
 
     def _plot_residuals_hist(self, fields=None):

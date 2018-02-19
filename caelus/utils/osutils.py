@@ -1,9 +1,21 @@
 # -*- coding: utf-8 -*-
 
 """\
-Miscellaneous Utilities
+Miscellaneous utilities
 -----------------------
 
+This module implements functions that are utilized throughout CPL. They mostly
+provide a higher-level interface to various ``os.path`` functions to make it
+easier to perform some tasks.
+
+.. autosummary::
+   :nosignatures:
+
+   set_work_dir
+   ensure_directory
+   abspath
+   ostype
+   timestamp
 """
 
 import os
@@ -82,6 +94,12 @@ def abspath(pname):
 
     This function expands the user home directory as well as any shell
     variables found in the path provided and returns an absolute path.
+
+    Args:
+        pname (path): Pathname to be expanded
+
+    Returns:
+        path: Absolute path after all substitutions
     """
     pth1 = os.path.expanduser(pname)
     pth2 = os.path.expandvars(pth1)
@@ -111,6 +129,11 @@ def set_work_dir(dname, create=False):
 
     Returns:
         path: Absolute path to the execution directory
+
+    Example:
+        >>> with osutils.set_work_dir("results_dir", create=True) as wdir:
+        ...     with open(os.path.join(wdir, "results.dat"), 'w') as fh:
+        ...         fh.write("Data")
     """
     abs_dir = abspath(dname)
     if create:
@@ -119,11 +142,9 @@ def set_work_dir(dname, create=False):
     orig_dir = os.getcwd()
     try:
         os.chdir(abs_dir)
-        _lgr.debug("Setting work directory: %s", abs_dir)
         yield abs_dir
     finally:
         os.chdir(orig_dir)
-        _lgr.debug("Setting work directory: %s", abs_dir)
 
 def clean_directory(dirname,
                     preserve_patterns=None):

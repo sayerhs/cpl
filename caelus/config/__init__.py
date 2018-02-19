@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""\
-Caleus Python Library Configuration Manager
--------------------------------------------
-
+"""
 ``caelus.config`` performs the following tasks:
 
    - Configure the behavior of the Caelus python library using YAML based
@@ -14,12 +11,14 @@ Caleus Python Library Configuration Manager
 
 .. currentmodule:: caelus.config
 .. autosummary::
+   :nosignatures:
 
-   get_config
-   reload_config
-   reset_default_config
-   cml_get_version
-   cml_get_latest_version
+   ~config.get_config
+   ~config.reload_config
+   ~config.reset_default_config
+   ~cmlenv.cml_get_version
+   ~cmlenv.cml_get_latest_version
+   ~cmlenv.CMLEnv
 """
 
 # pylint: disable=unused-import
