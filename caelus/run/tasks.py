@@ -13,7 +13,8 @@ import six
 from ..utils import osutils
 from ..utils.struct import Struct
 from . import core as run_cmds
-from ..post.logs import LogProcessor
+from ..post.logs import SolverLog
+from ..post.plots import CaelusPlot
 from ..config.cmlenv import cml_get_version
 from .cmd import CaelusCmd
 
@@ -164,7 +165,16 @@ class Tasks(object):
         log_file = options.log_file
         logs_dir = options.get("logs_directory", "logs")
         _lgr.info("Processing log file: %s", log_file)
-        clog = LogProcessor(log_file,
-                            case_dir=self.case_dir,
-                            logs_dir=logs_dir)
-        clog()
+        clog = SolverLog(
+            case_dir=self.case_dir,
+            logs_dir=logs_dir,
+            logfile=log_file)
+        do_plots = options.get("plot_residuals", None)
+        plot_file = options.get("residuals_plot_file", "residuals.png")
+        fields = options.get("residuals_fields", clog.fields)
+        if do_plots:
+            plot = CaelusPlot(self.case_dir)
+            dname, fname = os.path.split(plot_file)
+            plot.plotdir = dname or os.getcwd()
+            plot.plot_residuals_hist(plotfile=fname, fields=fields)
+            _lgr.info("Residual time history saved to %s", plot_file)

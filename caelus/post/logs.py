@@ -288,7 +288,7 @@ class SolverLog(object):
     def residual(self, field, all_cols=False):
         """Return the residual time-history for a field"""
         if field not in self.fields:
-            raise KeyError("Invalid field name: %s. Valid fields are: %s",
+            raise KeyError("Invalid field name: %s. Valid fields are: %s"%
                            field, self.fields)
         fname = os.path.join(self.logs_dir, field+".dat")
         data = np.loadtxt(fname, skiprows=2)
