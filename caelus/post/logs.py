@@ -55,7 +55,7 @@ class LogProcessor(object):
         self.time = 0.0
         #: (variable, subIteration) pairs tracking the number of predictor
         #: subIterations for each flow variable
-        self.corrs = {}
+        self.subiter_map = {}
 
         #: Open file handles for the residual outputs
         self.res_files = OrderedDict()
@@ -136,8 +136,8 @@ class LogProcessor(object):
             self.time = float(rexp.group(1))
             self.time_str = rexp.group(1)
             # Reset subIteration counters
-            for k in self.corrs:
-                self.corrs[k] = 0
+            for k in self.subiter_map:
+                self.subiter_map[k] = 0
 
     @coroutine
     def residual_processor(self):
@@ -162,8 +162,8 @@ class LogProcessor(object):
                 solver = rexp.group(1)       # e.g., PCB, GAMG, etc.
                 field = rexp.group(2)        # Ux, Uy, p, etc.
 
-                icorr = self.corrs.get(field, 0) + 1
-                self.corrs[field] = icorr
+                icorr = self.subiter_map.get(field, 0) + 1
+                self.subiter_map[field] = icorr
                 fh = get_file(field, solver)
                 fh.write(
                     self.time_str + "\t%d\t"%icorr +
@@ -194,7 +194,7 @@ class LogProcessor(object):
             while True:
                 rexp = (yield)
                 field = rexp.group(1)
-                icorr = self.corrs.get(field, 0)
+                icorr = self.subiter_map.get(field, 0)
                 fh = get_file(field)
                 fh.write(
                     self.time_str + "\t%d\t"%icorr +
@@ -211,8 +211,8 @@ class LogProcessor(object):
             fh.write("Time SubIteration LocalError GlobalError CumulativeError\n")
             while True:
                 rexp = (yield)
-                icorr = self.corrs.get('continuity', 0) + 1
-                self.corrs['continuity'] = icorr
+                icorr = self.subiter_map.get('continuity', 0) + 1
+                self.subiter_map['continuity'] = icorr
                 fh.write(
                     self.time_str + "\t%d\t"%icorr +
                     "\t".join(x for x in rexp.groups()) + "\n")
