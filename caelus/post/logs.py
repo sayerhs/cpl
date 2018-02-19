@@ -8,6 +8,10 @@ Caelus Log Analyzer
 import os
 from os.path import join
 from collections import OrderedDict
+import json
+
+import numpy as np
+
 from ..utils import osutils
 from ..utils.coroutines import coroutine, grep
 
@@ -76,6 +80,7 @@ class LogProcessor(object):
             self._watch_file(patterns)
         else:
             self._process_file(patterns)
+        self._save_state()
 
     def add_rule(self, regexp, actions):
         """Add a user-defined rule for processing
@@ -104,6 +109,24 @@ class LogProcessor(object):
     def _watch_file(self, patterns):
         """Helper function to process logs of a completed run"""
 
+    def _get_state(self):
+        """Return the current state of the logs processor"""
+        curr_state = dict(
+            case_dir=os.path.relpath(self.case_dir, self.logs_dir),
+            logfile=os.path.relpath(self.logfile, self.logs_dir),
+            time=self.time,
+            converged=self.converged,
+            solve_completed=self.solve_completed,
+            converged_time=self.converged_time,
+            fields=list(self.res_files.keys()),
+            bounding_fields=list(self.bound_files.keys()))
+        return curr_state
+
+    def _save_state(self, filename=".logs_state.json"):
+        """Save state of the logs for future introspection"""
+        curr_state = self._get_state()
+        with open(join(self.logs_dir, filename), 'w') as fh:
+            json.dump(curr_state, fh)
 
     @coroutine
     def time_processor(self):
@@ -228,3 +251,54 @@ class LogProcessor(object):
         while True:
             _ = (yield)
             self.solve_completed = True
+
+class SolverLog(object):
+    """Caelus solver log file interface"""
+
+    def __init__(self, case_dir=None,
+                 logs_dir="logs", force_reload=False,
+                 logfile=None):
+        """
+        Args:
+            case_dir (path): Absolute path to case directory
+            logs_dir (path): Path to logs directory relative to case_dir
+
+            force_reload (bool): If True, force reread of the log file even if
+                                 the logs were processed previously.
+
+            logfile (file): If force_reload, then log file to process
+        """
+        self.casedir = case_dir or os.getcwd()
+        self.logs_dir = os.path.join(self.casedir, logs_dir)
+        if not os.path.exists(self.logs_dir) and logfile is None:
+            raise RuntimeError("Cannot find processed logs data. "
+                               "Provide a valid log file.")
+        if force_reload or not os.path.exists(self.logs_dir):
+            logs = LogProcessor(logfile,
+                                self.casedir, logs_dir)
+            logs()
+
+        self.fields = []
+        self.bounding_fields = []
+        data = json.load(open(
+            os.path.join(self.logs_dir, ".logs_state.json")))
+        for key, val in data.items():
+            setattr(self, key, val)
+
+    def residual(self, field, all_cols=False):
+        """Return the residual time-history for a field"""
+        if field not in self.fields:
+            raise KeyError("Invalid field name: %s. Valid fields are: %s",
+                           field, self.fields)
+        fname = os.path.join(self.logs_dir, field+".dat")
+        data = np.loadtxt(fname, skiprows=2)
+        return data if all_cols else data[:, :3]
+
+    def bounding_var(self, field):
+        """Return the bounding information for a field"""
+        if field not in self.bounding_fields:
+            raise KeyError("Invalid field name: %s. Valid fields are: %s",
+                           field, self.bounding_fields)
+        fname = os.path.join(self.logs_dir, "bounding_"+field+".dat")
+        data = np.loadtxt(fname, skiprows=2)
+        return data
