@@ -112,8 +112,8 @@ class LogProcessor(object):
     def _get_state(self):
         """Return the current state of the logs processor"""
         curr_state = dict(
-            case_dir=os.path.relpath(self.case_dir, self.logs_dir),
-            logfile=os.path.relpath(self.logfile, self.logs_dir),
+            # case_dir=os.path.relpath(self.case_dir, self.logs_dir),
+            # logfile=os.path.relpath(self.logfile, self.logs_dir),
             time=self.time,
             converged=self.converged,
             solve_completed=self.solve_completed,
