@@ -128,7 +128,8 @@ class LogProcessor(object):
     def _watch_file(self, patterns):
         """Helper function to process logs of a completed run"""
 
-    def _get_state(self):
+    @property
+    def current_state(self):
         """Return the current state of the logs processor"""
         curr_state = dict(
             # case_dir=os.path.relpath(self.case_dir, self.logs_dir),
@@ -143,7 +144,7 @@ class LogProcessor(object):
 
     def _save_state(self, filename=".logs_state.json"):
         """Save state of the logs for future introspection"""
-        curr_state = self._get_state()
+        curr_state = self.current_state
         with open(join(self.logs_dir, filename), 'w') as fh:
             json.dump(curr_state, fh)
 
