@@ -176,5 +176,6 @@ class Tasks(object):
             plot = CaelusPlot(self.case_dir)
             dname, fname = os.path.split(plot_file)
             plot.plotdir = dname or os.getcwd()
+            plot.solver_log = clog
             plot.plot_residuals_hist(plotfile=fname, fields=fields)
             _lgr.info("Residual time history saved to %s", plot_file)

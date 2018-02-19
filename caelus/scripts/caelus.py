@@ -388,6 +388,7 @@ class CaelusCmd(CaelusSubCmdScript):
             plot = CaelusPlot(clog.casedir)
             dname, fname = os.path.split(args.plot_file)
             plot.plotdir = dname or os.getcwd()
+            plot.solver_log = clog
             plot.plot_residuals_hist(plotfile=fname,
                                      fields=fields)
             _lgr.info("Residual time history saved to %s",
