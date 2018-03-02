@@ -46,6 +46,17 @@ def get_caelus_root():
             if "windows" in sysname else
             pth.expanduser('~/Caelus/'))
 
+def get_cpl_root():
+    """Return the root path for CPL"""
+    ostype = osutils.ostype()
+    if ostype == "windows":
+        appdir = get_appdata_dir()
+        if appdir and os.path.exists(appdir):
+            return pth.join(appdir, "caelus")
+    else:
+        return osutils.abspath("~/.caelus/")
+
+
 def get_appdata_dir():
     """Return the path to the Windows APPDATA directory"""
     if "APPDATA" in os.environ:
@@ -82,12 +93,12 @@ def search_cfg_files():
 
       - The path pointed by :envvar:`CAELUSRC_SYSTEM`
 
-      - The user's home directory :file:`~/Caelus/.caelus.yaml` on Unix-like
-        systems, and :file:`%APPDATA%/caelus.yaml` on Windows systems.
+      - The user's home directory :file:`~/.caelus/caelus.yaml` on Unix-like
+        systems, and :file:`%APPDATA%/caelus/caelus.yaml` on Windows systems.
 
       - The path pointed by :envvar:`CAELUSRC`, if defined.
 
-      - The file :file:`caelusrc` in the current working directory
+      - The file :file:`caelus.yaml` in the current working directory
 
     Returns:
         List of configuration files available
@@ -108,13 +119,13 @@ def search_cfg_files():
 
     home = get_caelus_root()
     if home:
-        rcfile = pth.join(home, "."+_rcfile_default)
+        rcfile = pth.join(home, _rcfile_default)
         if pth.exists(rcfile):
             rcfiles.append(rcfile)
 
-    home = osutils.user_home_dir()
+    home = get_cpl_root()
     if home:
-        rcfile = pth.join(home, "."+_rcfile_default)
+        rcfile = pth.join(home, _rcfile_default)
         if pth.exists(rcfile):
             rcfiles.append(rcfile)
 
@@ -141,14 +152,9 @@ def configure_logging(log_cfg=None):
     """
     def get_default_log_file():
         """Set up default logging file if none provided"""
-        sysname = platform.system().lower()
-        if "windows" in sysname:
-            appdir = get_appdata_dir()
-            if not pth.exists(appdir):
-                os.mkdir(appdir)
-            return pth.join(appdir, "caelus_python.log")
-        else:
-            return "/tmp/caelus.log"
+        logs_dir = pth.join(get_cpl_root(), "cpl_logs")
+        logs_dir = osutils.ensure_directory(logs_dir)
+        return pth.join(logs_dir, "cpl.log")
 
     if log_cfg is None:
         logging.basicConfig()
@@ -163,7 +169,7 @@ def configure_logging(log_cfg=None):
         dictConfig(lggr_cfg)
         logger = logging.getLogger(__name__)
         if log_to_file:
-            logger.info("Logging enabled to file: %s", log_filename)
+            logger.debug("Logging enabled to file: %s", log_filename)
 
 def get_default_config():
     """Return a fresh instance of the default configuration"""
