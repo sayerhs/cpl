@@ -315,6 +315,7 @@ class CaelusCmd(CaelusSubCmdScript):
         task_file = osutils.abspath(args.file)
         tasks = Tasks.load(task_file)
         tasks(env=cenv)
+        _lgr.info("All tasks executed successfully.")
 
     def run_cmd(self):
         """Run a Caelus executable"""
@@ -325,6 +326,7 @@ class CaelusCmd(CaelusSubCmdScript):
             cml_env=cenv, output_file=args.log_file)
         cml_cmd.cml_exe_args = ' '.join(args.cmd_args)
         cml_cmd.parallel = args.parallel
+        _lgr.info("Caelus CML version: %s", cenv.version)
         if args.parallel:
             cml_cmd.num_mpi_ranks = get_mpi_size(args.case_dir)
             _lgr.info("Executing %s in parallel on %d ranks",
@@ -363,13 +365,14 @@ class CaelusCmd(CaelusSubCmdScript):
                        copy_zero=copy_zero,
                        copy_scripts=copy_scripts,
                        extra_patterns=extra_pat)
+        _lgr.info("Cloned case successfully.")
 
     def process_logs(self):
         """Process logs for a case"""
         args = self.args
         if not (os.path.exists(args.case_dir) and
                 os.path.isdir(args.case_dir)):
-            _lgr.fatal("Casee directory does not exist: %s", args.case_dir)
+            _lgr.fatal("Case directory does not exist: %s", args.case_dir)
             self.parser.exit(1)
         fname = os.path.join(args.case_dir, args.log_file)
         if not os.path.exists(fname):
@@ -403,6 +406,7 @@ class CaelusCmd(CaelusSubCmdScript):
                       preserve_zero=preserve_zero,
                       purge_mesh=purge_mesh,
                       preserve_extra=args.preserve)
+        _lgr.info("Cleaned case directory successfully.")
 
 def main():
     """Run caelus command"""

@@ -26,11 +26,9 @@ class CaelusScriptBase(object):
     description = "Caelus CLI Application"
     #: Epilog for help messages
     epilog = "Caelus Python Library (CPL) %s"%version
-    #: Log file
-    log_file = "caelus_cli.log"
 
     script_levels = ["INFO", "DEBUG"]
-    lib_levels = ["INFO", "DEBUG"]
+    lib_levels = ["WARNING", "INFO", "DEBUG"]
 
     def __init__(self, name=None, args=None):
         """
@@ -59,13 +57,18 @@ class CaelusScriptBase(object):
         parser.add_argument(
             '--version', action='version',
             version="Caelus Python Library (CPL) %s"%version)
-        parser.add_argument('-v', '--verbose', action='count', default=0,
-                            help="increase verbosity of logging. Default: No")
+        verbosity = parser.add_mutually_exclusive_group(required=False)
+        verbosity.add_argument(
+            '--quiet', action='store_true',
+            help="disable informational messages to screen")
+        verbosity.add_argument(
+            '-v', '--verbose', action='count', default=0,
+            help="increase verbosity of logging. Default: No")
         dolog = parser.add_mutually_exclusive_group(required=False)
         dolog.add_argument('--no-log', action='store_true',
                            help="disable logging of script to file.")
         dolog.add_argument('--cli-logs', default=None,
-                           help="name of the log file (%s)"%self.log_file)
+                           help="name of the log file.")
 
     def __call__(self):
         """Execute the CLI application"""
@@ -73,12 +76,13 @@ class CaelusScriptBase(object):
         verbosity = args.verbose
         log_to_file = (not args.no_log)
         log_file = args.cli_logs
-        self.setup_logging(log_to_file, log_file, verbosity)
+        self.setup_logging(log_to_file, log_file, verbosity, args.quiet)
+        _lgr.info("Caelus Python Library (CPL) %s", version)
 
 
     def setup_logging(self, log_to_file=True,
                       log_file=None,
-                      verbose_level=0):
+                      verbose_level=0, quiet=False):
         """Setup logging for the script.
 
         Args:
@@ -91,15 +95,18 @@ class CaelusScriptBase(object):
         cfg = get_config(init_logging=False)
         log_cfg = cfg.caelus.logging
         lggr_cfg = log_cfg.pylogger_options
-        lggr_cfg.handlers.console_caelus.level = (
-            lib_levels[min(verbose_level, len(lib_levels)-1)])
-        lggr_cfg.handlers.console_script.level = (
-            script_levels[min(verbose_level, len(script_levels)-1)])
+        if quiet:
+            lggr_cfg.handlers.console_caelus.level = "ERROR"
+            lggr_cfg.handlers.console_script.level = "ERROR"
+        else:
+            lggr_cfg.handlers.console_caelus.level = (
+                lib_levels[min(verbose_level, len(lib_levels)-1)])
+            lggr_cfg.handlers.console_script.level = (
+                script_levels[min(verbose_level, len(script_levels)-1)])
         lggr_cfg.loggers["caelus.scripts"].handlers.append("log_file")
         log_cfg.log_to_file = log_to_file
         if log_to_file:
-            log_cfg.log_file = (
-                log_file or log_cfg.log_file or self.log_file)
+            log_cfg.log_file = (log_file or log_cfg.log_file)
         configure_logging(log_cfg)
 
         rcfiles = rcfiles_loaded()

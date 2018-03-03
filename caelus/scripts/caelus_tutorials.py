@@ -21,7 +21,6 @@ class TutorialRunner(CaelusScriptBase):
     """CLI for running tutorials"""
 
     description = "Run Caelus Tutorials"
-    log_file = "caelus_tutorials.log"
 
     lib_levels = ["WARNING", "INFO", "DEBUG"]
 
