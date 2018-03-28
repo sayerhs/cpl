@@ -148,6 +148,12 @@ class Tasks(object):
             raise RuntimeError(
                 "Error executing command: %s", cml_exe)
 
+    def cmd_copy_file(self, options):
+        """Copy a given file to the destination."""
+        srcfile = options.src
+        destfile = options.dest
+        shutil.copy2(srcfile, destfile)
+
     def cmd_copy_tree(self, options):
         """Recursively copy a given directory to the destination."""
         srcdir = options.src
