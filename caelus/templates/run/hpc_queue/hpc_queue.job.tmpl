@@ -1,0 +1,21 @@
+#!{{ job.shell }}
+#
+# Caelus Python library {{ caelus_version }}
+# Job scheduler: {{ job.queue_name }}
+# Job name: {{ job.name }}
+# Generated on: {{ caelus_timestamp() }}
+#
+
+{{ queue_config }}
+
+# Configure environment
+{% block env_config %}
+  {{- job.env_config }}
+{% endblock %}
+
+#
+# main execution section
+#
+{% block script_body %}
+  {{- job.script_body }}
+{% endblock %}

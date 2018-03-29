@@ -3,6 +3,24 @@
 # Default Caelus Python Configuration
 
 caelus:
+  cpl:
+    template_dirs: []
+
+    python_env_type: conda
+    python_env_name: caelus
+
+    conda_settings:
+      conda_bin: ~/anaconda/bin
+
+  system:
+    job_scheduler: local_mpi
+    always_use_scheduler: no
+
+    scheduler_defaults:
+      join_outputs: true
+      shell: "/bin/bash"
+      mail_opts: "NONE"
+
   logging:
     log_to_file: false
     log_file: null

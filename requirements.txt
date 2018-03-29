@@ -13,6 +13,7 @@ pandas
 matplotlib
 PyYAML
 pytz
+Jinja2
 #### Additional packages for development
 pytest
 pylint

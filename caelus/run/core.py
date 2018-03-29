@@ -113,7 +113,8 @@ def clean_casedir(casedir,
         purge_mesh (bool): If true, also removes mesh from constant/polyMesh
         preserve_zero (bool): If False, removes the 0 directory
     """
-    base_patterns = ["system", "constant", "*.yaml", "*.yml", "*.py"]
+    base_patterns = ["system", "constant", "*.yaml", "*.yml", "*.py",
+                     "*.job"]
     zero_pat = ["0"] if preserve_zero else []
     extra_pat = preserve_extra if preserve_extra else []
     ppatterns = base_patterns + zero_pat + extra_pat

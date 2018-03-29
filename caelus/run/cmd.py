@@ -14,6 +14,7 @@ import logging
 
 from ..config import config, cmlenv
 from ..utils import osutils
+from .hpc_queue import get_job_scheduler
 
 _lgr = logging.getLogger(__name__)
 
@@ -78,6 +79,9 @@ class CaelusCmd(object):
         self.output_file = (output_file or
                             "%s.log"%exe_base)
 
+        #: Handle to the subprocess instance running the command
+        self.runner = get_job_scheduler()(self.cml_exe)
+
         #: Is this a parallel run
         self.parallel = False
         self.num_mpi_ranks = 1
@@ -86,32 +90,28 @@ class CaelusCmd(object):
         #: Extra arguments passed to MPI
         self.mpi_extra_args = ""
 
-        #: Handle to the subprocess instance running the command
-        self.task = None
+        self.job_id = None
 
     @property
     def num_mpi_ranks(self):
         """Number of MPI ranks for a parallel run"""
-        return self._num_mpi_ranks
+        return self.runner.num_ranks
 
     @num_mpi_ranks.setter
     def num_mpi_ranks(self, nranks):
-        self._num_mpi_ranks = int(nranks) #pylint: disable=attribute-defined-outside-init
+        nranks = int(nranks)
+        self.runner.num_ranks = nranks
         if nranks > 1:
             self.parallel = True
 
-    def prepare_mpi_cmd(self):
-        """Prepare the MPI invocation
+    @property
+    def mpi_extra_args(self):
+        """Extra arguments to pass to MPI command"""
+        return self.runner.mpi_extra_args
 
-        Returns:
-            A command line string containing the MPI run command with all its
-            required options.
-        """
-        cmd_tmpl = ("mpiexec -localonly %d "
-                    if osutils.ostype() == "windows"
-                    else "mpiexec -np %d ")
-        mpi_cmd = cmd_tmpl%self.num_mpi_ranks
-        return mpi_cmd + self.mpi_extra_args
+    @mpi_extra_args.setter
+    def mpi_extra_args(self, value):
+        self.runner.mpi_extra_args = value
 
     def prepare_exe_cmd(self):
         """Prepare the shell command and return as a string
@@ -122,33 +122,26 @@ class CaelusCmd(object):
         cmd_args = (" -parallel " + self.cml_exe_args
                     if self.parallel else
                     self.cml_exe_args)
-        return self.cml_exe + " " + cmd_args
+        cmd_line = self.cml_exe + " " + cmd_args
+        if self.runner.is_job_scheduler():
+            cmd_line += " >& %s"%self.output_file
+        return cmd_line
 
     def prepare_shell_cmd(self):
         """Prepare the complete command line string as executed"""
-        return (self.prepare_mpi_cmd() + " " + self.prepare_exe_cmd()
+        return (self.runner.prepare_mpi_cmd() + " " + self.prepare_exe_cmd()
                 if self.parallel else
                 self.prepare_exe_cmd())
 
-    def __call__(self, wait=True):
-        """Run the executable
-
-        If ``wait`` is True, then the status of the command will be returned
-        upon return, else returns None.
-        """
+    def __call__(self, wait=True, job_dependencies=None):
+        """Run the executable"""
         with osutils.set_work_dir(self.casedir):
-            with open(self.output_file, 'w') as fh:
-                cmdline = self.prepare_shell_cmd()
-                task = caelus_execute(
-                    cmdline,
-                    env=self.cml_env,
-                    stdout=fh,
-                    stderr=subprocess.STDOUT)
-                self.task = task
-                if wait:
-                    status = task.wait()
-                    if status != 0:
-                        _lgr.error("Error running exe %s in %s",
-                                   self.cml_exe,
-                                   self.casedir)
-                    return status
+            runner = self.runner
+            runner.cml_env = self.cml_env
+            runner.script_body = self.prepare_shell_cmd()
+            if runner.is_job_scheduler(): # pylint: disable=no-else-return
+                self.job_id = runner(
+                    job_dependencies=job_dependencies)
+                return 0
+            else:
+                return runner(wait=wait)

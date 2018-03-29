@@ -69,6 +69,7 @@ class Tasks(object):
         self.case_dir = None
         #: Caelus environment used when executing tasks
         self.env = None
+        self.dep_job_id = None
 
     @classmethod
     def load(cls,
@@ -98,6 +99,7 @@ class Tasks(object):
         self._validate_tasks()
         self.case_dir = case_dir or os.getcwd()
         self.env = env or cml_get_version()
+        self.dep_job_id = None
         act_map = self.task_map
         num_tasks = len(self.tasks)
         _lgr.info("Begin executing tasks in %s", self.case_dir)
@@ -143,8 +145,12 @@ class Tasks(object):
                 "num_ranks", run_cmds.get_mpi_size(self.case_dir))
             cml_cmd.mpi_extra_args = options.get(
                 "mpi_extra_args", "")
+        if "queue_settings" in options:
+            cml_cmd.runner.update(options["queue_settings"])
         _lgr.info("Executing command: %s", cml_exe)
-        status = cml_cmd()
+        job_dep = [self.dep_job_id] if self.dep_job_id else None
+        status = cml_cmd(job_dependencies=job_dep)
+        self.dep_job_id = cml_cmd.job_id
         if status != 0:
             raise RuntimeError(
                 "Error executing command: %s", cml_exe)

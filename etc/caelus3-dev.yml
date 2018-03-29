@@ -20,6 +20,7 @@ dependencies:
   - matplotlib
   - pyyaml
   - pytz
+  - jinja2
   - pytest
   - pylint
   - ipython
