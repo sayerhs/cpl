@@ -6,6 +6,7 @@ Caelus Tasks Manager
 """
 
 import os
+import glob
 import logging
 import shutil
 from collections import OrderedDict
@@ -148,11 +149,23 @@ class Tasks(object):
             raise RuntimeError(
                 "Error executing command: %s", cml_exe)
 
-    def cmd_copy_file(self, options):
-        """Copy a given file to the destination."""
-        srcfile = options.src
-        destfile = options.dest
-        shutil.copy2(srcfile, destfile)
+    def cmd_copy_files(self, options):
+        """Copy given file(s) to the destination."""
+        srcfiles = glob.glob(options.src)
+        dest = options.dest
+
+        if not len(srcfiles):
+            raise OSError(
+                "Error src pattern %s returns no files", options.src)
+
+        if len(srcfiles) > 1:
+            osutils.ensure_directory(dest)
+
+        for srcfile in srcfiles:
+            if not os.path.exists(srcfile):
+                raise OSError(
+                    "Error %s does not exist", srcfile)
+            shutil.copy2(srcfile, dest)
 
     def cmd_copy_tree(self, options):
         """Recursively copy a given directory to the destination."""
