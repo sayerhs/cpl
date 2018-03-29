@@ -154,17 +154,14 @@ class Tasks(object):
         srcfiles = glob.glob(options.src)
         dest = options.dest
 
-        if not len(srcfiles):
-            raise OSError(
+        if not srcfiles:
+            raise RuntimeError(
                 "Error src pattern %s returns no files", options.src)
 
         if len(srcfiles) > 1:
             osutils.ensure_directory(dest)
 
         for srcfile in srcfiles:
-            if not os.path.exists(srcfile):
-                raise OSError(
-                    "Error %s does not exist", srcfile)
             shutil.copy2(srcfile, dest)
 
     def cmd_copy_tree(self, options):
