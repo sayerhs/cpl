@@ -72,6 +72,10 @@ class LogProcessor(object):
 
         #: Track the latest time that was processed by the utility
         self.time = 0.0
+
+        #: Time as a string (for output)
+        self.time_str = "0"
+
         #: (variable, subIteration) pairs tracking the number of predictor
         #: subIterations for each flow variable
         self.subiter_map = {}
