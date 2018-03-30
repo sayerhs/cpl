@@ -13,6 +13,7 @@ import subprocess
 import logging
 import textwrap
 from collections import Mapping, OrderedDict
+import six
 
 from ..config import cmlenv
 from ..config.config import get_config
@@ -50,7 +51,8 @@ test)
         cmd_popen, stdout=stdout, stderr=stderr, env=renv.environ)
     return task
 
-class HPCQueue(abc.ABC):
+@six.add_metaclass(abc.ABCMeta)
+class HPCQueue():
     """Abstract base class for job submission interface
 
     Attributes:
