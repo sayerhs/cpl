@@ -70,6 +70,7 @@ class Tasks(object):
         #: Caelus environment used when executing tasks
         self.env = None
         self.dep_job_id = None
+        self.task_set_count = 0
 
     @classmethod
     def load(cls,
@@ -100,6 +101,7 @@ class Tasks(object):
         self.case_dir = case_dir or os.getcwd()
         self.env = env or cml_get_version()
         self.dep_job_id = None
+        self.task_set_count = 0
         act_map = self.task_map
         num_tasks = len(self.tasks)
         _lgr.info("Begin executing tasks in %s", self.case_dir)
@@ -212,3 +214,22 @@ class Tasks(object):
             plot.solver_log = clog
             plot.plot_residuals_hist(plotfile=fname, fields=fields)
             _lgr.info("Residual time history saved to %s", plot_file)
+
+    def cmd_exec_tasks(self, options):
+        """Execute another task file"""
+        task_file = options.task_file
+        casedir = os.path.dirname(task_file)
+        tasks = Tasks.load(task_file)
+        _lgr.info("Executing tasks from file: %s", task_file)
+        tasks(case_dir=casedir, env=self.env)
+
+    def cmd_task_set(self, options):
+        """A subset of tasks for grouping"""
+        self.task_set_count += 1
+        name = options.get("name", "Task set #%d"%self.task_set_count)
+        casedir = osutils.abspath(options.case_dir)
+        _lgr.info("Executing task set: %s", name)
+        tasks = Tasks()
+        tasks.tasks = options.tasks
+        tasks.task_file = self.task_file
+        tasks(case_dir=casedir, env=self.env)
