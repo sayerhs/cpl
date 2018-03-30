@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=wrong-import-position
 
 """\
 Caelus Plotting Utilities
@@ -14,6 +15,8 @@ from contextlib import contextmanager
 
 import six
 import numpy as np
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 from .logs import SolverLog
