@@ -88,6 +88,9 @@ class LogProcessor(object):
         #: List of user-defined rules to process
         self._user_rules = []
 
+        #: Extra actions for pre-defined expressions
+        self._extra_rules = {}
+
         #: Flag indicating convergence message in logs
         self.converged = False
         #: Flag indicating solver completion in logs (if End is found)
@@ -95,14 +98,31 @@ class LogProcessor(object):
         #: Timestep when the steady state solver converged
         self.converged_time = -1
 
-    def __call__(self, watch=False):
+        #: Flag indicating one timestep
+        self._tick = False
+
+    def __call__(self):
         """Process log file"""
         pat_builtin = [grep(*x) for x in self._init_builtins()]
         patterns = pat_builtin + self._user_rules
-        if watch:
-            self._watch_file(patterns)
-        else:
-            self._process_file(patterns)
+        self._process_file(patterns)
+        self._save_state()
+
+    def watch_file(self, target=None):
+        """Helper function to process logs of a completed run"""
+        import time
+        pat_builtin = [grep(*x) for x in self._init_builtins()]
+        patterns = pat_builtin + self._user_rules
+        with open(self.logfile) as fh:
+            while not self.solve_completed:
+                line = fh.readline()
+                if not line:
+                    time.sleep(0.1)
+                elif line.strip():
+                    for pat in patterns:
+                        pat.send(line)
+                    if self._tick and target is not None:
+                        target.send(self.solve_completed)
         self._save_state()
 
     def add_rule(self, regexp, actions):
@@ -116,11 +136,18 @@ class LogProcessor(object):
         self._user_rules.append(
             grep(regexp, act_list))
 
+    def extend_rule(self, line_type, actions):
+        """Extend a pre-defined regexp with extra functions"""
+        act_list = actions if hasattr(actions, "append") else [actions]
+        if line_type not in self.expressions:
+            raise RuntimeError("No pre-defined line type: %s"%line_type)
+        self._extra_rules.setdefault(line_type, []).extend(act_list)
+
     def _init_builtins(self):
         """Helper function to initialize builtin patterns"""
         for k, rexp in self.expressions.items():
             func = getattr(self, "%s_processor"%k)()
-            yield (rexp, [func])
+            yield (rexp, [func] + self._extra_rules.get(k, []))
 
     def _process_file(self, patterns):
         """Helper function to process logs of a completed run"""
@@ -128,9 +155,6 @@ class LogProcessor(object):
             for line in fh:
                 for pat in patterns:
                     pat.send(line)
-
-    def _watch_file(self, patterns):
-        """Helper function to process logs of a completed run"""
 
     @property
     def current_state(self):
@@ -162,6 +186,7 @@ class LogProcessor(object):
             # Reset subIteration counters
             for k in self.subiter_map:
                 self.subiter_map[k] = 0
+            self._tick = False
 
     @coroutine
     def residual_processor(self):
@@ -250,6 +275,7 @@ class LogProcessor(object):
                 rexp = (yield)
                 fh.write(self.time_str + "\t" +
                          "\t".join(x for x in rexp.groups()) + "\n")
+                self._tick = True
 
     @coroutine
     def courant_processor(self):
@@ -304,10 +330,12 @@ class SolverLog(object):
         """
         self.casedir = case_dir or os.getcwd()
         self.logs_dir = os.path.join(self.casedir, logs_dir)
-        if not os.path.exists(self.logs_dir) and logfile is None:
+        has_logs = os.path.exists(
+            os.path.join(self.logs_dir, ".logs_state.json"))
+        if not has_logs and logfile is None:
             raise RuntimeError("Cannot find processed logs data. "
                                "Provide a valid log file.")
-        if force_reload or not os.path.exists(self.logs_dir):
+        if force_reload or not has_logs:
             logs = LogProcessor(logfile,
                                 self.casedir, logs_dir)
             logs()

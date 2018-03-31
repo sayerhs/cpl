@@ -11,16 +11,18 @@ using matplotlib through :class:`CaelusPlot`.
 
 import os
 import logging
+import warnings
 from contextlib import contextmanager
+from collections import OrderedDict
 
 import six
 import numpy as np
-import matplotlib as mpl
-mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 from .logs import SolverLog
 from ..utils import osutils
+from ..utils import coroutines
+from .logs import LogProcessor
 
 _lgr = logging.getLogger(__name__)
 
@@ -164,3 +166,113 @@ class CaelusPlot(object):
         ylabels = ["Lift", "Drag", "Moment"]
         return self._force_plot_helper(
             func_object, "forces.dat", ylabels)
+
+class LogWatcher(object):
+    """Real-time log monitoring utility"""
+
+    def __init__(self, log_file, case_dir=None):
+        """
+        Args:
+            logprocessor (LogProcessor)
+        """
+        self.logprocessor = LogProcessor(log_file, case_dir)
+        # Flag indicating new data is available for plot updates
+        self._needs_update = False
+        #: List of fields to plot. If None, plots all available fields
+        self.plot_fields = []
+        self.time_array = None
+        self._field_data = OrderedDict()
+        self._need_init = True
+
+        self.logprocessor.extend_rule(
+            "time", self.time_processor())
+        self.logprocessor.extend_rule(
+            "residual", self.residual_processor())
+
+    def __call__(self):
+        """Run the residual watcher"""
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            self.logprocessor.watch_file(self.plot_residuals())
+            six.moves.input("Run has completed. Hit <Enter> to quit: ")
+            plt.close()
+
+    def skip_field(self, field):
+        """Helper function to determine if field must be processed"""
+        if not self.plot_fields:
+            return False
+        elif field in self.plot_fields:
+            return False
+        return True
+
+    @coroutines.coroutine
+    def time_processor(self):
+        """Capture time array"""
+        logp = self.logprocessor
+        while True:
+            _ = (yield)
+            if self.time_array is None:
+                self.time_array = np.array([logp.time])
+            else:
+                self.time_array = np.r_[self.time_array, logp.time]
+            self._needs_update = False
+
+    @coroutines.coroutine
+    def residual_processor(self):
+        """Capture residuals for plot updates"""
+        logp = self.logprocessor
+        while True:
+            rexp = (yield)
+            field = rexp.group(2)
+            icorr = logp.subiter_map[field]
+            if not self.skip_field(field) and icorr == 1:
+                value = float(rexp.group(3))
+                if field not in self._field_data:
+                    self._field_data[field] = np.array([value])
+                else:
+                    data = self._field_data[field]
+                    data = np.r_[data, value]
+                    self._field_data[field] = data
+                self._needs_update = True
+
+    @coroutines.coroutine
+    def plot_residuals(self):
+        """Update plot for residuals"""
+        logp = self.logprocessor
+        self._need_init = True
+        fig = plt.figure()
+        ax = None # pylint: disable=invalid-name
+        lines = {}
+        fields = None
+        title_str = "Case = %s; timestep = %%d"%(
+            os.path.basename(logp.case_dir))
+        tstep = 0
+        while True:
+            _ = (yield)
+            tarr = self.time_array
+            tstep += 1
+            if not self._needs_update:
+                continue
+            if not self._need_init:
+                for key, val in self._field_data.items():
+                    line = lines[key]
+                    line.set_data(tarr, val)
+                ax.relim()
+                ax.autoscale_view()
+                plt.legend(fields)
+                plt.title(title_str%tstep)
+                fig.canvas.draw()
+                fig.canvas.flush_events()
+            else:
+                self._need_init = False
+                plt.interactive(True)
+                fields = self._field_data.keys()
+                ax = plt.subplot(111)
+                ax.set_yscale("log")
+                ax.set_ylabel(r"$\log$(residual)")
+                ax.set_xlabel("Time/Iterations")
+                plt.grid()
+                for key, val in self._field_data.items():
+                    line, = ax.plot(tarr, val)
+                    lines[key] = line
+                plt.show()

@@ -18,7 +18,7 @@ from ..run.tasks import Tasks
 from ..run.core import clone_case, get_mpi_size, clean_casedir
 from ..run import cmd
 from ..post.logs import SolverLog
-from ..post.plots import CaelusPlot
+from ..post.plots import CaelusPlot, LogWatcher
 
 _lgr = logging.getLogger(__name__)
 
@@ -232,12 +232,15 @@ class CaelusCmd(CaelusSubCmdScript):
         logs.add_argument(
             '-f', '--plot-file', default="residuals.png",
             help="file where plot is saved")
+        logs.add_argument(
+            '-w', '--watch', action='store_true',
+            help="Monitor residuals during a run")
         fields_pat = logs.add_mutually_exclusive_group(required=False)
         fields_pat.add_argument(
-            '-i', '--include-patterns', action='append',
+            '-i', '--include-fields', default='',
             help="plot residuals for given fields")
         fields_pat.add_argument(
-            '-e', '--exclude-patterns', action='append',
+            '-e', '--exclude-fields', default='',
             help="exclude residuals for these fields")
         logs.add_argument(
             "log_file",
@@ -375,8 +378,15 @@ class CaelusCmd(CaelusSubCmdScript):
             _lgr.fatal("Case directory does not exist: %s", args.case_dir)
             self.parser.exit(1)
         fname = os.path.join(args.case_dir, args.log_file)
+        include_fields = args.include_fields.split()
+        exclude_fields = args.exclude_fields.split()
         if not os.path.exists(fname):
             _lgr.fatal("Cannot find log file: %s", fname)
+        if args.watch:
+            wlog = LogWatcher(args.log_file, args.case_dir)
+            if include_fields:
+                wlog.plot_fields = include_fields
+            wlog()
         clog = SolverLog(
             case_dir=osutils.abspath(args.case_dir),
             logs_dir=args.logs_dir,
@@ -384,10 +394,10 @@ class CaelusCmd(CaelusSubCmdScript):
         _lgr.info("%s processed to %s", args.log_file, args.logs_dir)
         if args.plot_residuals:
             fields = set(clog.fields)
-            if args.exclude_patterns:
-                fields.difference_update(set(args.exclude_patterns))
-            if args.include_patterns:
-                fields.intersection_update(set(args.include_patterns))
+            if exclude_fields:
+                fields.difference_update(set(exclude_fields))
+            if include_fields:
+                fields.intersection_update(set(include_fields))
             plot = CaelusPlot(clog.casedir)
             dname, fname = os.path.split(args.plot_file)
             plot.plotdir = dname or os.getcwd()
