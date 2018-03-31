@@ -241,7 +241,7 @@ class ParallelJob(SerialJob):
         """Flag indicating whether the queue type can support parallel runs"""
         return True
 
-    def prepare_mpi_command(self):
+    def prepare_mpi_cmd(self):
         """Prepare the MPI invocation"""
         num_mpi_ranks = getattr(self, "num_ranks", 1)
         cmd_tmpl = ("mpiexec -localonly %d "
