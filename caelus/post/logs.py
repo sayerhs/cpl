@@ -108,8 +108,19 @@ class LogProcessor(object):
         self._process_file(patterns)
         self._save_state()
 
-    def watch_file(self, target=None):
-        """Helper function to process logs of a completed run"""
+    def watch_file(self, target=None, wait_time=0.1):
+        """Process a log file for an in-progress run.
+
+        This method takes one parameter, ``target``, a coroutine that is called
+        at the end of every timestep. See
+        :class:`~caelus.post.plots.LogWatcher` for an example of using target
+        to plot residuals for monitoring the run.
+
+        Args:
+            target (coroutine): A consumer acting on the data
+            wait_time (seconds): Wait time between checking the log file for
+                                 updates
+        """
         import time
         pat_builtin = [grep(*x) for x in self._init_builtins()]
         patterns = pat_builtin + self._user_rules
@@ -117,7 +128,7 @@ class LogProcessor(object):
             while not self.solve_completed:
                 line = fh.readline()
                 if not line:
-                    time.sleep(0.1)
+                    time.sleep(wait_time)
                 elif line.strip():
                     for pat in patterns:
                         pat.send(line)
@@ -138,7 +149,16 @@ class LogProcessor(object):
             grep(regexp, act_list))
 
     def extend_rule(self, line_type, actions):
-        """Extend a pre-defined regexp with extra functions"""
+        """Extend a pre-defined regexp with extra functions
+
+        The default action for LogProcessor is to output processed lines into
+        files. Additional actions on pre-defined lines (e.g., "time") can be
+        hooked via this method.
+
+        Args:
+            line_type (str): Pre-defined line type
+            actions (list): A list of coroutines that receive the matching lines
+        """
         act_list = actions if hasattr(actions, "append") else [actions]
         if line_type not in self.expressions:
             raise RuntimeError("No pre-defined line type: %s"%line_type)

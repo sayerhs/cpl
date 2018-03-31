@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
-"""
-Job scheduler interface
+"""\
+Job Scheduler Interface
+-----------------------
+
+This module provides a unified interface to submitting serial, local-MPI
+parallel, and parallel jobs on high-performance computing (HPC) queues.
 """
 
 import sys
@@ -36,8 +40,8 @@ def caelus_execute(cmd, env=None, stdout=sys.stdout, stderr=sys.stderr):
 
     Args:
         cmd (str or list): The command to be executed
-        env (CMLEnv): An instance representing the CML installation (default: la
-test)
+        env (CMLEnv): An instance representing the CML installation
+                      (default: latest)
         stdout: A file handle where standard output is redirected
         stderr: A file handle where standard error is redirected
 
@@ -305,7 +309,6 @@ class SlurmQueue(HPCQueue):
 
         Returns:
             str: Job ID as a string
-
         """
         depends_arg = ""
         if job_dependencies:

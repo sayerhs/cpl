@@ -170,20 +170,26 @@ class CaelusPlot(object):
 class LogWatcher(object):
     """Real-time log monitoring utility"""
 
-    def __init__(self, log_file, case_dir=None):
+    def __init__(self, logfile, case_dir=None):
         """
         Args:
-            logprocessor (LogProcessor)
+            logfile (str): Name of the Caelus log file
+            casedir (path): Path to the case directory (default: cwd)
         """
-        self.logprocessor = LogProcessor(log_file, case_dir)
+        self.logprocessor = LogProcessor(logfile, case_dir)
         # Flag indicating new data is available for plot updates
         self._needs_update = False
         #: List of fields to plot. If None, plots all available fields
         self.plot_fields = []
+        #: Time array used for plotting data
         self.time_array = None
+        #: Dictionary containing fields requested for plotting and data
+        #: extracted from log file so far
         self._field_data = OrderedDict()
+        # Flag for initialization
         self._need_init = True
 
+        # Register time and residual consumers with LogProcessor
         self.logprocessor.extend_rule(
             "time", self.time_processor())
         self.logprocessor.extend_rule(
@@ -192,6 +198,8 @@ class LogWatcher(object):
     def __call__(self):
         """Run the residual watcher"""
         with warnings.catch_warnings():
+            # Quell warning issued by matplotlib during the first timestep for
+            # axis limits
             warnings.simplefilter("ignore", UserWarning)
             self.logprocessor.watch_file(self.plot_residuals())
             six.moves.input("Run has completed. Hit <Enter> to quit: ")

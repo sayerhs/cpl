@@ -26,8 +26,8 @@ preceeding files.
    :envvar:`CAELUSRC_SYSTEM` if it exists;
 
 #. The per-user configuration file, if available. On Linux/OS X, this is the
-   file :file:`~/.caelus.yaml`, and :file:`%APPDATA%/caelus.yaml` on Windows
-   systems;
+   file :file:`~/.caelus/caelus.yaml`, and :file:`%APPDATA%/caelus/caelus.yaml`
+   on Windows systems;
 
 #. The per-user configuration file pointed by the environment variable
    :envvar:`CAELUSRC` if it exists;
