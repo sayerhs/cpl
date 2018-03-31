@@ -382,6 +382,7 @@ class CaelusCmd(CaelusSubCmdScript):
         exclude_fields = args.exclude_fields.split()
         if not os.path.exists(fname):
             _lgr.fatal("Cannot find log file: %s", fname)
+            self.parser.exit(1)
         if args.watch:
             wlog = LogWatcher(args.log_file, args.case_dir)
             if include_fields:
