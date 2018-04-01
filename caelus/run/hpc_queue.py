@@ -158,6 +158,22 @@ class HPCQueue():
             if key in settings:
                 setattr(self, key, settings[key])
 
+    def process_run_env(self):
+        """Populate the run variables for script"""
+        env_cfg = """
+        # CAELUS environment updates
+        export PROJECT_DIR=%s
+        export CAELUS_PROJECT_DIR=${PROJECT_DIR}
+        export PATH=%s:${PATH}
+        export LD_LIBRARY_PATH=%s:${LD_LIBRARY_PATH}
+
+        """
+        renv = self.cml_env or cmlenv.cml_get_latest_version()
+        path_var = (renv.bin_dir + os.pathsep + renv.mpi_bindir)
+        lib_var = (renv.lib_dir + os.pathsep + renv.mpi_libdir)
+        self.env_config = textwrap.dedent(env_cfg)%(
+            renv.project_dir, path_var, lib_var)
+
     @abc.abstractmethod
     def get_queue_settings(self):
         """Return a string with all the necessary queue options"""
@@ -365,21 +381,120 @@ class SlurmQueue(HPCQueue):
         return "srun --ntasks ${SLURM_NTASKS} " + getattr(
             self, "mpi_extra_args", "")
 
-    def process_run_env(self):
-        """Populate the run variables for script"""
-        env_cfg = """
-        # SLURM environment updates
-        export PROJECT_DIR=%s
-        export CAELUS_PROJECT_DIR=${PROJECT_DIR}
-        export PATH=%s:${PATH}
-        export LD_LIBRARY_PATH=%s:${LD_LIBRARY_PATH}
+    def __call__(self, **kwargs):
+        """Submit the job"""
+        script_file = kwargs.get("script_file", None)
+        job_deps = kwargs.get("job_dependencies", None)
+        extra_args = kwargs.get("extra_args", None)
+        if not self._has_script_body:
+            raise RuntimeError(
+                "Script contents have not been set before submit")
+        self.process_run_env()
+        script_file = self.write_script(script_file)
+        return self.submit(script_file, job_deps, extra_args)
 
+class PBSQueue(HPCQueue):
+    """PBS Queue Interface"""
+
+    queue_name = "pbs"
+
+    _queue_var_map = OrderedDict(
+        name="-N ",
+        queue="-q "
+        account="-A ",
+        num_nodes="-l nodes="
+        stdout="-o ",
+        stderr="-e ",
+        join_outputs="-j "
+        mail_opts="-m "
+        email_address="-M ",
+        time_limit="-l walltime=",
+    )
+
+    _default_queue_vaues = dict(
+        stdout="job-$PBS_JOBNAME-$PBS_JOBID.out"
+        join_outputs="oe"
+        shell="/bin/bash"
+    )
+
+    _batch_job_regex = re.compile(r"(\d+)")
+
+    @classmethod
+    def submit(cls, script_file,
+               job_dependencies=None,
+               extra_args=None,
+               dep_type="afterok"):
+        """Submit a PBS job using qsub command
+
+        ``job_dependencies`` is a list of PBS job IDs. The submitted job will
+        run depending the status of the dependencies.
+
+        ``extra_args`` is a dictionary of arguments passed to ``qsub`` command.
+
+
+        The job ID returned by this method can be used as an argument to delete
+        method or as an entry in ``job_dependencies`` for a subsequent job
+        submission.
+
+        Args:
+            script_file (path): Script provided to sbatch command
+            job_dependencies (list): List of jobs to wait for
+            extra_args (dict): Extra SLURM arguments
+
+        Returns:
+            str: Job ID as a string
         """
-        renv = self.cml_env or cmlenv.cml_get_latest_version()
-        path_var = (renv.bin_dir + os.pathsep + renv.mpi_bindir)
-        lib_var = (renv.lib_dir + os.pathsep + renv.mpi_libdir)
-        self.env_config = textwrap.dedent(env_cfg)%(
-            renv.project_dir, path_var, lib_var)
+        depends_arg = ""
+        if job_dependencies:
+            depends_arg = (
+                "-W depend=%s:"%dep_type +
+                ":".join("%s"%i for i in job_dependencies))
+        qsub_args = extra_args or ""
+
+        qsub_cmd = "qsub %s %s %s"%(
+            depends_arg, qsub_args, script_file)
+        cmd_line = shlex.split(qsub_cmd)
+        _lgr.debug("Executing PBS qsub command: %s", qsub_cmd)
+        pp = subprocess.Popen(
+            cmd_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = pp.communicate()
+        job_id_match = cls._batch_job_regex.search(out.decode('utf-8'))
+        if err or not job_id_match:
+            raise RuntimeError("Error submitting job: '%s'"%qsub_cmd)
+        job_id = job_id_match.group(1)
+        return job_id
+
+    @staticmethod
+    def delete(job_id):
+        """Delete the PBS batch job using job ID"""
+        qdel_cmd = "qdel %s"%job_id
+        cmd_line = shlex.split(qdel_cmd)
+        _lgr.debug("Executing PBS qdel command: %s", qdel_cmd)
+        pp = subprocess.Popen(
+            cmd_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = pp.communicate()
+        if out:
+            _lgr.debug("qdel output: %s", out)
+        if err:
+            _lgr.debug("Error executing qdel: %s", err)
+
+    def get_queue_settings(self):
+        """Return all PBS options suitable for embedding in script"""
+        qopts = "\n".join(
+            "#PBS %s%s"%(val, getattr(self, key))
+            for key, val in self._queue_var_map.items()
+            if hasattr(self, key))
+        header = "\n# PBS Queue options\n"
+        return header + qopts + "\n"
+
+    def prepare_mpi_cmd(self):
+        """Prepare the MPI invocation"""
+        num_mpi_ranks = getattr(self, "num_ranks", 1)
+        cmd_tmpl = ("mpiexec -localonly %d "
+                    if osutils.ostype() == "windows"
+                    else "mpiexec -np %d ")
+        mpi_cmd = cmd_tmpl%num_mpi_ranks
+        return mpi_cmd + getattr(self, "mpi_extra_args", "")
 
     def __call__(self, **kwargs):
         """Submit the job"""
@@ -397,6 +512,7 @@ _hpc_queue_map = dict(
     no_mpi=SerialJob,
     local_mpi=ParallelJob,
     slurm=SlurmQueue,
+    pbs=PBSQueue,
 )
 
 def get_job_scheduler(queue_type=None):
