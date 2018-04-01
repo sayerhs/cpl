@@ -20,7 +20,7 @@ from collections import Mapping, OrderedDict
 import six
 
 from ..config import cmlenv
-from ..config.config import get_config
+from ..config import config
 from ..config.jinja2wrappers import CaelusTemplates
 from ..utils import osutils
 
@@ -125,7 +125,7 @@ class HPCQueue():
         self.env_config = ""
         self._has_script_body = False
         self._script_body = None
-        cfg = get_config()
+        cfg = config.get_config()
         opts = cfg.caelus.system.scheduler_defaults
         for key, val in self._queue_default_values.items():
             setattr(self, key, val)
@@ -179,9 +179,14 @@ class HPCQueue():
     def get_queue_settings(self):
         """Return a string with all the necessary queue options"""
 
-    @abc.abstractmethod
     def prepare_mpi_cmd(self):
         """Prepare the MPI invocation"""
+        num_mpi_ranks = getattr(self, "num_ranks", 1)
+        cmd_tmpl = ("mpiexec -localonly %d "
+                    if osutils.ostype() == "windows"
+                    else "mpiexec -np %d ")
+        mpi_cmd = cmd_tmpl%num_mpi_ranks
+        return mpi_cmd + getattr(self, "mpi_extra_args", "")
 
     @abc.abstractmethod
     def __call__(self, **kwargs):
@@ -372,6 +377,19 @@ class SlurmQueue(HPCQueue):
         if err:
             _lgr.debug("Error executing scancel: %s", err)
 
+    def __init__(self, name, cml_env=None, **kwargs):
+        """
+        Args:
+            name (str): Name of the job
+            cml_env (CMLEnv): Environment used for execution
+        """
+        super(SlurmQueue, self).__init__(name, cml_env, **kwargs)
+        cfg = config.get_config()
+        opts = cfg.caelus.system
+        use_mpiexec = opts.get("slurm_use_mpiexec", False)
+        if not use_mpiexec:
+            self.prepare_mpi_cmd = self.prepare_srun_cmd
+
     def get_queue_settings(self):
         """Return all SBATCH options suitable for embedding in script"""
         qopts = "\n".join(
@@ -381,7 +399,7 @@ class SlurmQueue(HPCQueue):
         header = "\n# SLURM options\n"
         return header + qopts + "\n"
 
-    def prepare_mpi_cmd(self):
+    def prepare_srun_cmd(self):
         """Prepare the call to SLURM srun command"""
         return "srun --ntasks ${SLURM_NTASKS} " + getattr(
             self, "mpi_extra_args", "")
@@ -492,15 +510,6 @@ class PBSQueue(HPCQueue):
         header = "\n# PBS Queue options\n"
         return header + qopts + "\n"
 
-    def prepare_mpi_cmd(self):
-        """Prepare the MPI invocation"""
-        num_mpi_ranks = getattr(self, "num_ranks", 1)
-        cmd_tmpl = ("mpiexec -localonly %d "
-                    if osutils.ostype() == "windows"
-                    else "mpiexec -np %d ")
-        mpi_cmd = cmd_tmpl%num_mpi_ranks
-        return mpi_cmd + getattr(self, "mpi_extra_args", "")
-
     def __call__(self, **kwargs):
         """Submit the job"""
         script_file = kwargs.get("script_file", None)
@@ -522,7 +531,7 @@ _hpc_queue_map = dict(
 
 def get_job_scheduler(queue_type=None):
     """Return an instance of the job scheduler"""
-    cfg = get_config()
+    cfg = config.get_config()
     cfg_queue_type = cfg.caelus.system.get("job_scheduler", 'local_mpi')
     qtype = queue_type or cfg_queue_type
     return _hpc_queue_map.get(qtype.lower(), ParallelJob)
