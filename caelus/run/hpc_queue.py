@@ -167,6 +167,7 @@ class HPCQueue():
         export CAELUS_PROJECT_DIR=${PROJECT_DIR}
         export PATH=%s:${PATH}
         export LD_LIBRARY_PATH=%s:${LD_LIBRARY_PATH}
+        export MPI_BUFFER_SIZE=20000000
 
         """
         renv = self.cml_env or cmlenv.cml_get_latest_version()
