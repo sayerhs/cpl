@@ -93,7 +93,8 @@ class HPCQueue():
 
     @classmethod
     @abc.abstractmethod
-    def submit(cls, script_file, job_dependencies=None, extra_args=None):
+    def submit(cls, script_file, job_dependencies=None, extra_args=None,
+               dep_type=None):
         """Submit the job to the queue"""
 
     @staticmethod
@@ -303,7 +304,8 @@ class SlurmQueue(HPCQueue):
     @classmethod
     def submit(cls, script_file,
                job_dependencies=None,
-               extra_args=None):
+               extra_args=None,
+               dep_type="afterok"):
         """Submit to SLURM using sbatch command
 
         ``job_dependencies`` is a list of SLURM job IDs. The submitted job will
@@ -314,6 +316,8 @@ class SlurmQueue(HPCQueue):
         ``sbatch`` command. Note that this can override options provided in the
         script file as well as introduce additional options during submission.
 
+        ``dep_type`` can be one of: after, afterok, afternotok afterany
+
         The job ID returned by this method can be used as an argument to delete
         method or as an entry in ``job_dependencies`` for a subsequent job
         submission.
@@ -322,6 +326,7 @@ class SlurmQueue(HPCQueue):
             script_file (path): Script provided to sbatch command
             job_dependencies (list): List of jobs to wait for
             extra_args (dict): Extra SLURM arguments
+            dep_type (str): Dependency type
 
         Returns:
             str: Job ID as a string
@@ -400,21 +405,21 @@ class PBSQueue(HPCQueue):
 
     _queue_var_map = OrderedDict(
         name="-N ",
-        queue="-q "
+        queue="-q ",
         account="-A ",
-        num_nodes="-l nodes="
+        num_nodes="-l nodes=",
         stdout="-o ",
         stderr="-e ",
-        join_outputs="-j "
-        mail_opts="-m "
+        join_outputs="-j ",
+        mail_opts="-m ",
         email_address="-M ",
         time_limit="-l walltime=",
     )
 
     _default_queue_vaues = dict(
-        stdout="job-$PBS_JOBNAME-$PBS_JOBID.out"
-        join_outputs="oe"
-        shell="/bin/bash"
+        stdout="job-$PBS_JOBNAME-$PBS_JOBID.out",
+        join_outputs="oe",
+        shell="/bin/bash",
     )
 
     _batch_job_regex = re.compile(r"(\d+)")
