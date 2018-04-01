@@ -4,7 +4,12 @@ import os
 import shutil
 import pytest
 
+from caelus.config import config
+
 script_dir = os.path.dirname(__file__)
+
+def no_logging():
+    pass
 
 def copy_casedir(tmpldir, dirname):
     """Copy a case directory"""
@@ -34,3 +39,8 @@ def test_casedir(tmpdir_factory):
     tmpldir = os.path.join(script_dir, "_casedir_template")
     copy_casedir(tmpldir, dirname)
     return casedir
+
+@pytest.fixture(autouse=True)
+def no_config(monkeypatch):
+    monkeypatch.setattr(config, "get_config", config.get_default_config)
+    monkeypatch.setattr(config, "configure_logging", no_logging)

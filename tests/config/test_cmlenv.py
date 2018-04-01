@@ -25,7 +25,7 @@ caelus:
 """
 
 def mock_get_config():
-    cfg = cmlenv.CaelusCfg.from_yaml(dummy_config)
+    cfg = config.CaelusCfg.from_yaml(dummy_config)
 
     def _cfg():
         return cfg
@@ -55,11 +55,7 @@ def caelus_directory():
 def no_get_config(monkeypatch, caelus_directory):
     """Mock CaelusCfg object for testing"""
     monkeypatch.setattr(config, "get_config", mock_get_config())
-    monkeypatch.setattr(cmlenv, "get_config", mock_get_config())
     cfg = config.get_config()
-    cfg.caelus.caelus_cml.versions[0].path = os.path.join(
-        caelus_directory, "caelus-10.11")
-    cfg = cmlenv.get_config()
     cfg.caelus.caelus_cml.versions[0].path = os.path.join(
         caelus_directory, "caelus-10.11")
 

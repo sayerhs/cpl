@@ -20,7 +20,7 @@ import glob
 import itertools
 import logging
 from distutils.version import LooseVersion
-from .config import CaelusCfg, get_caelus_root, get_config
+from . import config
 from ..utils import osutils
 
 _lgr = logging.getLogger(__name__)
@@ -42,10 +42,10 @@ def discover_versions(root=None):
             tmp = bname.split("-")
             if tmp:
                 version = tmp[-1]
-                yield CaelusCfg(version=version,
-                                path=cpath)
+                yield config.CaelusCfg(version=version,
+                                       path=cpath)
 
-    rpath = root or get_caelus_root()
+    rpath = root or config.get_caelus_root()
     cdirs = glob.glob(os.path.join(rpath, "[Cc]aelus-*"))
     return list(path_to_cfg(cdirs))
 
@@ -55,7 +55,7 @@ def _filter_invalid_versions(cml_cfg):
     Args:
         cml_cfg (list): List of CML configuration entries
     """
-    root_default = get_caelus_root()
+    root_default = config.get_caelus_root()
     for ver in cml_cfg:
         vid = ver.get("version", None)
         if vid is None:
@@ -116,7 +116,7 @@ class CMLEnv(object):
         self._version = cfg.version
         self._project_dir = cfg.get(
             "path",
-            os.path.join(get_caelus_root(), "caelus-%s"%self.version))
+            os.path.join(config.get_caelus_root(), "caelus-%s"%self.version))
         self._root_dir = os.path.dirname(self._project_dir)
 
         # Determine build dir
@@ -253,7 +253,7 @@ def _cml_env_mgr():
 
     def _init_cml_versions():
         """Initialize versions based on user configuration"""
-        cfg = get_config()
+        cfg = config.get_config()
         cml_opts = cfg.caelus.caelus_cml.versions
         if cml_opts:
             cml_filtered = list(_filter_invalid_versions(cml_opts))
@@ -300,7 +300,7 @@ def _cml_env_mgr():
             raise RuntimeError("No valid Caelus CML versions found")
         else:
             _init_cml_versions()
-        cfg = get_config()
+        cfg = config.get_config()
         vkey = version or cfg.caelus.caelus_cml.get("default",
                                                     "latest")
         if vkey == "latest":

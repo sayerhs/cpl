@@ -7,7 +7,7 @@ Utilities for working with Jinja2 templates
 import os
 from jinja2 import Environment, FileSystemLoader
 
-from .config import get_config, get_cpl_root
+from . import config
 from ..version import version
 from ..utils import osutils
 
@@ -15,10 +15,10 @@ def get_template_dirs():
     """Return a list of template dirs in normal configuration locations"""
     tmpl_dirs = []
 
-    cfg = get_config()
+    cfg = config.get_config()
     tmpl_dirs = cfg.caelus.cpl.get("template_dirs", tmpl_dirs)
 
-    home = get_cpl_root()
+    home = config.get_cpl_root()
     if home:
         tmpl_path = os.path.join(home, "cpl_templates")
         if os.path.exists(tmpl_path) and os.path.isdir(tmpl_path):
