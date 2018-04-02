@@ -8,52 +8,6 @@ from caelus.utils import osutils
 from caelus.config import cmlenv, config
 from caelus.run import hpc_queue as hq
 
-class MockPopen(object):
-    """Mock a Popen instance"""
-
-    def __init__(self, cml_cmd, *args, **kwargs):
-        self.cml_cmd = cml_cmd
-        self.args = args
-        self.kwargs = kwargs
-
-    def communicate(self):
-        if "sbatch" in self.cml_cmd:
-            return ("Submitted batch job 1234".encode('utf-8'), "")
-        elif "qsub" in self.cml_cmd:
-            return ("1234".encode('utf-8'), "")
-        return ("output", "error")
-
-class MockCMLEnv(object):
-    """Mock CMLEnv object"""
-
-    @property
-    def project_dir(self):
-        return "~/Caelus/caelus-7.04"
-
-    @property
-    def bin_dir(self):
-        return "~/Caelus/caelus-7.04/bin"
-
-    @property
-    def mpi_bindir(self):
-        return "~/Caelus/caelus-7.04/mpi/bin"
-
-    @property
-    def lib_dir(self):
-        return "~/Caelus/caelus-7.04/lib"
-
-    @property
-    def mpi_libdir(self):
-        return "~/Caelus/caelus-7.04/mpi_lib"
-
-    @property
-    def environ(self):
-        """Return an empty environment"""
-        return {}
-
-def mock_cml_get_latest_version():
-    return MockCMLEnv()
-
 def test_get_job_scheduler(monkeypatch):
     types = "no_mpi local_mpi slurm pbs".split()
     cfg = config.get_config()
@@ -65,11 +19,8 @@ def test_get_job_scheduler(monkeypatch):
         jcls = hq.get_job_scheduler()
         assert(jcls == hq._hpc_queue_map[jtype])
 
-def test_caelus_execute(monkeypatch):
+def test_caelus_execute():
     cml_cmd = "mpiexec -np 4 simpleSolver -parallel"
-    monkeypatch.setattr(subprocess, "Popen", MockPopen)
-    monkeypatch.setattr(cmlenv, "cml_get_latest_version",
-                        mock_cml_get_latest_version)
     task = hq.caelus_execute(cml_cmd)
     cmd_list = shlex.split(cml_cmd)
     assert(task.cml_cmd == cmd_list)
@@ -77,16 +28,15 @@ def test_caelus_execute(monkeypatch):
     task = hq.caelus_execute(cmd_list)
     assert(task.cml_cmd == cmd_list)
 
-def test_serial_job(monkeypatch, tmpdir):
+def test_serial_job(tmpdir):
     cmd_line = "blockMesh -help"
     cmd_list = shlex.split(cmd_line)
-    monkeypatch.setattr(subprocess, "Popen", MockPopen)
-    monkeypatch.setattr(cmlenv, "cml_get_latest_version",
-                        mock_cml_get_latest_version)
     sjob = hq.SerialJob("blockMesh")
+    sjob.delete("1234")
 
     with pytest.raises(RuntimeError):
         sjob()
+        sjob.write_script()
 
     assert(not sjob.is_parallel())
     assert(not sjob.is_job_scheduler())
@@ -100,11 +50,10 @@ def test_serial_job(monkeypatch, tmpdir):
         assert (sjob.task.cml_cmd == cmd_list)
         logfile = cdir.join("blockMesh.log")
         assert(logfile.check())
+        status = sjob.submit("dummy_script.sh")
+        assert(status == 0)
 
-def test_parallel_job(monkeypatch, tmpdir):
-    monkeypatch.setattr(subprocess, "Popen", MockPopen)
-    monkeypatch.setattr(cmlenv, "cml_get_latest_version",
-                        mock_cml_get_latest_version)
+def test_parallel_job(tmpdir):
     job = hq.ParallelJob("simpleSolver")
     job.num_ranks = 12
     job.mpi_extra_args = " --bind-to core "
@@ -130,10 +79,7 @@ def test_parallel_job(monkeypatch, tmpdir):
         assert(logfile.check())
 
 
-def test_slurm_job(monkeypatch, tmpdir):
-    monkeypatch.setattr(subprocess, "Popen", MockPopen)
-    monkeypatch.setattr(cmlenv, "cml_get_latest_version",
-                        mock_cml_get_latest_version)
+def test_slurm_job(tmpdir):
     job = hq.SlurmQueue("simpleSolver")
     job.num_ranks = 12
     job.mpi_extra_args = " --bind-to core "
