@@ -100,7 +100,7 @@ class TutorialRunner(CaelusScriptBase):
 
         test_counter = 0
         failed_tests = 0
-        cenv = cml_get_version()
+        cenv = self.cenv
         _lgr.info("Caelus CML version: %s", cenv.version)
         with osutils.set_work_dir(args.base_dir) as wdir:
             for case in func(wdir):
@@ -120,7 +120,7 @@ class TutorialRunner(CaelusScriptBase):
 
         test_counter = 0
         failed_tests = 0
-        cenv = cml_get_version()
+        cenv = self.cenv
         _lgr.info("Caelus CML version: %s", cenv.version)
         with osutils.set_work_dir(args.base_dir) as wdir:
             for case in func(wdir):
@@ -128,7 +128,7 @@ class TutorialRunner(CaelusScriptBase):
                 try:
                     self.clean_tutorial(case, cenv)
                 except:
-                    _lgr.exception("Failed: %s", case)
+                    _lgr.warning("Warning: %s", case)
                     failed_tests += 1
                 test_counter += 1
         _lgr.info("Tutorial clean complete; Attempted: %d, Failed: %d",
@@ -143,6 +143,8 @@ class TutorialRunner(CaelusScriptBase):
             func = self.exclude_matching_tutorials
         if args.include_patterns:
             func = self.get_matching_tutorials
+
+        self.cenv = cml_get_version()
 
         if not args.clean:
             self.run_all_tutorials(func)
