@@ -383,11 +383,13 @@ class CaelusCmd(CaelusSubCmdScript):
         fname = os.path.join(args.case_dir, args.log_file)
         include_fields = args.include_fields.split()
         exclude_fields = args.exclude_fields.split()
+        cerrors = args.plot_continuity_errors
         if not os.path.exists(fname):
             _lgr.fatal("Cannot find log file: %s", fname)
             self.parser.exit(1)
         if args.watch:
             wlog = LogWatcher(args.log_file, args.case_dir)
+            wlog.plot_continuity_errors = cerrors
             if include_fields:
                 wlog.plot_fields = include_fields
             wlog()
@@ -398,7 +400,6 @@ class CaelusCmd(CaelusSubCmdScript):
         _lgr.info("%s processed to %s", args.log_file, args.logs_dir)
         if args.plot_residuals:
             fields = set(clog.fields)
-            cerrors = args.plot_continuity_errors
             if exclude_fields:
                 fields.difference_update(set(exclude_fields))
             if include_fields:

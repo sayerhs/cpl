@@ -129,7 +129,7 @@ class CaelusPlot(object):
         if self.plot_continuity_errors:
             cerrs = logf.continuity_errors()
             idx = cerrs[:, 1] == 1
-            ax.plot(cerrs[idx, 0], cerrs[idx, 2], label="continuity")
+            ax.plot(cerrs[idx, 0], np.abs(cerrs[idx, 2]), label="continuity")
         ax.grid(True)
         plt.legend()
         return (fig, ax)
@@ -196,15 +196,20 @@ class LogWatcher(object):
         self._field_data = OrderedDict()
         # Flag for initialization
         self._need_init = True
+        # Flag indicating whether continuity errors are plotted
+        self.plot_continuity_errors = False
 
+    def __call__(self):
+        """Run the residual watcher"""
         # Register time and residual consumers with LogProcessor
         self.logprocessor.extend_rule(
             "time", self.time_processor())
         self.logprocessor.extend_rule(
             "residual", self.residual_processor())
 
-    def __call__(self):
-        """Run the residual watcher"""
+        if self.plot_continuity_errors:
+            self.logprocessor.extend_rule(
+                "continuity", self.continuity_processor())
         with warnings.catch_warnings():
             # Quell warning issued by matplotlib during the first timestep for
             # axis limits
@@ -250,6 +255,25 @@ class LogWatcher(object):
                     data = np.r_[data, value]
                     self._field_data[field] = data
                 self._needs_update = True
+
+    @coroutines.coroutine
+    def continuity_processor(self):
+        """Capture continuity errors for plot updates"""
+        key = 'continuity'
+        logp = self.logprocessor
+        while True:
+            rexp = (yield)
+            icorr = logp.subiter_map[key]
+            if icorr == 1:
+                value = np.abs(float(rexp.group(1)))
+                if key not in self._field_data:
+                    self._field_data[key] = np.array([value])
+                else:
+                    data = self._field_data[key]
+                    data = np.r_[data, value]
+                    self._field_data[key] = data
+                self._needs_update = True
+
 
     @coroutines.coroutine
     def plot_residuals(self):
