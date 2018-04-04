@@ -35,6 +35,9 @@ class TutorialRunner(CaelusScriptBase):
             '-c', '--clone-dir', default=None,
             help="copy tutorials from this directory")
         parser.add_argument(
+            '--clean', action='store_true',
+            help="clean tutorials from this directory")
+        parser.add_argument(
             '-f', '--task-file', default="run_tutorial.yaml",
             help="task file containing tutorial actions (run_tutorial.yaml)")
         test_pat = parser.add_mutually_exclusive_group(required=False)
@@ -79,15 +82,21 @@ class TutorialRunner(CaelusScriptBase):
             tasks = Tasks.load(args.task_file)
             tasks(env=cenv)
 
-    def __call__(self):
-        """Run the command"""
-        super(TutorialRunner, self).__call__()
+    def clean_tutorial(self, casedir, cenv):
+        """Run clean actions in tutorial task file"""""
         args = self.args
-        func = self.get_all_tutorials
-        if args.exclude_patterns:
-            func = self.exclude_matching_tutorials
-        if args.include_patterns:
-            func = self.get_matching_tutorials
+        with osutils.set_work_dir(casedir):
+            tasks = Tasks.load(args.task_file)
+            tasks.case_dir = casedir
+            for task in tasks.tasks:
+                for key in task:
+                    if key == "clean_case":
+                        tasks.cmd_clean_case(task[key])
+                        break
+
+    def run_all_tutorials(self, func):
+        """Run all tutorials given by walking the directory"""
+        args = self.args
 
         test_counter = 0
         failed_tests = 0
@@ -104,6 +113,41 @@ class TutorialRunner(CaelusScriptBase):
                 test_counter += 1
         _lgr.info("Tutorial run complete; Attempted: %d, Failed: %d",
                   test_counter, failed_tests)
+
+    def clean_all_tutorials(self, func):
+        """Clean all tutorials given by walking the directory"""
+        args = self.args
+
+        test_counter = 0
+        failed_tests = 0
+        cenv = cml_get_version()
+        _lgr.info("Caelus CML version: %s", cenv.version)
+        with osutils.set_work_dir(args.base_dir) as wdir:
+            for case in func(wdir):
+                _lgr.info("Cleaning tutorial: %s", case)
+                try:
+                    self.clean_tutorial(case, cenv)
+                except:
+                    _lgr.exception("Failed: %s", case)
+                    failed_tests += 1
+                test_counter += 1
+        _lgr.info("Tutorial clean complete; Attempted: %d, Failed: %d",
+                  test_counter, failed_tests)
+
+    def __call__(self):
+        """Run the command"""
+        super(TutorialRunner, self).__call__()
+        args = self.args
+        func = self.get_all_tutorials
+        if args.exclude_patterns:
+            func = self.exclude_matching_tutorials
+        if args.include_patterns:
+            func = self.get_matching_tutorials
+
+        if not args.clean:
+            self.run_all_tutorials(func)
+        else:
+            self.clean_all_tutorials(func)
 
 def main():
     """CLI entry point"""
