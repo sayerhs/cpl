@@ -205,13 +205,15 @@ class Tasks(object):
             logs_dir=logs_dir,
             logfile=log_file)
         do_plots = options.get("plot_residuals", None)
-        plot_file = options.get("residuals_plot_file", "residuals.png")
-        fields = options.get("residuals_fields", clog.fields)
         if do_plots:
+            plot_file = options.get("residuals_plot_file", "residuals.png")
+            fields = options.get("residuals_fields", clog.fields)
+            cerrors = options.get("plot_continuity_errors", False)
             plot = CaelusPlot(self.case_dir)
             dname, fname = os.path.split(plot_file)
             plot.plotdir = dname or os.getcwd()
             plot.solver_log = clog
+            plot.plot_continuity_errors = cerrors
             plot.plot_residuals_hist(plotfile=fname, fields=fields)
             _lgr.info("Residual time history saved to %s", plot_file)
 

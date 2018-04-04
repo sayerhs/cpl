@@ -385,3 +385,9 @@ class SolverLog(object):
         fname = os.path.join(self.logs_dir, "bounding_"+field+".dat")
         data = np.loadtxt(fname, skiprows=2)
         return data
+
+    def continuity_errors(self):
+        """Return the time history of continuity errors"""
+        fname = os.path.join(self.logs_dir, "continuity_errors.dat")
+        data = np.loadtxt(fname, skiprows=1)
+        return data

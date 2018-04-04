@@ -37,11 +37,11 @@ def mpl_settings(backend="agg"):
 
 def make_plot_method(func):
     """Make a wrapper plot method"""
-    def plot_wrapper(self, plotfile=None, dpi=120, **kwargs):
+    def plot_wrapper(self, plotfile=None, dpi=300, **kwargs):
         """%s
 
             plotfile: File to save plot (e.g., residuals.png)
-            dpi: Resolution for saving plots (default=120)
+            dpi: Resolution for saving plots (default=300)
         """
         if plotfile:
             osutils.ensure_directory(self.plotdir)
@@ -100,6 +100,10 @@ class CaelusPlot(object):
         #: Instance of :class:`~caelus.post.logs.SolverLog`
         self.solver_log = None
 
+        #: Flag indicating whether continuity errors are plotted along with
+        #: residuals
+        self.plot_continuity_errors = False
+
     def _plot_residuals_hist(self, fields=None):
         """Plot time-history of residuals for a Caelus run
 
@@ -122,8 +126,12 @@ class CaelusPlot(object):
             # We only want initial residuals (iter = 1)
             idx = res[:, 1] == 1
             ax.plot(res[idx, 0], res[idx, 2], label=field)
-            ax.grid(True)
-            plt.legend(loc=3)
+        if self.plot_continuity_errors:
+            cerrs = logf.continuity_errors()
+            idx = cerrs[:, 1] == 1
+            ax.plot(cerrs[idx, 0], cerrs[idx, 2], label="continuity")
+        ax.grid(True)
+        plt.legend()
         return (fig, ax)
 
     def _force_plot_helper(self,

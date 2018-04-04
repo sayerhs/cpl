@@ -230,6 +230,9 @@ class CaelusCmd(CaelusSubCmdScript):
             '-p', '--plot-residuals', action='store_true',
             help="generate residual time-history plots")
         logs.add_argument(
+            '-c', '--plot-continuity-errors', action='store_true',
+            help="plot continuity errors along with field residuals")
+        logs.add_argument(
             '-f', '--plot-file', default="residuals.png",
             help="file where plot is saved")
         logs.add_argument(
@@ -395,11 +398,13 @@ class CaelusCmd(CaelusSubCmdScript):
         _lgr.info("%s processed to %s", args.log_file, args.logs_dir)
         if args.plot_residuals:
             fields = set(clog.fields)
+            cerrors = args.plot_continuity_errors
             if exclude_fields:
                 fields.difference_update(set(exclude_fields))
             if include_fields:
                 fields.intersection_update(set(include_fields))
             plot = CaelusPlot(clog.casedir)
+            plot.plot_continuity_errors = cerrors
             dname, fname = os.path.split(args.plot_file)
             plot.plotdir = dname or os.getcwd()
             plot.solver_log = clog
