@@ -71,6 +71,28 @@ def find_caelus_recipe_dirs(
         if os.path.exists(os.path.join(cdir, action_file)):
             yield cdir
 
+def find_recipe_dirs(basedir, action_file="caelus_tasks.yaml"):
+    """Return directories that contain the action files
+
+    This behaves differently than :ref:`find_caelus_recipe_dirs` in that it
+    doesn't require a valid case directory. It assumes that the case
+    directories are sub-directories and this task file acts on multiple
+    directories.
+
+    Args:
+        basedir (path): Top-level directory to traverse
+        action_file (filename): Default is ``caelus_tasks.yaml``
+
+    Yields:
+        Path to the case directory with action files
+    """
+    absdir = osutils.abspath(basedir)
+    for root, dirs, _ in os.walk(absdir):
+        if os.path.exists(os.path.join(root, action_file)):
+            for dname in list(dirs):
+                dirs.remove(dname)
+            yield root
+
 def clean_polymesh(casedir,
                    region=None,
                    preserve_patterns=None):

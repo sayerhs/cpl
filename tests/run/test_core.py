@@ -149,3 +149,20 @@ def test_find_caelus_recipe_dirs(tmpdir, template_casedir):
     rdirs = list(rcore.find_caelus_recipe_dirs(
         str(tmpdir), fname))
     assert len(rdirs) == 3
+
+def test_find_recipe_dirs(tmpdir, template_casedir):
+    tmpldir = str(template_casedir)
+    num_dirs = 5
+    fname = "caelus_recipe_test.yaml"
+    for i in range(num_dirs):
+        cdir = tmpdir.join("casedirs_%d"%i)
+        rcore.clone_case(str(cdir), tmpldir)
+
+    assert len(list(rcore.find_case_dirs(str(tmpdir)))) == num_dirs
+    for i in range(0, num_dirs, 2):
+        fpath = tmpdir.join("casedirs_%d"%i, fname)
+        fpath.write("dummy")
+
+    rdirs = list(rcore.find_recipe_dirs(
+        str(tmpdir), fname))
+    assert len(rdirs) == 3

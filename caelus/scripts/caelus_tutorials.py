@@ -11,7 +11,7 @@ import logging
 
 from ..utils import osutils
 from ..config.cmlenv import cml_get_version
-from ..run.core import find_caelus_recipe_dirs
+from ..run import core
 from ..run.tasks import Tasks
 from .core import CaelusScriptBase
 
@@ -53,7 +53,7 @@ class TutorialRunner(CaelusScriptBase):
         args = self.args
         task_file = args.task_file
         patterns = args.include_patterns
-        for cdir in find_caelus_recipe_dirs(basedir, task_file):
+        for cdir in core.find_recipe_dirs(basedir, task_file):
             for pdir in patterns:
                 if fnmatch.fnmatch(cdir, pdir):
                     yield cdir
@@ -63,7 +63,7 @@ class TutorialRunner(CaelusScriptBase):
         args = self.args
         task_file = args.task_file
         patterns = args.exclude_patterns
-        for cdir in find_caelus_recipe_dirs(basedir, task_file):
+        for cdir in core.find_recipe_dirs(basedir, task_file):
             for pdir in patterns:
                 if not fnmatch.fnmatch(cdir, pdir):
                     yield cdir
@@ -72,7 +72,7 @@ class TutorialRunner(CaelusScriptBase):
         """Return all tutorials by walking the directory"""
         args = self.args
         task_file = args.task_file
-        for cdir in find_caelus_recipe_dirs(basedir, task_file):
+        for cdir in core.find_recipe_dirs(basedir, task_file):
             yield cdir
 
     def run_tutorial(self, casedir, cenv):
