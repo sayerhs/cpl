@@ -38,6 +38,12 @@ def test_clean_polymesh(test_casedir):
         assert os.path.exists(
             os.path.join(meshdir, "preserve_%d.dat"%i))
 
+def test_clean_polymesh_noexist(tmpdir):
+    """clean_polymesh on a non-existent directory is a no-op"""
+    root = str(tmpdir)
+    assert(not os.path.exists(os.path.join(root, "constant", "polyMesh")))
+    rcore.clean_polymesh(root)
+
 def test_clean_casedir(test_casedir):
     root = str(test_casedir)
     logf = test_casedir.join("pisoSolver.log")
@@ -74,6 +80,10 @@ def test_clean_casedir(test_casedir):
         assert not os.path.exists(
             os.path.normpath(
                 os.path.join(root, fname)))
+
+def test_clean_casedir_nonexist(tmpdir):
+    root = str(tmpdir)
+    rcore.clean_casedir(root)
 
 def test_clone_casedir(tmpdir, test_casedir):
     tmpldir = str(test_casedir)

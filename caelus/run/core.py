@@ -85,15 +85,16 @@ def clean_polymesh(casedir,
     if preserve_patterns:
         ppatterns += preserve_patterns
     absdir = osutils.abspath(casedir)
-    if not is_caelus_casedir(absdir):
-        _lgr.error("Invalid case directory provided: %s", casedir)
-        raise FileNotFoundError("Invalid case directory: "+casedir)
-
-    _lgr.debug("Cleaning polyMesh in %s", absdir)
     meshdir = (os.path.join(absdir, "constant", "polyMesh")
                if region is None else
                (os.path.join(absdir, "constant", region, "polyMesh")))
-    osutils.clean_directory(meshdir, ppatterns)
+
+    if os.path.exists(meshdir):
+        _lgr.debug("Cleaning polyMesh in %s", absdir)
+        osutils.clean_directory(meshdir, ppatterns)
+    else:
+        _lgr.warning("No polyMesh directory %s; skipping clean_mesh",
+                     meshdir)
 
 def clean_casedir(casedir,
                   preserve_extra=None,
