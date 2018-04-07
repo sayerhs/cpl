@@ -12,6 +12,7 @@ from collections import OrderedDict, MutableMapping, Mapping
 from abc import ABCMeta
 import yaml
 import six
+import numpy as np
 
 def _merge(this, that):
     """Recursive merge from *that* mapping to *this* mapping
@@ -94,6 +95,16 @@ def gen_yaml_encoder(cls):
         """Convert Struct to dictionary for YAML"""
         return dumper.represent_dict(list(data.items()))
 
+    def numpy_representer(dumper, data):
+        """Convert numpy arrays to YAML"""
+        return dumper.represent_list(data.tolist())
+
+    def numpy_scalar_representer(dumper, data):
+        """Converty numpy dtypes to YAML"""
+        if isinstance(data, np.int64):
+            return dumper.represent_int(int(data))
+        return dumper.represent_float(float(data))
+
     # pylint: disable=too-many-ancestors
     class StructYAMLDumper(yaml.Dumper):
         """Custom YAML dumper for Struct data"""
@@ -101,6 +112,12 @@ def gen_yaml_encoder(cls):
         def __init__(self, *args, **kwargs):
             yaml.Dumper.__init__(self, *args, **kwargs)
             self.add_representer(cls, struct_representer)
+            self.add_representer(np.ndarray,
+                                 numpy_representer)
+            self.add_representer(np.float_,
+                                 numpy_scalar_representer)
+            self.add_representer(np.int_,
+                                 numpy_scalar_representer)
 
     return StructYAMLDumper
 
