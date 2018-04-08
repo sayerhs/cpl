@@ -1,1 +1,2 @@
 recursive-include caelus/templates *
+include caelus/config/default_config.yaml

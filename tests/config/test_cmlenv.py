@@ -59,6 +59,21 @@ def no_get_config(monkeypatch, caelus_directory):
     cfg.caelus.caelus_cml.versions[0].path = os.path.join(
         caelus_directory, "caelus-10.11")
 
+def test_get_latest_version():
+    # ALERT: This is testing the configuration object, not the temporary
+    # directory created for other tests.
+    cmlenv.cml_reset_versions()
+    cver = cmlenv.cml_get_latest_version()
+    assert cver.version == "10.11"
+
+def test_get_version():
+    # ALERT: This is testing the configuration object, not the temporary
+    # directory created for other tests.
+    cmlenv.cml_reset_versions()
+    cmlenv.cml_get_version("10.11")
+    with pytest.raises(KeyError):
+        cmlenv.cml_get_version("3.84")
+
 def test_discover_versions(caelus_directory):
     cvers = cmlenv.discover_versions(caelus_directory)
     assert len(cvers) == 3
@@ -75,18 +90,3 @@ def test_determine_platform_dir(caelus_directory):
     bpath_expected = os.path.join(
         root_path, "platforms", "%s64g++DPOpt"%ostype)
     assert bdir_path == bpath_expected
-
-def test_get_latest_version():
-    # ALERT: This is testing the configuration object, not the temporary
-    # directory created for other tests.
-    cver = cmlenv.cml_get_latest_version()
-    assert cver.version == "10.11"
-    cmlenv.cml_reset_versions()
-
-def test_get_version():
-    # ALERT: This is testing the configuration object, not the temporary
-    # directory created for other tests.
-    cmlenv.cml_get_version("10.11")
-    with pytest.raises(KeyError):
-        cmlenv.cml_get_version("3.84")
-    cmlenv.cml_reset_versions()

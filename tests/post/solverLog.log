@@ -1,0 +1,94 @@
+/*---------------------------------------------------------------------------*\
+ Caelus 7.04                                   
+ Web:      www.caelus-cml.com 
+\*---------------------------------------------------------------------------*/
+Build  : 7.04-b66c1d6952b6
+Exec   : /home/cnsidero/Development/AppliedCCM/caelus/caelus-nextrelease-chris/platforms/linux64g++DPOpt/bin/pisoSolver -case .
+Date   : Apr 06 2017
+Time   : 16:16:41
+Host   : "smoky"
+PID    : 8836
+Case   : /home/cnsidero/Build/tutorials/incompressible/pisoSolver/ras/cavity
+nProcs : 1
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+Reading field p
+
+Reading field U
+
+Reading/calculating face flux field phi
+
+Selecting incompressible transport model Newtonian
+Selecting turbulence model type RASModel
+Selecting RAS turbulence model realizableKE
+realizableKECoeffs
+{
+    Cmu             0.09;
+    A0              4.04;
+    C2              1.9;
+    sigmak          1;
+    sigmaEps        1.2;
+}
+
+
+Starting time loop
+
+Time = 0.005
+
+Courant Number mean: 0 max: 0
+USGSPBiCGStab:  Solving for Ux, Initial residual = 1, Final residual = 2.6211e-06, No Iterations 3
+USGSPBiCGStab:  Solving for Uy, Initial residual = 1, Final residual = 2.81349e-06, No Iterations 3
+SSGSPCG:  Solving for p, Initial residual = 1, Final residual = 0.0658993, No Iterations 12
+time step continuity errors : sum local = 1.8586e-06, global = -2.1455e-22, cumulative = -2.1455e-22
+SSGSPCG:  Solving for p, Initial residual = 0.328156, Final residual = 8.10733e-07, No Iterations 35
+time step continuity errors : sum local = 3.39978e-11, global = 1.39974e-21, cumulative = 1.18519e-21
+USGSPBiCGStab:  Solving for epsilon, Initial residual = 0.0841972, Final residual = 6.3344e-06, No Iterations 2
+USGSPBiCGStab:  Solving for k, Initial residual = 1, Final residual = 2.17891e-06, No Iterations 3
+ExecutionTime = 0.01 s  ClockTime = 0 s
+
+Time = 0.01
+
+Courant Number mean: 0.000341363 max: 0.00264771
+USGSPBiCGStab:  Solving for Ux, Initial residual = 0.424184, Final residual = 5.86149e-06, No Iterations 2
+USGSPBiCGStab:  Solving for Uy, Initial residual = 0.390924, Final residual = 4.54082e-06, No Iterations 2
+SSGSPCG:  Solving for p, Initial residual = 0.215592, Final residual = 0.0124261, No Iterations 22
+time step continuity errors : sum local = 1.1263e-06, global = 9.25408e-22, cumulative = 2.1106e-21
+SSGSPCG:  Solving for p, Initial residual = 0.0568559, Final residual = 4.66259e-07, No Iterations 33
+time step continuity errors : sum local = 3.29078e-11, global = -1.6828e-21, cumulative = 4.27808e-22
+USGSPBiCGStab:  Solving for epsilon, Initial residual = 0.00621116, Final residual = 1.05598e-06, No Iterations 2
+USGSPBiCGStab:  Solving for k, Initial residual = 0.380149, Final residual = 2.47459e-06, No Iterations 2
+ExecutionTime = 0.01 s  ClockTime = 0 s
+
+Time = 0.015
+
+Courant Number mean: 0.000747074 max: 0.00597362
+USGSPBiCGStab:  Solving for Ux, Initial residual = 0.205498, Final residual = 1.9886e-06, No Iterations 2
+USGSPBiCGStab:  Solving for Uy, Initial residual = 0.201858, Final residual = 1.72414e-06, No Iterations 2
+SSGSPCG:  Solving for p, Initial residual = 0.0740628, Final residual = 0.00599596, No Iterations 10
+time step continuity errors : sum local = 5.47048e-07, global = -8.61819e-21, cumulative = -8.19038e-21
+SSGSPCG:  Solving for p, Initial residual = 0.0183935, Final residual = 9.37821e-07, No Iterations 31
+time step continuity errors : sum local = 6.66322e-11, global = 1.72157e-21, cumulative = -6.46881e-21
+USGSPBiCGStab:  Solving for epsilon, Initial residual = 0.00604026, Final residual = 8.00375e-07, No Iterations 2
+USGSPBiCGStab:  Solving for k, Initial residual = 0.219948, Final residual = 1.14688e-06, No Iterations 2
+ExecutionTime = 0.01 s  ClockTime = 0 s
+
+Time = 0.02
+
+Courant Number mean: 0.00114628 max: 0.00916548
+USGSPBiCGStab:  Solving for Ux, Initial residual = 0.145279, Final residual = 1.19878e-06, No Iterations 2
+USGSPBiCGStab:  Solving for Uy, Initial residual = 0.145526, Final residual = 9.82873e-07, No Iterations 2
+SSGSPCG:  Solving for p, Initial residual = 0.0475646, Final residual = 0.00473931, No Iterations 7
+time step continuity errors : sum local = 4.31963e-07, global = -5.54211e-21, cumulative = -1.20109e-20
+SSGSPCG:  Solving for p, Initial residual = 0.00822639, Final residual = 7.88778e-07, No Iterations 31
+time step continuity errors : sum local = 6.07866e-11, global = -1.86878e-20, cumulative = -3.06987e-20
+USGSPBiCGStab:  Solving for epsilon, Initial residual = 0.0058402, Final residual = 6.2227e-07, No Iterations 2
+USGSPBiCGStab:  Solving for k, Initial residual = 0.153319, Final residual = 6.86822e-07, No Iterations 2
+ExecutionTime = 0.02 s  ClockTime = 0 s
+
+End
+
