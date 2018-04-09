@@ -181,7 +181,7 @@ class Tasks(object):
         ignore_func = None
         if ignore_pat:
             ignore_func = shutil.ignore_patterns(*ignore_pat)
-        shutil.copytree(srcdir, destdir,
+        osutils.copy_tree(srcdir, destdir,
                         symlinks=symlinks, ignore=ignore_func)
 
     def cmd_clean_case(self, options):

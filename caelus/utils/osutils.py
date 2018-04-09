@@ -174,3 +174,27 @@ def clean_directory(dirname,
                 shutil.rmtree(fpath)
             elif os.path.isfile(fpath) or os.path.islink(fpath):
                 os.remove(fpath)
+
+def copy_tree(srcdir, destdir, symlinks=False, ignore=None):
+    """Enchanced version of shutil.copytree. 
+
+    - creates the output directory if it doesn already exist.
+    - copies sub-directories by recursively calling itself.
+    - checks if a file is modified before copying.
+
+    Args:
+        srcdir (path): path to source directory to be copied.
+        destdir (path): path (or new name) of destination directory.
+        symlinks (bool): as in shutil.copytree
+        ignore (function): as in shutil.copytree
+    """
+    if not os.path.exists(destdir):
+        os.makedirs(destdir)
+    for item in os.listdir(srcdir):
+        src = os.path.join(srcdir, item)
+        dest = os.path.join(destdir, item)
+        if os.path.isdir(src):
+            copy_tree(src, dest, symlinks, ignore)
+        else:
+            if not os.path.exists(dest) or os.stat(src).st_mtime - os.stat(dest).st_mtime > 1:
+                shutil.copy2(src, dest)

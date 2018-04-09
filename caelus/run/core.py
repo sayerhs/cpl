@@ -197,7 +197,7 @@ def clone_case(casedir,
     if extra_patterns:
         default_ignore += extra_patterns
     ignore_func = shutil.ignore_patterns(*default_ignore)
-    shutil.copytree(tmpl_dir, absdir, ignore=ignore_func)
+    osutils.copy_tree(tmpl_dir, absdir, ignore=ignore_func)
     _lgr.info("Cloned directory: %s; template directory: %s",
               absdir, tmpl_dir)
     return absdir
