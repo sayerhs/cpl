@@ -3,6 +3,7 @@
 
 import os
 import shutil
+import pytest
 from caelus.run import core as rcore
 
 def test_is_caelus_casedir(template_casedir):
@@ -83,7 +84,8 @@ def test_clean_casedir(test_casedir):
 
 def test_clean_casedir_nonexist(tmpdir):
     root = str(tmpdir)
-    rcore.clean_casedir(root)
+    with pytest.raises(IOError):
+        rcore.clean_casedir(root)
 
 def test_clone_casedir(tmpdir, test_casedir):
     tmpldir = str(test_casedir)
