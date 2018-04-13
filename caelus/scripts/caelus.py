@@ -392,6 +392,8 @@ class CaelusCmd(CaelusSubCmdScript):
             wlog.plot_continuity_errors = cerrors
             if include_fields:
                 wlog.plot_fields = include_fields
+            if exclude_fields:
+                wlog.skip_fields = exclude_fields
             wlog()
         clog = SolverLog(
             case_dir=osutils.abspath(args.case_dir),

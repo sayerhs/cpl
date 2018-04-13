@@ -189,6 +189,8 @@ class LogWatcher(object):
         self._needs_update = False
         #: List of fields to plot. If None, plots all available fields
         self.plot_fields = []
+        #: List of fields to skip. If None, plots all available fields
+        self.skip_fields = []
         #: Time array used for plotting data
         self.time_array = None
         #: Dictionary containing fields requested for plotting and data
@@ -220,7 +222,9 @@ class LogWatcher(object):
 
     def skip_field(self, field):
         """Helper function to determine if field must be processed"""
-        if not self.plot_fields:
+        if field in self.skip_fields:
+            return True
+        elif not self.plot_fields:
             return False
         elif field in self.plot_fields:
             return False
