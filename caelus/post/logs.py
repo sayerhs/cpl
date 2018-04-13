@@ -135,7 +135,8 @@ class LogProcessor(object):
                     if self._tick and target is not None:
                         target.send(self.solve_completed)
                         self._tick = False
-        self._save_state()
+        if self.solve_completed:
+            self._save_state()
 
     def add_rule(self, regexp, actions):
         """Add a user-defined rule for processing
