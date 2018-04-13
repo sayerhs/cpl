@@ -387,7 +387,7 @@ class SlurmQueue(HPCQueue):
         super(SlurmQueue, self).__init__(name, cml_env, **kwargs)
         cfg = config.get_config()
         opts = cfg.caelus.system
-        use_mpiexec = opts.get("slurm_use_mpiexec", False)
+        use_mpiexec = opts.get("slurm_use_mpiexec", True)
         if not use_mpiexec:
             self.prepare_mpi_cmd = self.prepare_srun_cmd
 
