@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=bare-except
 
 """\
 Caelus Tutorial Runner CLI
@@ -54,9 +55,9 @@ class TutorialRunner(CaelusScriptBase):
         task_file = args.task_file
         patterns = args.include_patterns
         for cdir in core.find_recipe_dirs(basedir, task_file):
-            for pdir in patterns:
-                if fnmatch.fnmatch(cdir, pdir):
-                    yield cdir
+            if any(fnmatch.fnmatch(cdir, pdir)
+                   for pdir in patterns):
+                yield cdir
 
     def exclude_matching_tutorials(self, basedir):
         """Yield a list of tutorials that are not excluded by user."""
@@ -64,9 +65,9 @@ class TutorialRunner(CaelusScriptBase):
         task_file = args.task_file
         patterns = args.exclude_patterns
         for cdir in core.find_recipe_dirs(basedir, task_file):
-            for pdir in patterns:
-                if not fnmatch.fnmatch(cdir, pdir):
-                    yield cdir
+            if not any(fnmatch.fnmatch(cdir, pdir)
+                       for pdir in patterns):
+                yield cdir
 
     def get_all_tutorials(self, basedir):
         """Return all tutorials by walking the directory"""
@@ -124,11 +125,10 @@ class TutorialRunner(CaelusScriptBase):
         _lgr.info("Caelus CML version: %s", cenv.version)
         with osutils.set_work_dir(args.base_dir) as wdir:
             for case in func(wdir):
-                _lgr.info("Cleaning tutorial: %s", case)
                 try:
                     self.clean_tutorial(case, cenv)
                 except:
-                    _lgr.warning("Warning: %s", case)
+                    _lgr.warning("Failed clean in: %s", case)
                     failed_tests += 1
                 test_counter += 1
         _lgr.info("Tutorial clean complete; Attempted: %d, Failed: %d",
