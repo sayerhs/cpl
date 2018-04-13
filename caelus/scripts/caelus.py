@@ -319,8 +319,13 @@ class CaelusCmd(CaelusSubCmdScript):
         cenv = cml_get_version()
         _lgr.info("Caelus CML version: %s", cenv.version)
         task_file = osutils.abspath(args.file)
-        tasks = Tasks.load(task_file)
-        tasks(env=cenv)
+        dpath = os.path.dirname(task_file)
+        if dpath and not os.path.isabs(dpath):
+            dpath = osutils.abspath(dpath)
+        dpath = dpath or os.getcwd()
+        with osutils.set_work_dir(dpath):
+            tasks = Tasks.load(os.path.basename(task_file))
+            tasks(env=cenv)
         _lgr.info("All tasks executed successfully.")
 
     def run_cmd(self):

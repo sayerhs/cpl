@@ -134,9 +134,20 @@ class TutorialRunner(CaelusScriptBase):
         _lgr.info("Tutorial clean complete; Attempted: %d, Failed: %d",
                   test_counter, failed_tests)
 
+    def check_file_argument(self):
+        """Check file argument to ensure that there is no directory provided"""
+        args = self.args
+        fname = args.task_file
+        dname = os.path.dirname(fname)
+        if dname:
+            _lgr.error("Task file pattern should not have directory component; "
+                       "use '-d' option to specify base directory")
+            self.parser.exit(1)
+
     def __call__(self):
         """Run the command"""
         super(TutorialRunner, self).__call__()
+        self.check_file_argument()
         args = self.args
         func = self.get_all_tutorials
         if args.exclude_patterns:

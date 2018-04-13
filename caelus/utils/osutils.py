@@ -103,7 +103,7 @@ def abspath(pname):
     """
     pth1 = os.path.expanduser(pname)
     pth2 = os.path.expandvars(pth1)
-    return os.path.abspath(pth2)
+    return os.path.normpath(os.path.abspath(pth2))
 
 def ensure_directory(dname):
     """Check if directory exists, if not, create it.

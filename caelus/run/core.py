@@ -137,12 +137,16 @@ def clean_casedir(casedir,
         preserve_zero (bool): If False, removes the 0 directory
     """
     base_patterns = ["system", "constant", "*.yaml", "*.yml", "*.py",
-                     "*.job"]
+                     "*.job", "README*", "readme*"]
     zero_pat = ["0"] if preserve_zero else []
     extra_pat = preserve_extra if preserve_extra else []
     ppatterns = base_patterns + zero_pat + extra_pat
 
     absdir = osutils.abspath(casedir)
+    if not is_caelus_casedir(absdir):
+        raise IOError(
+            "Not a valid case directory; refusing to perform destructive "
+            "clean operation on %s"%absdir)
     _lgr.debug("Cleaning case directory: %s", absdir)
     osutils.clean_directory(absdir, ppatterns)
 
