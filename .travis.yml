@@ -7,10 +7,10 @@ python:
 
 install:
   - pip install -r etc/requirements-test.txt
-  - pip install .
+  - pip install -e .
 
 script:
-  - pytest --cov
+  - pytest --cov=caelus
 
 after_success:
   - coveralls
