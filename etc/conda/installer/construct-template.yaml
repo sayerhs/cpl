@@ -23,9 +23,7 @@ specs:
   - caelus
 
 exclude:
-  - qt
   - sip
-  - pyqt
   - libgcc           [linux]
   - libgfortran      [linux]
   - pycairo          [linux]
