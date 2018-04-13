@@ -16,7 +16,7 @@ from ..utils.struct import Struct
 from . import core as run_cmds
 from ..post.logs import SolverLog
 from ..post.plots import CaelusPlot
-from ..config.cmlenv import cml_get_version
+from ..config import cmlenv
 from .cmd import CaelusCmd
 
 _lgr = logging.getLogger(__name__)
@@ -99,7 +99,7 @@ class Tasks(object):
         """Execute tasks """
         self._validate_tasks()
         self.case_dir = case_dir or os.getcwd()
-        self.env = env or cml_get_version()
+        self.env = env or cmlenv.cml_get_version()
         self.dep_job_id = None
         self.task_set_count = 0
         act_map = self.task_map
