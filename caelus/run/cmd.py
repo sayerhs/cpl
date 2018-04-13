@@ -125,6 +125,8 @@ class CaelusCmd(object):
         cmd_line = self.cml_exe + " " + cmd_args
         if self.runner.is_job_scheduler():
             cmd_line += " >& %s"%self.output_file
+        else:
+            self.runner.stdout = self.output_file
         return cmd_line
 
     def prepare_shell_cmd(self):
