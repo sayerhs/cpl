@@ -1,0 +1,38 @@
+# Custom conda installer for Caelus Python Library
+
+name: caelus
+version: v0.0.2
+
+install_in_dependency_order: True
+
+channels:
+  - http://repo.continuum.io/pkgs/free/
+  - file://LOCAL_CHANNEL_PATH
+
+specs:
+  - python 2.7*
+  - conda
+  - pip
+  - six
+  - nomkl
+  - numpy
+  - matplotlib
+  - pyyaml
+  - pytz
+  - jinja2
+
+exclude:
+  - qt
+  - sip
+  - pyqt
+  - libgcc           [linux]
+  - libgfortran      [linux]
+  - pycairo          [linux]
+  - cairo            [linux]
+  - gstreamer        [linux]
+  - gst-plugins-base [linux]
+
+
+company: "Applied CCM"
+
+add_to_path_default: True

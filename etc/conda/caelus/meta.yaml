@@ -1,0 +1,29 @@
+# conda-build recipe for Caelus Python Library
+
+package:
+  name: caelus
+  version: "v0.0.2"
+
+source:
+  git_rev: master
+  git_url: "../../../"
+
+requirements:
+  host:
+    - python
+    - setuptools
+
+  run:
+    - python
+    - pip
+    - six
+    - numpy
+    - matplotlib
+    - pyyaml
+    - pytz
+    - jinja2
+
+about:
+  home: https://bitbucket.org/appliedccm/cpl
+  license: "Apache License 2.0"
+  summmary: Python library for use with Caelus CML and OpenFOAM
