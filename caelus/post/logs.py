@@ -373,7 +373,7 @@ class SolverLog(object):
         """Return the residual time-history for a field"""
         if field not in self.fields:
             raise KeyError("Invalid field name: %s. Valid fields are: %s"%
-                           field, self.fields)
+                           (field, self.fields))
         fname = os.path.join(self.logs_dir, field+".dat")
         data = np.loadtxt(fname, skiprows=2)
         return data if all_cols else data[:, :3]
@@ -381,8 +381,8 @@ class SolverLog(object):
     def bounding_var(self, field):
         """Return the bounding information for a field"""
         if field not in self.bounding_fields:
-            raise KeyError("Invalid field name: %s. Valid fields are: %s",
-                           field, self.bounding_fields)
+            raise KeyError("Invalid field name: %s. Valid fields are: %s"%
+                           (field, self.bounding_fields))
         fname = os.path.join(self.logs_dir, "bounding_"+field+".dat")
         data = np.loadtxt(fname, skiprows=2)
         return data
