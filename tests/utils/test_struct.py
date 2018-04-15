@@ -4,7 +4,8 @@
 caelus.utils.struct Tests
 """
 
-from caelus.utils.struct import Struct
+import pytest
+from caelus.utils.struct import Struct, merge
 
 def test_access():
     """Test basic key/attribute access patterns"""
@@ -14,6 +15,8 @@ def test_access():
     assert obj.a == 1
     assert obj.xyz == 20
     assert obj["abc"] == 10
+    with pytest.raises(AttributeError):
+        _ = obj.ijk
 
 def test_merge_update():
     """Test dictionary merging"""
@@ -67,3 +70,14 @@ def test_yaml_output():
     obj = Struct.from_yaml(test_yaml)
     out = obj.to_yaml(default_flow_style=True)
     assert out == yaml_out_string
+
+def test_yaml_load(tmpdir):
+    yfile = tmpdir.join("test.yaml")
+    yfile.write(test_yaml)
+    obj = Struct.load_yaml(yfile)
+    assert("caelus" in obj)
+
+def test_merge():
+    obj1 = Struct.from_yaml(test_yaml)
+    obj2 = Struct.from_yaml(test_yaml)
+    merge(obj1, obj2)
