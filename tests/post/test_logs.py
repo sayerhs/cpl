@@ -32,7 +32,7 @@ def test_solverlog(tmpdir):
     logfile = casedir.join("solverLog.log")
     logfile.write(open(os.path.join(
         script_dir, "solverLog.log"), 'r').read())
-    slog = SolverLog(case_dir=cname, logfile=logfile)
+    slog = SolverLog(case_dir=cname, logfile=str(logfile))
     assert(len(slog.fields) == 5)
     vel = slog.residual("Ux")
     assert(len(vel.shape) == 2)

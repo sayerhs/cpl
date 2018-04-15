@@ -74,7 +74,7 @@ def test_yaml_output():
 def test_yaml_load(tmpdir):
     yfile = tmpdir.join("test.yaml")
     yfile.write(test_yaml)
-    obj = Struct.load_yaml(yfile)
+    obj = Struct.load_yaml(str(yfile))
     assert("caelus" in obj)
 
 def test_merge():
