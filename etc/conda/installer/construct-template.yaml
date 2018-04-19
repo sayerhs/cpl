@@ -14,7 +14,8 @@ specs:
   - conda
   - pip
   - six
-  - nomkl
+  - nomkl            [not win]
+  - mkl 2017.0.1*    [win]
   - numpy
   - matplotlib
   - pyyaml
