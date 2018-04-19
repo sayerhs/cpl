@@ -40,7 +40,14 @@ _config_banner = """\
 """
 
 def get_caelus_root():
-    """Get Caelus root directory"""
+    """Get Caelus root directory
+
+    In Unix-y systems this returns ``${HOME}/Caelus`` and on Windows it returns
+    ``C:\\Caelus``.
+
+    Returns:
+        path: Path to Caelus root directory
+    """
     sysname = platform.system().lower()
     return (pth.abspath(r'C:\Caelus')
             if "windows" in sysname else
@@ -58,7 +65,7 @@ def get_cpl_root():
 
 
 def get_appdata_dir():
-    """Return the path to the Windows APPDATA directory"""
+    """Return the path to the Windows ``APPDATA`` directory"""
     if "APPDATA" in os.environ:
         return pth.join(os.environ["APPDATA"])
     return None
@@ -172,19 +179,43 @@ def configure_logging(log_cfg=None):
             logger.debug("Logging enabled to file: %s", log_filename)
 
 def get_default_config():
-    """Return a fresh instance of the default configuration"""
+    """Return a fresh instance of the default configuration
+
+    This function does not read the ``caelus.yaml`` files on the system, and
+    returns the configurations shipped with CPL.
+
+    Returns:
+        CaelusCfg: The default configuration
+    """
     cdir = pth.dirname(__file__)
     default_yaml = pth.join(cdir, "default_config.yaml")
     cfg = CaelusCfg.load_yaml(default_yaml)
     return cfg
 
 def _cfg_manager():
-    """Configuration manager"""
+    """Configuration manager
+
+    Creates an interface to initalize configuration and return the
+    configuration instance that can be updated by the user.
+    """
     config_files = [None]
     cfg = [None]
 
     def _init_config(base_cfg=None, init_logging=True):
-        """Initialize configuration"""
+        """Initialize configuration
+
+        Loads the :func:`get_default_config` and then reads all the
+        configuration files available on the system (see
+        :func:`search_cfg_files`) and returns a fully populated configuration
+        object.
+
+        Args:
+            base_cfg (CaelusCfg): A base configuration object that is updated
+            init_logging (bool): If True, initializes logging
+
+        Returns:
+            CaelusCfg: Configuration object
+        """
         cfg = base_cfg or get_default_config()
 
         rcfiles = search_cfg_files()
@@ -213,7 +244,8 @@ def _cfg_manager():
         reset by invoking :func:`~caelus.config.config.reload_config`.
 
         Args:
-            base_cfg: A CMLEnv object to use instead of default
+            base_cfg (CaelusCfg): A base configuration object that is updated
+            init_logging (bool): If True, initializes logging
 
         Returns:
             CaelusCfg: The configuration dictionary

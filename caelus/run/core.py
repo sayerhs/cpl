@@ -74,7 +74,7 @@ def find_caelus_recipe_dirs(
 def find_recipe_dirs(basedir, action_file="caelus_tasks.yaml"):
     """Return directories that contain the action files
 
-    This behaves differently than :ref:`find_caelus_recipe_dirs` in that it
+    This behaves differently than :func:`find_caelus_recipe_dirs` in that it
     doesn't require a valid case directory. It assumes that the case
     directories are sub-directories and this task file acts on multiple
     directories.
@@ -135,6 +135,10 @@ def clean_casedir(casedir,
         preserve_extra (list): List of shell wildcard patterns to preserve
         purge_mesh (bool): If true, also removes mesh from constant/polyMesh
         preserve_zero (bool): If False, removes the 0 directory
+
+    Raises:
+        IOError: ``clean_casedir`` will refuse to remove files from a directory
+                 that is not a valid Caelus case directory.
     """
     base_patterns = ["system", "constant", "*.yaml", "*.yml", "*.py",
                      "*.job", "README*", "readme*"]
@@ -173,9 +177,8 @@ def clone_case(casedir,
         path: Absolute path to the newly cloned directory
 
     Raises:
-        IOError: If either the ``casedir`` exists or if the
-        ``template_dir`` does not exist or is not a valid Caelus case
-        directory.
+        IOError: If either the ``casedir`` exists or if the ``template_dir``
+                 does not exist or is not a valid Caelus case directory.
     """
     absdir = osutils.abspath(casedir)
     tmpl_dir = osutils.abspath(template_dir)
