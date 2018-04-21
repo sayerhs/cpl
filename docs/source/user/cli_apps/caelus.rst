@@ -87,7 +87,7 @@ This is useful for legacy workflows.
 
 .. code-block:: bash
 
-   $caelus env -h
+   $ caelus env -h
    usage: caelus env [-h] [-d WRITE_DIR]
 
    Write environment variables that can be sourced into the SHELL environment
@@ -167,6 +167,8 @@ exist. CPL will not attempt to overwrite existing directories during clone.
    directory. This option allows the user to modify the behavior and create the
    new case in a different location. Useful for use within scripts.
 
+.. _cli_apps_caelus_tasks:
+
 caelus tasks -- run tasks from a file
 -------------------------------------
 
@@ -178,7 +180,7 @@ directory. The behavior can be modified to read other file names and locations.
 
 .. code-block:: bash
 
-   $caelus tasks -h
+   $ caelus tasks -h
    usage: caelus tasks [-h] [-f FILE]
 
    Run pre-defined tasks within a case directory read from a YAML-formatted file.
@@ -204,7 +206,7 @@ current directory. This behavior can be modified to specify the case directory.
 
 .. code-block:: bash
 
-   $caelus run -h
+   $ caelus run -h
    usage: caelus run [-h] [-p] [-l LOG_FILE] [-d CASE_DIR]
                   cmd_name [cmd_args [cmd_args ...]]
 

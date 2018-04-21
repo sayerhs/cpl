@@ -12,7 +12,11 @@ python, it also requires several scientific python libraries:
    - `Pandas <http://pandas.pydata.org>`_ -- Data Analysis library
    - `Matplotlib <https://matplotlib.org>`_ -- Plotting package
 
-To ease the process of installation of all the required dependencies, this user
+The quickest way to install CPL is to use the `official installer
+<http://www.caelus-cml.com/download/>`_ provided by Applied CCM. Once installed,
+please proceed to :ref:`check_install` to learn how to use CPL.
+
+For users wishing to install CPL from the git repository, this user
 guide recommends the use of `Anaconda Python Distribution
 <http://docs.continuum.io/anaconda/index>`_. This distribution provides a
 comprehensive set of python packages necessary to get up and running with CPL.
@@ -22,8 +26,8 @@ section, but will require some Python expertise on the part of the user.
 The default installation instructions use Python v2.7. However, CPL is
 designed to work with both Python v2.7 and Python v3.x versions.
 
-Recommended Installation Process - Anaconda
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installing CPL with Anaconda Python Distribution
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install Anaconda
 ----------------
@@ -93,6 +97,9 @@ Install CPL
 
    For *editable* development versions of CPL use ``pip install -e .``
    instead.
+
+After completing this steps, please proceed to :ref:`check_install` to test that
+your installation is working properly.
 
 
 Alternate Installation -- Virtualenv
@@ -179,6 +186,21 @@ Install CPL
    #. Use ``mkvirtualenv --python=PYTHON_EXE`` to customize the python
       interpreter used by the virutal environment instead of the default python
       found in your path.
+
+.. _check_install:
+
+Check installation
+~~~~~~~~~~~~~~~~~~
+
+After installing CPL, please open a command line terminal and execute
+:program:`caelus -h` to check if the installation process was completed
+succesfully. Note that users who didn't use the installer provided by Applied
+CCM might need to activate their *environment* before the ``caelus`` command is
+available on their path. If everything was installed and configured
+successfully, users should see a detailed help message summarizing the usage of
+:program:`caelus`. At this stage, you can either learn about building
+documentation and executing unit tests (provided with CPL) in the next sections
+or skip to :ref:`configuration` to learn how to configure and use CPL.
 
 Building documentation
 ~~~~~~~~~~~~~~~~~~~~~~

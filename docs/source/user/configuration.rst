@@ -63,7 +63,55 @@ Note that only options that are being overridden need to be specified. Other
 options are populated from the system-wide or per-user configuration file if
 they exist.
 
-CPL Configuration Reference
+Checking current configuration
+------------------------------
+
+To aid debugging and troubleshooting, CPL provides a command :program:`caelus
+cfg` to dump the configuration used by the library based on all available
+configuration files. A sample usage is shown here:
+
+.. code-block:: bash
+   :linenos:
+
+   $ caelus -v cfg
+   DEBUG: Loaded configuration from files = ['/home/caelus/.caelus/caelus.yaml']
+   INFO: Caelus Python Library (CPL) v0.1.0
+   # -*- mode: yaml -*-
+   #
+   # Caelus Python Library (CPL) v0.1.0
+   #
+   # Auto-generated on: 2018-04-21 17:03:35 (UTC)
+   #
+
+   caelus:
+     cpl:
+       python_env_type: conda
+       python_env_name: caelus
+       conda_settings:
+         conda_bin: ~/anaconda/bin
+     system:
+       job_scheduler: local_mpi
+       always_use_scheduler: false
+       scheduler_defaults:
+         join_outputs: true
+         shell: /bin/bash
+         mail_opts: NONE
+     logging:
+       log_to_file: true
+       log_file: null
+     caelus_cml:
+       default: latest
+       versions: []
+
+The **final** configuration after parsing all available configuration files is
+shown in the output. If the user provides ``-v`` (verbose) flag, then the
+command also prints out all the configuration files that were detected and read
+during the initialization process. Users can also use :option:`caelus cfg
+<caelus cfg -f>` to create a configuration file with all the current settings
+using the ``-f`` option. Please see :ref:`caelus <cli_apps_caelus>` command
+documentation for details.
+
+CPL configuration reference
 ---------------------------
 
 CPL configuration files are in YAML format and must contain at least one node
@@ -94,6 +142,84 @@ below.
 
 Core library configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Python environment options
+``````````````````````````
+
+.. confval:: caelus.cpl
+
+   This section contains options to configure the python environment (either
+   Anaconda/Conda environment or virtualenv settings).
+
+.. confval:: caelus.cpl.python_env_type
+
+   Type of python environment. Currently this can be either ``conda`` or
+   ``virtualenv``.
+
+.. confval:: caelus.cpl.python_env_name
+
+   The name of the Python environment for use with CPL, e.g., ``caelus2`` or
+   ``caelus-dev``.
+
+.. confval:: caelus.cpl.conda_settings
+
+   Extra information for Conda installation on your system.
+
+System configuration
+````````````````````
+
+.. confval:: caelus.system
+
+   This section provides CPL with necessary information on the system settings,
+   particularly the queue configuration on HPC systems.
+
+.. confval:: caelus.system.job_scheduler
+
+   The type of job-scheduler available on the system and used by CPL when
+   executing CML executables on the system. By default, all parallel jobs will
+   use the job scheduler, user can configure even serial jobs (e.g., mesh
+   generation, domain decomposition and reconstruction) be submitted on queues.
+
+   =============== ============================================================
+   Name            Description
+   =============== ============================================================
+   ``local_mpi``   No scheduler, submit locally
+   ``slurm``       Use SLURM commands to submit jobs
+   =============== ============================================================
+
+.. confval:: caelus.system.always_use_scheduler
+
+   A Boolean flag indicating whether even serial jobs (e.g., mesh generation)
+   should use the queue system. This flag is useful when the user intends to
+   generate large meshes and requires access to the high-memory compute nodes on
+   the HPC system.
+
+.. confval:: caelus.system.scheduler_defaults
+
+   This section contains options that are used by default when submitting jobs
+   to an HPC queue system.
+
+   =================== =========================================================
+   Option              Description
+   =================== =========================================================
+   ``queue``           Default queue for submitting jobs
+   ``account``         Account for charging core hours
+   ``stdout``          Default file pattern for redirecting standard output
+   ``stdout``          Default file pattern for redirecting standard error
+   ``join_outputs``    Join ``stdout`` and ``stderr`` (queue specific)
+   ``mail_options``    A string indicating mail options for queue
+   ``email_address``   Address where notifications should be sent
+   ``time_limit``      Wall clock time limit
+   =================== =========================================================
+
+   .. note::
+
+      Currently, these options accept strings and are specific to the queue
+      system (e.g., SLURM or PBS Torque). So the user must consult their queue
+      system manuals for appropriate values to these options.
+
+CPL logging options
+```````````````````
 
 .. confval:: caelus.logging
 
