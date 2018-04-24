@@ -217,6 +217,14 @@ class Tasks(object):
             plot.plot_residuals_hist(plotfile=fname, fields=fields)
             _lgr.info("Residual time history saved to %s", plot_file)
 
+        try:
+            with osutils.set_work_dir(self.case_dir):
+                cname = os.path.basename(self.case_dir)
+                with open(cname+".foam", 'w') as fh:
+                    fh.write(" ")
+        except IOError:
+            _lgr.warning("Error creating .foam file")
+
     def cmd_exec_tasks(self, options):
         """Execute another task file"""
         task_file = options.task_file
