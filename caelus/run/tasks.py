@@ -189,11 +189,14 @@ class Tasks(object):
         remove_zero = options.get("remove_zero", False)
         remove_mesh = options.get("remove_mesh", False)
         preserve_extra = options.get("preserve", None)
+        remove_extra = options.get("remove_extra", None)
         _lgr.info("Cleaning case directory: %s", self.case_dir)
         run_cmds.clean_casedir(self.case_dir,
                                preserve_zero=(not remove_zero),
                                purge_mesh=remove_mesh,
                                preserve_extra=preserve_extra)
+        if remove_extra:
+            osutils.remove_files_dirs(remove_extra, self.case_dir)
 
     def cmd_process_logs(self, options):
         """Process logs for a case"""

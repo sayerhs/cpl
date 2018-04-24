@@ -175,6 +175,22 @@ def clean_directory(dirname,
             elif os.path.isfile(fpath) or os.path.islink(fpath):
                 os.remove(fpath)
 
+def remove_files_dirs(paths, basedir=None):
+    """Remove files and/or directories
+
+    Args:
+        paths (list): A list of file paths to delete (no patterns allowed)
+        basedir (path): Base directory to search
+    """
+    wdir = basedir or os.getcwd()
+    with set_work_dir(wdir):
+        for fpath in paths:
+            if os.path.exists(fpath):
+                if os.path.isdir(fpath):
+                    shutil.rmtree(fpath)
+                elif os.path.isfile(fpath) or os.path.islink(fpath):
+                    os.remove(fpath)
+
 def copy_tree(srcdir, destdir, symlinks=False, ignore_func=None):
     """Enchanced version of shutil.copytree
 
