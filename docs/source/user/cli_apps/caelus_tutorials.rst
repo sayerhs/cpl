@@ -27,6 +27,7 @@ Caelus CML distribution.
                            directory where tutorials are run
      -c CLONE_DIR, --clone-dir CLONE_DIR
                            copy tutorials from this directory
+     --clean               clean tutorials from this directory
      -f TASK_FILE, --task-file TASK_FILE
                            task file containing tutorial actions
                            (run_tutorial.yaml)
