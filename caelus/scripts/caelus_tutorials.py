@@ -85,15 +85,24 @@ class TutorialRunner(CaelusScriptBase):
 
     def clean_tutorial(self, casedir, cenv):
         """Run clean actions in tutorial task file"""""
-        args = self.args
-        with osutils.set_work_dir(casedir):
-            tasks = Tasks.load(args.task_file)
-            tasks.case_dir = casedir
+        def _exec_clean_case(tasks):
             for task in tasks.tasks:
                 for key in task:
                     if key == "clean_case":
                         tasks.cmd_clean_case(task[key])
                         break
+                    elif key == "task_set":
+                        tasks_sub = Tasks()
+                        tasks_sub.case_dir = osutils.abspath(task[key].case_dir)
+                        tasks_sub.task_file = tasks.task_file
+                        tasks_sub.tasks = task[key].tasks
+                        _exec_clean_case(tasks_sub)
+
+        args = self.args
+        with osutils.set_work_dir(casedir):
+            tasks = Tasks.load(args.task_file)
+            tasks.case_dir = casedir
+            _exec_clean_case(tasks)
 
     def run_all_tutorials(self, func):
         """Run all tutorials given by walking the directory"""
