@@ -200,7 +200,9 @@ caelus run -- run a Caelus executable in the appropriate environment
 Run a single Caelus application. The application name is the one mandatory argument.
 Additional command arguments can be specified. The behavior can be modified to enble
 parallel execution of the application. By default, the application runs from the
-current directory. This behavior can be modified to specify the case directory.
+current directory. This behavior can be modified to specify the case directory. Note:
+when passing ``cmd_args``, ``--`` is required between ``run`` and ``cmd_name`` so the
+cmd_args are parsed correctly. E.g. ``caelus run -- renumberMesh "-overwrite"``
 
 .. program:: caelus run
 
@@ -230,7 +232,7 @@ current directory. This behavior can be modified to specify the case directory.
 
 .. option:: -l log_file, --log-file log_file
 
-   By default, a log file named ``log.<application>`` is created. This option allows
+   By default, a log file named ``<application>.log`` is created. This option allows
    the user to modify the behavior and create a differently named log file.
 
 .. option:: -d casedir, --case-dir casedir
