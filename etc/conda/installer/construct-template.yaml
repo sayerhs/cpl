@@ -1,7 +1,7 @@
 # Custom conda installer for Caelus Python Library
 
 name: caelus-conda
-version: v0.0.2
+version: v0.1.0
 
 install_in_dependency_order: True
 
