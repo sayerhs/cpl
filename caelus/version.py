@@ -24,6 +24,8 @@ def git_describe():
         out, _ = task.communicate()
         if task.poll() == 0:
             git_ver = out.strip().decode('ascii')
+    except:
+        pass
     finally:
         os.chdir(cwd)
     return git_ver
