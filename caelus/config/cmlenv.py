@@ -223,10 +223,27 @@ class CMLEnv(object):
         senv['BUILD_OPTION'] = self._build_option
         senv['EXTERNAL_DIR'] = os.path.join(
             self.project_dir, "external")
-        senv['PATH'] = (
-            self.bin_dir + os.pathsep +
-            self.mpi_bindir + os.pathsep +
-            os.environ.get('PATH'))
+        if ostype == "windows":
+            win_ext_dir = os.path.normpath(os.path.join(
+                self.project_dir, "external", "windows"))
+            mingw_bin_dir = os.path.normpath(os.path.join(
+                win_ext_dir, "mingw", "bin"))
+            term_bin_dir = os.path.normpath(os.path.join(
+                win_ext_dir, "terminal", "bin"))
+            ansicon_bin_dir = os.path.normpath(os.path.join(
+                win_ext_dir, "ansicon", "x64"))
+            senv['PATH'] = (
+                self.bin_dir + os.pathsep +
+                self.mpi_bindir + os.pathsep +
+                mingw_bin_dir + os.pathsep +
+                term_bin_dir + os.pathsep +
+                ansicon_bin_dir + os.pathsep +
+                os.environ.get('PATH'))
+        else:
+            senv['PATH'] = (
+                self.bin_dir + os.pathsep +
+                self.mpi_bindir + os.pathsep +
+                os.environ.get('PATH'))
         senv['MPI_BUFFER_SIZE'] = "20000000"
         senv['OPAL_PREFIX'] = self.mpi_dir
 

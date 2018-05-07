@@ -38,9 +38,26 @@ def populate_environment(cenv):
     for evar in varnames:
         env[evar] = cenv.environ[evar]
 
-    env["PATH"] = (
-        cenv.bin_dir + os.pathsep +
-        cenv.mpi_bindir + os.pathsep + "$PATH")
+    if ostype == "windows":
+        win_ext_dir = os.path.normpath(os.path.join(
+            cenv.project_dir, "external", "windows"))
+        mingw_bin_dir = os.path.normpath(os.path.join(
+            win_ext_dir, "mingw", "bin"))
+        term_bin_dir = os.path.normpath(os.path.join(
+            win_ext_dir, "terminal", "bin"))
+        ansicon_bin_dir = os.path.normpath(os.path.join(
+            win_ext_dir, "ansicon", "x64"))
+        env['PATH'] = (
+            cenv.bin_dir + os.pathsep +
+            cenv.mpi_bindir + os.pathsep +
+            mingw_bin_dir + os.pathsep +
+            term_bin_dir + os.pathsep +
+            ansicon_bin_dir + os.pathsep + "$PATH")
+    else:
+        env["PATH"] = (
+            cenv.bin_dir + os.pathsep +
+            cenv.mpi_bindir + os.pathsep + "$PATH")
+
     lib_path = ("LD_LIBRARY_PATH" if ostype != "darwin"
                 else "DYLD_FALLBACK_LIBRARY_PATH")
     env[lib_path] = (
