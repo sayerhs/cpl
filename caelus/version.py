@@ -8,12 +8,13 @@ import os
 import subprocess
 import shlex
 
-_basic_version = "v0.0.2"
+_basic_version = "v0.1.0"
 
 def git_describe():
     """Get version from git-describe"""
     dirname = os.path.dirname(__file__)
     cwd = os.getcwd()
+    git_ver = _basic_version
     try:
         os.chdir(dirname)
         cmdline = "git describe --tags --dirty"
@@ -21,9 +22,10 @@ def git_describe():
         task = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         out, _ = task.communicate()
-        git_ver = _basic_version
         if task.poll() == 0:
             git_ver = out.strip().decode('ascii')
+    except:
+        pass
     finally:
         os.chdir(cwd)
     return git_ver
