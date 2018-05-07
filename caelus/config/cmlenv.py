@@ -227,7 +227,7 @@ class CMLEnv(object):
             win_ext_dir = os.path.normpath(os.path.join(
                 self.project_dir, "external", "windows"))
             mingw_bin_dir = os.path.normpath(os.path.join(
-                win_ext_dir, "mingw", "bin"))
+                win_ext_dir, "mingw64", "bin"))
             term_bin_dir = os.path.normpath(os.path.join(
                 win_ext_dir, "terminal", "bin"))
             ansicon_bin_dir = os.path.normpath(os.path.join(
