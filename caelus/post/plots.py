@@ -307,6 +307,7 @@ class LogWatcher(object):
                 plt.title(title_str%tstep)
                 fig.canvas.draw()
                 fig.canvas.flush_events()
+                plt.pause(0.00001)
             else:
                 self._need_init = False
                 plt.interactive(True)
@@ -320,3 +321,4 @@ class LogWatcher(object):
                     line, = ax.plot(tarr, val)
                     lines[key] = line
                 plt.show()
+                plt.pause(0.00001)
