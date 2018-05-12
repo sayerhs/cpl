@@ -10,6 +10,7 @@ Defines the base classes that are used to build the CLI scripts.
 import logging
 import argparse
 from ..config.config import get_config, configure_logging, rcfiles_loaded
+from ..config import cmlenv
 from ..version import version
 
 _lgr = logging.getLogger(__name__)
@@ -57,6 +58,9 @@ class CaelusScriptBase(object):
         parser.add_argument(
             '--version', action='version',
             version="Caelus Python Library (CPL) %s"%version)
+        parser.add_argument(
+            '--cml-version', default=None,
+            help="CML version used for this invocation")
         verbosity = parser.add_mutually_exclusive_group(required=False)
         verbosity.add_argument(
             '--quiet', action='store_true',
@@ -79,6 +83,14 @@ class CaelusScriptBase(object):
         self.setup_logging(log_to_file, log_file, verbosity, args.quiet)
         _lgr.info("Caelus Python Library (CPL) %s", version)
 
+        if args.cml_version is not None:
+            try:
+                cmlenv.cml_get_version(args.cml_version)
+            except (RuntimeError, KeyError):
+                _lgr.error("Invalid CML version specified: %s",
+                           args.cml_version)
+                self.parser.exit(1)
+            self.cfg.caelus.caelus_cml.default = args.cml_version
 
     def setup_logging(self, log_to_file=True,
                       log_file=None,
