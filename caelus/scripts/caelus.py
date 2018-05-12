@@ -143,7 +143,7 @@ class CaelusCmd(CaelusSubCmdScript):
         subparsers = self.subparsers
         cpl_config = subparsers.add_parser(
             "cfg",
-            description="Dump CPL configuration",
+            description="dump CPL configuration",
             help="Dump CPL configuration")
         env = subparsers.add_parser(
             "env",
@@ -158,7 +158,7 @@ class CaelusCmd(CaelusSubCmdScript):
             "tasks",
             description="Run pre-defined tasks within a case directory "
             "read from a YAML-formatted file.",
-            help="Run tasks from file")
+            help="run tasks from file")
         run = subparsers.add_parser(
             "run",
             description="Run a Caelus executable in the correct environment",
