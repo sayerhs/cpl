@@ -1,5 +1,9 @@
 language: python
 
+os:
+  - linux
+  - osx
+
 python:
   - "2.7"
   - "3.5"
@@ -18,3 +22,4 @@ after_success:
 branches:
   only:
     - master
+    - dev
