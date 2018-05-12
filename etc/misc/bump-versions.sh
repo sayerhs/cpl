@@ -14,5 +14,5 @@ FILES=(setup.py
       )
 
 for fname in ${FILES[@]} ; do
-    sed -i '' -e 's/0.0.2/0.1.0/' ${fname}
+    sed -i '' -e 's/0.1.0/0.1.1/' ${fname}
 done

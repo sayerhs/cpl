@@ -8,7 +8,7 @@ import os
 import subprocess
 import shlex
 
-_basic_version = "v0.1.0"
+_basic_version = "v0.1.1"
 
 def git_describe():
     """Get version from git-describe"""
