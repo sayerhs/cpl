@@ -276,10 +276,16 @@ class CaelusCmd(CaelusSubCmdScript):
             help="path to the case directory")
         clean.add_argument(
             '-m', '--clean-mesh', action='store_true',
-            help="remove polyMesh directory")
+            help="remove polyMesh directory (default: no)")
         clean.add_argument(
             '-z', '--clean-zero', action='store_true',
-            help="remove 0 directory")
+            help="remove 0 directory (default: no)")
+        clean.add_argument(
+            '-t', '--clean-time-dirs', action='store_true',
+            help="remove time directories (default: no)")
+        clean.add_argument(
+            '--clean-processors', action='store_true',
+            help="clean processor directories (default: no)")
         clean.add_argument(
             '-p', '--preserve', action='append',
             help="shell wildcard patterns of extra files to preserve")
@@ -446,8 +452,12 @@ class CaelusCmd(CaelusSubCmdScript):
         args = self.args
         purge_mesh = args.clean_mesh
         preserve_zero = (not args.clean_zero)
+        preserve_times = (not args.clean_time_dirs)
+        preserve_processors = (not args.clean_processors)
         clean_casedir(args.case_dir,
                       preserve_zero=preserve_zero,
+                      preserve_times=preserve_times,
+                      preserve_processors=preserve_processors,
                       purge_mesh=purge_mesh,
                       preserve_extra=args.preserve)
         _lgr.info("Cleaned case directory successfully.")

@@ -186,13 +186,19 @@ class Tasks(object):
 
     def cmd_clean_case(self, options):
         """Clean a case directory"""
-        remove_zero = options.get("remove_zero", False)
-        remove_mesh = options.get("remove_mesh", False)
+        purge_all = options.get("purge_all", False)
+        purge_generated = options.get("purge_generated", purge_all)
+        remove_zero = options.get("remove_zero", purge_all)
+        remove_mesh = options.get("remove_mesh", purge_all)
+        remove_times = options.get("remove_time_dirs", purge_generated)
+        remove_processors = options.get("remove_processor", purge_generated)
         preserve_extra = options.get("preserve", None)
         remove_extra = options.get("remove_extra", None)
         _lgr.info("Cleaning case directory: %s", self.case_dir)
         run_cmds.clean_casedir(self.case_dir,
                                preserve_zero=(not remove_zero),
+                               preserve_times=(not remove_times),
+                               preserve_processors=(not remove_processors),
                                purge_mesh=remove_mesh,
                                preserve_extra=preserve_extra)
         if remove_extra:
