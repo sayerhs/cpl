@@ -121,6 +121,8 @@ def clean_polymesh(casedir,
 def clean_casedir(casedir,
                   preserve_extra=None,
                   preserve_zero=True,
+                  preserve_times=False,
+                  preserve_processors=False,
                   purge_mesh=False):
     """Clean a Caelus case directory.
 
@@ -135,6 +137,8 @@ def clean_casedir(casedir,
         preserve_extra (list): List of shell wildcard patterns to preserve
         purge_mesh (bool): If true, also removes mesh from constant/polyMesh
         preserve_zero (bool): If False, removes the 0 directory
+        preserve_times (bool): If False, removes the time directories
+        preserve_processors (bool): If False, removes processor directories
 
     Raises:
         IOError: ``clean_casedir`` will refuse to remove files from a directory
@@ -143,8 +147,12 @@ def clean_casedir(casedir,
     base_patterns = ["system", "constant", "*.yaml", "*.yml", "*.py",
                      "*.job", "README*", "readme*"]
     zero_pat = ["0"] if preserve_zero else []
+    time_pat = (["[1-9]*", "0.[0-9]*", "-[0-9]*"]
+                if preserve_times else [])
+    proc_pat = ["processor*"] if preserve_processors else []
     extra_pat = preserve_extra if preserve_extra else []
-    ppatterns = base_patterns + zero_pat + extra_pat
+    ppatterns = (base_patterns + zero_pat + extra_pat
+                 + time_pat + proc_pat)
 
     absdir = osutils.abspath(casedir)
     if not is_caelus_casedir(absdir):
