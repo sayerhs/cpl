@@ -50,19 +50,22 @@ def populate_environment(cenv):
         env['PATH'] = (
             cenv.bin_dir + os.pathsep +
             cenv.mpi_bindir + os.pathsep +
+            cenv.user_bindir + os.pathsep +
             mingw_bin_dir + os.pathsep +
             term_bin_dir + os.pathsep +
-            ansicon_bin_dir + os.pathsep + "$PATH")
+            ansicon_bin_dir + os.pathsep + "%PATH%")
     else:
         env["PATH"] = (
             cenv.bin_dir + os.pathsep +
-            cenv.mpi_bindir + os.pathsep + "$PATH")
+            cenv.mpi_bindir + os.pathsep +
+            cenv.user_bindir + os.pathsep + "$PATH")
 
     lib_path = ("LD_LIBRARY_PATH" if ostype != "darwin"
                 else "DYLD_FALLBACK_LIBRARY_PATH")
     env[lib_path] = (
         cenv.lib_dir + os.pathsep +
         cenv.mpi_libdir + os.pathsep +
+        cenv.user_bindir + os.pathsep +
         "$%s"%lib_path)
     env["OMP"] = False
     env["MPI_LIB_PATH"] = cenv.mpi_libdir

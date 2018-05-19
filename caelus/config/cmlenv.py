@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=attribute-defined-outside-init
+# pylint: disable=attribute-defined-outside-init,no-else-return
 
 """\
 Caelus CML Environment Manager
@@ -213,6 +213,34 @@ class CMLEnv(object):
                 os.path.join(self.mpi_dir, "bin"))
         return self._mpi_bindir
 
+    @property
+    def user_dir(self):
+        """Return the user directory"""
+        if not hasattr(self, "_user_dir"):
+            udir = self._cfg.get("user_dir", None)
+            if not udir:
+                udir = os.path.join(
+                    self.root, "%s-%s"%(osutils.username(), self.version))
+            self._user_dir = udir
+            self._user_build_dir = os.path.join(
+                udir, "platforms", self._build_option)
+
+    @property
+    def user_libdir(self):
+        """Return path to user lib directory"""
+        _ = self.user_dir
+        return os.path.join(self._user_build_dir, "lib")
+
+    @property
+    def user_bindir(self):
+        """Return path to user bin directory"""
+        _ = self.user_dir
+        if osutils.ostype() == "windows":
+            return (self.user_libdir +
+                    os.path.join(self._user_build_dir, "bin"))
+        else:
+            return os.path.join(self._user_build_dir, "bin")
+
     def _generate_environment(self):
         """Return an environment suitable for executing programs"""
         ostype = osutils.ostype()
@@ -235,6 +263,7 @@ class CMLEnv(object):
             senv['PATH'] = (
                 self.bin_dir + os.pathsep +
                 self.mpi_bindir + os.pathsep +
+                self.user_bindir + os.pathsep +
                 mingw_bin_dir + os.pathsep +
                 term_bin_dir + os.pathsep +
                 ansicon_bin_dir + os.pathsep +
@@ -243,6 +272,7 @@ class CMLEnv(object):
             senv['PATH'] = (
                 self.bin_dir + os.pathsep +
                 self.mpi_bindir + os.pathsep +
+                self.user_bindir + os.pathsep +
                 os.environ.get('PATH'))
         senv['MPI_BUFFER_SIZE'] = "20000000"
         senv['OPAL_PREFIX'] = self.mpi_dir
@@ -253,6 +283,7 @@ class CMLEnv(object):
         senv[lib_var] = (
             self.lib_dir + os.pathsep +
             self.mpi_libdir + os.pathsep +
+            self.user_libdir + os.pathsep +
             os.environ.get(lib_var, ''))
         return senv
 
