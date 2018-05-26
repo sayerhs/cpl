@@ -216,8 +216,10 @@ class LogWatcher(object):
             # Quell warning issued by matplotlib during the first timestep for
             # axis limits
             warnings.simplefilter("ignore", UserWarning)
+            print("Starting residuals monitor; Ctrl+C to quit...")
             self.logprocessor.watch_file(self.plot_residuals())
-            six.moves.input("Run has completed. Hit <Enter> to quit: ")
+            if self.logprocessor.solve_completed:
+                six.moves.input("Run has completed. Hit <Enter> to quit: ")
             plt.close()
 
     def skip_field(self, field):

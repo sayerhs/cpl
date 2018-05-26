@@ -101,6 +101,9 @@ class LogProcessor(object):
         #: Flag indicating one timestep
         self._tick = False
 
+        #: Flag indicating user exit (Ctrl+C) in watch mode
+        self._user_exit = False
+
     def __call__(self):
         """Process log file"""
         pat_builtin = [grep(*x) for x in self._init_builtins()]
@@ -122,10 +125,17 @@ class LogProcessor(object):
                                  updates
         """
         import time
+        import signal
+
+        def _signal_handler(*args):
+            """Handle quit signal for plot watching"""
+            self._user_exit = True
+
+        signal.signal(signal.SIGINT, _signal_handler)
         pat_builtin = [grep(*x) for x in self._init_builtins()]
         patterns = pat_builtin + self._user_rules
         with open(self.logfile) as fh:
-            while not self.solve_completed:
+            while (not self.solve_completed) and (not self._user_exit):
                 line = fh.readline()
                 if not line:
                     time.sleep(wait_time)
