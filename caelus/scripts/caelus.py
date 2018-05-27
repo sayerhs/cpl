@@ -287,7 +287,7 @@ class CaelusCmd(CaelusSubCmdScript):
             '-t', '--clean-time-dirs', action='store_true',
             help="remove time directories (default: no)")
         clean.add_argument(
-            '--clean-processors', action='store_true',
+            '-P', '--clean-processors', action='store_true',
             help="clean processor directories (default: no)")
         clean.add_argument(
             '-p', '--preserve', action='append',

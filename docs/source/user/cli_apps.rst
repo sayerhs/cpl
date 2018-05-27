@@ -34,6 +34,10 @@ are described below:
 
    Disable logging messages from the script to a log file.
 
+.. option:: --cml-version
+
+   Specify CML version to use for this particular invocation of CPL command.
+
 .. option:: --cli-logs log_file
 
    Customize the filename used to capture log messages during execution. This

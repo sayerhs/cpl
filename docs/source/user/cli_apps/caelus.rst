@@ -209,7 +209,7 @@ cmd_args are parsed correctly. E.g. ``caelus run -- renumberMesh "-overwrite"``
 .. code-block:: bash
 
    $ caelus run -h
-   usage: caelus run [-h] [-p] [-l LOG_FILE] [-d CASE_DIR] [-m M]
+   usage: caelus run [-h] [-p] [-l LOG_FILE] [-d CASE_DIR] [-m MACHINEFILE]
                      cmd_name [cmd_args [cmd_args ...]]
 
    Run a Caelus executable in the correct environment
@@ -225,7 +225,8 @@ cmd_args are parsed correctly. E.g. ``caelus run -- renumberMesh "-overwrite"``
                            filename to redirect command output
      -d CASE_DIR, --case-dir CASE_DIR
                            path to the case directory
-     -m M, --machinefile M  machine file for distributed runs (local_mpi only)
+     -m MACHINEFILE, --machinefile MACHINEFILE
+                           machine file for distributed runs (local_mpi only)
 
 .. option:: -p, --parallel
 
@@ -235,12 +236,14 @@ cmd_args are parsed correctly. E.g. ``caelus run -- renumberMesh "-overwrite"``
 
    File containing nodes used for a distributed MPI run. This option is ignored
    if :confval:`job_scheduler <caelus.cpl.system.job_scheduler>` is not
-   ``local_mpi``. This option has no effect if the parallel option is not used.
+   ``local_mpi``. This option has no effect if the :option:`parallel option
+   <caelus run -p>` is not used.
 
 .. option:: -l log_file, --log-file log_file
 
-   By default, a log file named ``<application>.log`` is created. This option allows
-   the user to modify the behavior and create a differently named log file.
+   By default, a log file named ``<application>.log`` is created. This option
+   allows the user to modify the behavior and create a differently named log
+   file.
 
 .. option:: -d casedir, --case-dir casedir
 
@@ -310,7 +313,8 @@ directory.
 .. option:: -w, --watch
 
    This option allows the user to dynamically monitor residuals for a log file
-   from a currently run.
+   from an ongoing run. To exit before the completion of the run, hit
+   ``Ctrl+C``.
 
 .. option:: -i include_fields, --include-fields include_fields
 
@@ -347,18 +351,22 @@ additional files and directories.
 .. code-block:: bash
 
    $ caelus clean -h
-   usage: caelus clean [-h] [-d CASE_DIR] [-m] [-z] [-p PRESERVE]
+   usage: caelus clean [-h] [-d CASE_DIR] [-m] [-z] [-t] [-P] [-p PRESERVE]
 
    Clean a case directory
 
    optional arguments:
-       -h, --help         show this help message and exit
-       -d CASE_DIR, --case-dir CASE_DIR
-                          path to the case directory
-       -m, --clean-mesh   remove polyMesh directory
-       -z, --clean-zero   remove 0 directory
-       -p PRESERVE, --preserve PRESERVE
-                          shell wildcard patterns of extra files to preserve
+     -h, --help            show this help message and exit
+     -d CASE_DIR, --case-dir CASE_DIR
+                           path to the case directory
+     -m, --clean-mesh      remove polyMesh directory (default: no)
+     -z, --clean-zero      remove 0 directory (default: no)
+     -t, --clean-time-dirs
+                           remove time directories (default: no)
+     -P, --clean-processors
+                           clean processor directories (default: no)
+     -p PRESERVE, --preserve PRESERVE
+                           shell wildcard patterns of extra files to preserve
 
 .. option:: -d, case_dir, --case-dir case_dir
 
@@ -374,6 +382,16 @@ additional files and directories.
 
    By default, the ``0`` files are not cleaned. This option allows
    the user to modify the behavior and remove the ``0`` directory.
+
+.. option:: -t, --clean-time-dirs
+
+   Remove time directories from the case directory. Note, this only removes the
+   reconstructed time directories and not the decomposed directores that exist
+   within ``processor*`` directories.
+
+.. option:: -P, --clean-processors
+
+   Remove decomposed ``processor*`` directories from the case directory.
 
 .. option:: -p preserve_pattern, --preserve preserve_pattern
 
