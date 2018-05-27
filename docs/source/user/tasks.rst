@@ -110,6 +110,13 @@ executable. Several other options are available and are documented below. Exampl
    ``hostfile`` options). As with :taskopt:`cmd_args <run_command.cmd_args>`,
    enclose the options within quotes.
 
+   .. code-block:: yaml
+
+      - run_command:
+          cmd_name: pimpleSolver
+          parallel: true
+          mpi_extra_args: "--hostfile my_hostfile"
+
 copy_files -- Copy files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -179,12 +186,32 @@ the :file:`0/` directory. For example,
 .. taskopt:: clean_case.remove_zero
 
    Boolean flag indicating whether the :file:`0/` directory should be removed.
-   The default value is ``False``.
+   The default value is ``no``.
 
 .. taskopt:: clean_case.remove_mesh
 
    Boolean flag indicating whether the :file:`constant/polyMesh` directory
-   should be removed. The default value is ``False``.
+   should be removed. The default value is ``no``.
+
+.. taskopt:: clean_case.remove_time_dirs
+
+   Boolean flag indicating whether time directories from a previous run should
+   be removed. The default value is ``no``.
+
+.. taskopt:: clean_case.remove_processors
+
+   Boolean flag indicating whether processor directories from a previous run
+   should be removed. The default value is ``no``.
+
+.. taskopt:: clean_case.purge_generated
+
+   A Boolean flag when enabled will set ``remove_time_dirs`` and
+   ``remove_processors`` to ``yes``.
+
+.. taskopt:: clean_case.purge_all
+
+   A shortcut to set ``remove_zero``, ``remove_mesh``, ``remove_time_dirs`` and
+   ``remove_processors`` to ``yes``.
 
 .. taskopt:: clean_case.preserve
 
