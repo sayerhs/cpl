@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=missing-docstring,redefined-outer-name
 
+import sys
 import os
+import pytest
 from caelus.io.printer import foam_writer
+
+pytestmark = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="Formatting differences with numpy on windows")
 
 def check_text(left, right):
     """Check output for formatting
