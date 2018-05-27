@@ -12,6 +12,7 @@ scipy
 pandas
 matplotlib
 PyYAML
+ply
 pytz
 Jinja2
 #### Additional packages for development

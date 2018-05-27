@@ -20,6 +20,7 @@ requirements:
     - numpy
     - matplotlib
     - pyyaml
+    - ply
     - pytz
     - jinja2
 

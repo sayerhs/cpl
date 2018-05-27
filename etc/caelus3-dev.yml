@@ -19,6 +19,7 @@ dependencies:
   - pandas
   - matplotlib
   - pyyaml
+  - ply
   - pytz
   - jinja2
   - pytest
