@@ -4,7 +4,6 @@ environment:
 
   matrix:
     - PYTHON: "C:\\Python27"
-    - PYTHON: "C:\\Python35"
     - PYTHON: "C:\\Python36"
 
 build: off
@@ -12,8 +11,8 @@ build: off
 install:
   # update path to use installed pip
   - set PATH=%PYTHON%\\scripts;%PATH%
-  - "pip install -r etc\\requirements-test.txt"
-  - "pip install -e ."
+  - "python -m pip install -r etc\\requirements-test.txt"
+  - "python -m pip install -e ."
 
 test_script:
   - py.test
