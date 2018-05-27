@@ -19,6 +19,7 @@ import os
 import glob
 import itertools
 import logging
+import json
 from distutils.version import LooseVersion
 from . import config
 from ..utils import osutils
@@ -135,6 +136,8 @@ class CMLEnv(object):
         else:
             self._build_dir = build_dir
             self._build_option = os.path.basename(build_dir)
+
+        self._process_scons_env_file()
 
     def __repr__(self):
         return "<Caelus v%s>"%(self.version)
@@ -274,8 +277,10 @@ class CMLEnv(object):
                 self.mpi_bindir + os.pathsep +
                 self.user_bindir + os.pathsep +
                 os.environ.get('PATH'))
-        senv['MPI_BUFFER_SIZE'] = "20000000"
-        senv['OPAL_PREFIX'] = self.mpi_dir
+        senv['MPI_BUFFER_SIZE'] = self._scons_env.get(
+            'MPI_BUFFER_SIZE', "20000000")
+        senv['OPAL_PREFIX'] = self._scons_env.get(
+            'OPAL_PREFIX', self.mpi_dir)
 
         lib_var = 'LD_LIBRARY_PATH'
         if ostype == "darwin":
@@ -293,6 +298,24 @@ class CMLEnv(object):
         if not hasattr(self, "_environ"):
             self._environ = self._generate_environment()
         return self._environ
+
+    def _process_scons_env_file(self):
+        """Load the CML json file and determine configuration"""
+        self._scons_env = {}
+        env_file = os.path.join(self.project_dir, "etc", "cml_env.json")
+        if os.path.exists(env_file):
+            env_all = json.load(open(env_file, 'r'))
+            env = env_all.get(self._build_option, None)
+            if env is not None:
+                self._scons_env = env
+                self._mpi_libdir = env['MPI_LIB_PATH']
+                self._mpi_dir = os.path.dirname(self._mpi_libdir)
+                self._user_dir = env['CAELUS_USER_DIR']
+                self._user_build_dir = os.path.dirname(
+                    env['CAELUS_USER_APPBIN'])
+                _lgr.debug(
+                    "CML build environment loaded from SCons: %s (%s)",
+                           env_file, self._build_option)
 
 def _cml_env_mgr():
     """Caelus CML versions manager"""
