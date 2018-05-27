@@ -209,8 +209,8 @@ cmd_args are parsed correctly. E.g. ``caelus run -- renumberMesh "-overwrite"``
 .. code-block:: bash
 
    $ caelus run -h
-   usage: caelus run [-h] [-p] [-l LOG_FILE] [-d CASE_DIR]
-                  cmd_name [cmd_args [cmd_args ...]]
+   usage: caelus run [-h] [-p] [-l LOG_FILE] [-d CASE_DIR] [-m M]
+                     cmd_name [cmd_args [cmd_args ...]]
 
    Run a Caelus executable in the correct environment
 
@@ -225,10 +225,17 @@ cmd_args are parsed correctly. E.g. ``caelus run -- renumberMesh "-overwrite"``
                            filename to redirect command output
      -d CASE_DIR, --case-dir CASE_DIR
                            path to the case directory
+     -m M, --machinefile M  machine file for distributed runs (local_mpi only)
 
 .. option:: -p, --parallel
 
    Run the executable in parallel
+
+.. option:: -m, --machinefile
+
+   File containing nodes used for a distributed MPI run. This option is ignored
+   if :confval:`job_scheduler <caelus.cpl.system.job_scheduler>` is not
+   ``local_mpi``. This option has no effect if the parallel option is not used.
 
 .. option:: -l log_file, --log-file log_file
 

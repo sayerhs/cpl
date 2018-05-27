@@ -210,6 +210,7 @@ System configuration
    ``mail_options``    A string indicating mail options for queue
    ``email_address``   Address where notifications should be sent
    ``time_limit``      Wall clock time limit
+   ``machinefile``     File used in ``mpirun -machinefile <FILE>``
    =================== =========================================================
 
    .. note::

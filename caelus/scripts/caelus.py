@@ -232,6 +232,9 @@ class CaelusCmd(CaelusSubCmdScript):
             '-d', '--case-dir', default=os.getcwd(),
             help="path to the case directory")
         run.add_argument(
+            '-m', '--machinefile', default=None,
+            help="machine file for distributed runs (local_mpi only)")
+        run.add_argument(
             'cmd_name',
             help="name of the Caelus executable")
         run.add_argument(
@@ -366,10 +369,19 @@ class CaelusCmd(CaelusSubCmdScript):
         _lgr.info("Caelus CML version: %s", cenv.version)
         if args.parallel:
             cml_cmd.num_mpi_ranks = get_mpi_size(args.case_dir)
+            if args.machinefile is not None:
+                if not os.path.exists(args.machinefile):
+                    _lgr.error("Cannot find machine file: %s",
+                               args.machinefile)
+                    self.parser.exit(1)
+                if cml_cmd.runner.is_job_scheduler():
+                    _lgr.warning("Ignoring machine file with scheduler")
+                cml_cmd.runner.machinefile = args.machinefile
             _lgr.info("Executing %s in parallel on %d ranks",
                       args.cmd_name, cml_cmd.num_mpi_ranks)
         else:
             _lgr.info("Executing %s in serial mode", args.cmd_name)
+
         status = cml_cmd()
         if status != 0:
             _lgr.error("Error executing command; see %s for details",

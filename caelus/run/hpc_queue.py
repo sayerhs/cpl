@@ -271,10 +271,13 @@ class ParallelJob(SerialJob):
     def prepare_mpi_cmd(self):
         """Prepare the MPI invocation"""
         num_mpi_ranks = getattr(self, "num_ranks", 1)
+        machinefile = getattr(self, "machinefile", None)
         cmd_tmpl = ("mpiexec -localonly %d "
                     if osutils.ostype() == "windows"
                     else "mpiexec -np %d ")
         mpi_cmd = cmd_tmpl%num_mpi_ranks
+        if machinefile:
+            mpi_cmd += mpi_cmd + " -machinefile %s "%machinefile
         return mpi_cmd + getattr(self, "mpi_extra_args", "")
 
 class SlurmQueue(HPCQueue):
