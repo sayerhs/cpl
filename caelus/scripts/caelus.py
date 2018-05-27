@@ -437,7 +437,12 @@ class CaelusCmd(CaelusSubCmdScript):
                 wlog.plot_fields = include_fields
             if exclude_fields:
                 wlog.skip_fields = exclude_fields
-            wlog()
+            user_exit = wlog()
+
+            # Do not continue if the user aborted using "Ctrl+C"
+            if user_exit:
+                self.parser.exit(1)
+
         clog = SolverLog(
             case_dir=osutils.abspath(args.case_dir),
             logs_dir=args.logs_dir,

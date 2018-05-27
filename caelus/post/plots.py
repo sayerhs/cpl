@@ -217,10 +217,11 @@ class LogWatcher(object):
             # axis limits
             warnings.simplefilter("ignore", UserWarning)
             print("Starting residuals monitor; Ctrl+C to quit...")
-            self.logprocessor.watch_file(self.plot_residuals())
+            user_exit = self.logprocessor.watch_file(self.plot_residuals())
             if self.logprocessor.solve_completed:
                 six.moves.input("Run has completed. Hit <Enter> to quit: ")
             plt.close()
+            return user_exit
 
     def skip_field(self, field):
         """Helper function to determine if field must be processed"""

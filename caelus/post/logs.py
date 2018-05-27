@@ -147,6 +147,7 @@ class LogProcessor(object):
                         self._tick = False
         if self.solve_completed:
             self._save_state()
+        return self._user_exit
 
     def add_rule(self, regexp, actions):
         """Add a user-defined rule for processing
