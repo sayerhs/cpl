@@ -74,34 +74,6 @@ for debugging.
    overrides the behavior and will not create backups of existing configurations
    before overwriting the file.
 
-caelus env -- write shell environment file
-------------------------------------------
-
-Write a shell environment file to be sourced/called by the platform specific
-shell. This will be a combination of all the options loaded from the
-configuration files described in :ref:`configuration <configuration>` section. 
-The output can be redirected to a directory by using the :option:`caelus env -d` option.
-This is useful for legacy workflows.
-
-.. program:: caelus env
-
-.. code-block:: bash
-
-   $ caelus env -h
-   usage: caelus env [-h] [-d WRITE_DIR]
-
-   Write environment variables that can be sourced into the SHELL environment
-
-   optional arguments:
-     -h, --help            show this help message and exit
-     -d WRITE_DIR, --write-dir WRITE_DIR
-                           Path where the environment files are written
-
-.. option:: -d write_dir, --write_dir write_dir
-
-    Save the environment file to the ``write_dir`` instead of the current working
-    directory
-
 caelus clone -- Clone a case directory
 --------------------------------------
 

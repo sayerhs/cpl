@@ -22,103 +22,6 @@ from ..post.plots import CaelusPlot, LogWatcher
 
 _lgr = logging.getLogger(__name__)
 
-def populate_environment(cenv):
-    """Populate environment used for sourcing in shells"""
-
-    ostype = osutils.ostype()
-    varnames = """project project_dir caelus_project_dir
-        build_option external_dir mpi_buffer_size
-        opal_prefix""".upper().split()
-
-    env = OrderedDict()
-    env["PROJECT_NAME"] = "Caelus"
-    env["PROJECT_VERSION"] = cenv.version
-    env["PROJECT_VER"] = cenv.version
-
-    for evar in varnames:
-        env[evar] = cenv.environ[evar]
-
-    if ostype == "windows":
-        win_ext_dir = os.path.normpath(os.path.join(
-            cenv.project_dir, "external", "windows"))
-        mingw_bin_dir = os.path.normpath(os.path.join(
-            win_ext_dir, "mingw64", "bin"))
-        term_bin_dir = os.path.normpath(os.path.join(
-            win_ext_dir, "terminal", "bin"))
-        ansicon_bin_dir = os.path.normpath(os.path.join(
-            win_ext_dir, "ansicon", "x64"))
-        env['PATH'] = (
-            cenv.bin_dir + os.pathsep +
-            cenv.mpi_bindir + os.pathsep +
-            cenv.user_bindir + os.pathsep +
-            mingw_bin_dir + os.pathsep +
-            term_bin_dir + os.pathsep +
-            ansicon_bin_dir + os.pathsep + "%PATH%")
-    else:
-        env["PATH"] = (
-            cenv.bin_dir + os.pathsep +
-            cenv.mpi_bindir + os.pathsep +
-            cenv.user_bindir + os.pathsep + "$PATH")
-
-    lib_path = ("LD_LIBRARY_PATH" if ostype != "darwin"
-                else "DYLD_FALLBACK_LIBRARY_PATH")
-    env[lib_path] = (
-        cenv.lib_dir + os.pathsep +
-        cenv.mpi_libdir + os.pathsep +
-        cenv.user_bindir + os.pathsep +
-        "$%s"%lib_path)
-    env["OMP"] = False
-    env["MPI_LIB_PATH"] = cenv.mpi_libdir
-    env["BIN_PLATFORM_INSTALL"] = cenv.bin_dir
-    env["LIB_PLATFORM_INSTALL"] = cenv.lib_dir
-    env["SCONSFLAGS"] = "--site-dir=%s/site_scons"%cenv.project_dir
-
-    env["LIB_SRC"] = os.path.normpath(os.path.join(
-        cenv.project_dir, "src", "libraries"))
-    env["CAELUS_APP"] = os.path.normpath(os.path.join(
-        cenv.project_dir, "src", "applications"))
-    env["CAELUS_SOLVERS"] = os.path.normpath(os.path.join(
-        cenv.project_dir, "src", "applications", "solvers"))
-    env["CAELUS_UTILITIES"] = os.path.normpath(os.path.join(
-        cenv.project_dir, "src", "applications", "utilities"))
-    env["CAELUS_TUTORIALS"] = os.path.normpath(os.path.join(
-        cenv.project_dir, "tutorials"))
-    return env
-
-def write_unix_env(env):
-    """Write out unix environment files"""
-    bash_fmt = 'export %s="%s"\n'
-    csh_fmt = 'setenv %s "%s"\n'
-    with open("caelus-bashrc", 'w') as fh:
-        fh.write("#!/bin/bash\n")
-        fh.write("#\n# Bash configuration file for %s\n\n"%env["PROJECT"])
-        for key, value in env.items():
-            fh.write(bash_fmt%(key, value))
-    _lgr.info("Bash environment file written to: %s",
-              os.path.join(os.getcwd(), "caelus-bashrc"))
-    with open("caelus-cshrc", 'w') as fh:
-        fh.write("#!/bin/csh\n")
-        fh.write("#\n# csh configuration file for %s\n\n"%env["PROJECT"])
-        for key, value in env.items():
-            fh.write(csh_fmt%(key, value))
-    _lgr.info("Csh environment file written to: %s",
-              os.path.join(os.getcwd(), "caelus-cshrc"))
-
-def write_windows_env(env):
-    """Write out windows environment files"""
-    header = """
-REM Caelus run environment
-@echo off
-
-"""
-    cmd_fmt = '@set %s=%s\n'
-    with open("caelus-environment.cmd", 'w') as fh:
-        fh.write(header)
-        for key, value in env.items():
-            fh.write(cmd_fmt%(key, value))
-    _lgr.info("Environment file written to: %s",
-              os.path.join(os.getcwd(), "caelus-environment.cmd"))
-
 class CaelusCmd(CaelusSubCmdScript):
     """CLI interface to Caelus Python Library.
 
@@ -148,11 +51,6 @@ class CaelusCmd(CaelusSubCmdScript):
             "cfg",
             description="dump CPL configuration",
             help="Dump CPL configuration")
-        env = subparsers.add_parser(
-            "env",
-            description="Write environment variables that can be "
-            "sourced into the SHELL environment",
-            help="write shell environment file")
         clone = subparsers.add_parser(
             "clone",
             description="Clone a case directory into a new folder.",
@@ -186,12 +84,6 @@ class CaelusCmd(CaelusSubCmdScript):
             '-b', '--no-backup', action='store_true',
             help="Overwrite existing config without saving a backup")
         cpl_config.set_defaults(func=self.write_config)
-
-        # Env action
-        env.add_argument(
-            '-d', '--write-dir', default=None,
-            help="Path where the environment files are written")
-        env.set_defaults(func=self.write_env)
 
         # Clone action
         clone.add_argument(
@@ -321,26 +213,6 @@ class CaelusCmd(CaelusSubCmdScript):
         if args.config_file:
             _lgr.info("CPL configuration written to file: %s",
                       args.config_file)
-
-    def write_env(self):
-        """Write out the environment file"""
-        args = self.args
-        write_dir = args.write_dir or os.getcwd()
-        cenv = cml_get_version()
-        if not (write_dir and
-                os.path.exists(write_dir) and
-                os.path.isdir(write_dir)):
-            _lgr.error("Directory does not exist: %s", write_dir)
-            self.parser.exit(1)
-        if write_dir is None:
-            write_dir = os.path.join(
-                cenv.project_dir, "etc")
-        with osutils.set_work_dir(write_dir):
-            env = populate_environment(cenv)
-            if osutils.ostype() == "windows":
-                write_windows_env(env)
-            else:
-                write_unix_env(env)
 
     def run_tasks(self):
         """Run tasks"""
