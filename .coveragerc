@@ -1,0 +1,5 @@
+[run]
+omit = 
+    caelus/scripts/*
+    caelus/io/caeluslextab.py
+    caelus/io/caelusyacctab.py
