@@ -227,6 +227,7 @@ class CMLEnv(object):
             self._user_dir = udir
             self._user_build_dir = os.path.join(
                 udir, "platforms", self._build_option)
+        return os.path.join(self._user_build_dir, "bin")
 
     @property
     def user_libdir(self):
