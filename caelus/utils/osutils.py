@@ -105,6 +105,20 @@ def abspath(pname):
     pth2 = os.path.expandvars(pth1)
     return os.path.normpath(os.path.abspath(pth2))
 
+def path_exists(pname):
+    """Check path of the directory exists.
+
+    This function expands the user home directory as well as any shell
+    variables found in the path provided and checks if that path exists.
+
+    Args:
+        pname (path): Pathname to be checked
+
+    Returns:
+        path: Boolean for path existence
+    """
+    return os.path.exists(abspath(pname))
+
 def ensure_directory(dname):
     """Check if directory exists, if not, create it.
 

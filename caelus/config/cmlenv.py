@@ -65,14 +65,14 @@ def _filter_invalid_versions(cml_cfg):
         ver.version = str(vid)
         pdir = ver.get("path",
                        os.path.join(root_default, "caelus-%s"%vid))
-        if os.path.exists(pdir):
+        if osutils.path_exists(pdir):
             yield ver
 
 
 def _determine_platform_dir(root_path):
     """Determine the build type platform option"""
     basepath = os.path.join(root_path, "platforms")
-    if not os.path.exists(basepath):
+    if not osutils.path_exists(basepath):
         return None
 
     ostype = osutils.ostype()
@@ -85,7 +85,7 @@ def _determine_platform_dir(root_path):
             arch_types, prec_types, opt_types, compilers):
         bdir_name = "%s%s%s%s%s"%(ostype, at, ct, pt, ot)
         bdir_path = os.path.join(basepath, bdir_name)
-        if os.path.exists(bdir_path):
+        if osutils.path_exists(bdir_path):
             return bdir_path
 
 def _determine_mpi_dir(root_path, mpi_type="openmpi"):
@@ -118,6 +118,7 @@ class CMLEnv(object):
         self._project_dir = cfg.get(
             "path",
             os.path.join(config.get_caelus_root(), "caelus-%s"%self.version))
+        self._project_dir = osutils.abspath(self._project_dir)
         self._root_dir = os.path.dirname(self._project_dir)
 
         # Determine build dir
@@ -166,7 +167,7 @@ class CMLEnv(object):
     @property
     def build_dir(self):
         """Return the build platform directory"""
-        if not self._build_dir or not os.path.exists(self._build_dir):
+        if not self._build_dir or not osutils.path_exists(self._build_dir):
             raise IOError("Cannot find Caelus platform directory: %s"%
                           self._build_dir)
         return self._build_dir
@@ -304,7 +305,7 @@ class CMLEnv(object):
         """Load the CML json file and determine configuration"""
         self._scons_env = {}
         env_file = os.path.join(self.project_dir, "etc", "cml_env.json")
-        if os.path.exists(env_file):
+        if osutils.path_exists(env_file):
             env_all = json.load(open(env_file, 'r'))
             env = env_all.get(self._build_option, None)
             if env is not None:
