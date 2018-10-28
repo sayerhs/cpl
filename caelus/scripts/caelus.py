@@ -10,7 +10,9 @@ import sys
 import os
 import logging
 import shutil
-from collections import OrderedDict
+
+import six
+
 from ..utils import osutils
 from ..config.cmlenv import cml_get_version
 from .core import CaelusSubCmdScript
@@ -19,6 +21,7 @@ from ..run.core import clone_case, get_mpi_size, clean_casedir
 from ..run import cmd
 from ..post.logs import SolverLog
 from ..post.plots import CaelusPlot, LogWatcher
+from ..build.build import CMLBuilder
 
 _lgr = logging.getLogger(__name__)
 
@@ -72,6 +75,12 @@ class CaelusCmd(CaelusSubCmdScript):
             "clean",
             description="Clean a case directory",
             help="clean case directory")
+        # SCons supplied with CML can only handle Python 2
+        if six.PY2:
+            build = subparsers.add_parser(
+                "build",
+                description="Compile Caelus CML",
+                help="compile Caelus CML sources")
 
         # Configuration action
         cpl_config.add_argument(
@@ -185,6 +194,31 @@ class CaelusCmd(CaelusSubCmdScript):
             '-p', '--preserve', action='append',
             help="shell wildcard patterns of extra files to preserve")
         clean.set_defaults(func=self.clean_case)
+
+        if six.PY2:
+            build.add_argument(
+                '-c', '--clean', action='store_true',
+                help="clean CML build")
+            build.add_argument(
+                '-j', '--jobs', type=int, default=-1,
+                help="number of parallel jobs")
+            build_dir_pat = build.add_mutually_exclusive_group(required=False)
+            build_dir_pat.add_argument(
+                '-a', '--all', action='store_true',
+                help="Build both project and user directories (default: no)")
+            build_dir_pat.add_argument(
+                '-p', '--project', action='store_true',
+                help="Build Caelus CML project (default: no)")
+            build_dir_pat.add_argument(
+                '-u', '--user', action='store_true',
+                help="Build user project (default: no)")
+            build_dir_pat.add_argument(
+                '-d', '--source-dir', default=os.getcwd(),
+                help="Build sources in path (default: CWD)")
+            build.add_argument(
+                'scons_args', nargs='*',
+                help="additional arguments passed to SCons")
+            build.set_defaults(func=self.cml_build)
 
     def write_config(self):
         """Dump the configuration file"""
@@ -350,6 +384,55 @@ class CaelusCmd(CaelusSubCmdScript):
                       purge_mesh=purge_mesh,
                       preserve_extra=args.preserve)
         _lgr.info("Cleaned case directory successfully.")
+
+    def cml_build(self):
+        """Build CML sources"""
+        args = self.args
+        build_project = (args.all or args.project)
+        build_user = (args.all or args.user)
+        build_srcdir = not (build_project or build_user)
+        srcdir = osutils.abspath(args.source_dir)
+        if build_srcdir and not osutils.path_exists(srcdir):
+            _lgr.error("Source directory does not exist: %s", srcdir)
+            self.parser.exit(1)
+
+        cenv = cml_get_version()
+        scons_args = args.scons_args
+        if args.clean:
+            scons_args.append("--clean")
+        if args.jobs > 0:
+            scons_args.append("--jobs=%d"%args.jobs)
+        builder = CMLBuilder(cml_env=cenv, scons_args=scons_args)
+
+        _lgr.info("Caelus CML version: %s", cenv.version)
+        prj_successful = True
+        if build_project:
+            _lgr.info("Compiling project sources")
+            builder.build_project_dir()
+            if builder.rcode != 0:
+                _lgr.error("Compilation failed in project directory. See log for details.")
+                prj_successful = False
+            else:
+                _lgr.info("Project sources compiled successfully.")
+
+        if build_user and prj_successful:
+            _lgr.info("Compiling user sources")
+            status = builder.build_user_dir()
+            if status or builder.rcode != 0:
+                _lgr.error("Compilation failed in user directory. See log for details.")
+            else:
+                _lgr.info("User sources compiled successfully.")
+        elif build_user:
+            _lgr.warning("Detected incompleted project build; skipping user source compilation.")
+
+        if build_srcdir:
+            _lgr.info("Compiling sources in: %s", srcdir)
+            builder.build_dir(srcdir)
+            if builder.rcode != 0:
+                _lgr.error("Compilation failed in directory. See log for details.")
+            else:
+                _lgr.info("Directory compiled successfully.")
+        _lgr.info("Build logs stored in %s", builder.build_log)
 
 def main():
     """Run caelus command"""
