@@ -171,7 +171,7 @@ class HPCQueue():
 
         """
         renv = self.cml_env or cmlenv.cml_get_latest_version()
-        path_var = (renv.bin_dir + os.pathsep + renv.user_dir +
+        path_var = (renv.bin_dir + os.pathsep + renv.user_bindir +
             os.pathsep + renv.mpi_bindir)
         lib_var = (renv.lib_dir + os.pathsep + renv.user_libdir +
             os.pathsep + renv.mpi_libdir)

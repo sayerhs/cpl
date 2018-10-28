@@ -48,6 +48,18 @@ class MockCMLEnv(object):
         return "~/Caelus/caelus-7.04/mpi_lib"
 
     @property
+    def user_dir(self):
+        return "~/Caelus/user-7.04"
+
+    @property
+    def user_bindir(self):
+        return "~/Caelus/user-7.04/bin"
+
+    @property
+    def user_libdir(self):
+        return "~/Caelus/user-7.04/lib"
+
+    @property
     def environ(self):
         """Return an empty environment"""
         return {}
