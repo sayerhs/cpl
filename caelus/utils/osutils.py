@@ -115,7 +115,7 @@ def path_exists(pname):
         pname (path): Pathname to be checked
 
     Returns:
-        path: Boolean for path existence
+        bool: True if path exists
     """
     return os.path.exists(abspath(pname))
 
