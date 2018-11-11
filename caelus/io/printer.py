@@ -145,6 +145,9 @@ class DictPrinter(object):
         indenter = self.indenter
         if isinstance(value, self.no_keywd_values):
             value.write_value(buf, indenter.indent_str)
+        elif isinstance(value, dtypes.BoundaryList):
+            buf.write("%d"%len(value.value))
+            self.write_list(value.value)
         elif isinstance(value, dtypes.FoamType):
             buf.write(indenter.indent_str + self.keyword_fmt%key + " ")
             value.write_value(buf, indenter.indent_str)
