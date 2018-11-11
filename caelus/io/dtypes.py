@@ -246,6 +246,9 @@ class MultipleValues(FoamType):
         fh.write(" ".join(np.str(val) for val in self.value))
         fh.write(";\n")
 
+    def __str__(self):
+        return " ".join(np.str(val) for val in self.value)
+
 class ListTemplate(FoamType):
     """List<T> type entries"""
 
