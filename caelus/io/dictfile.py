@@ -7,6 +7,7 @@ Caelus/OpenFOAM Input File Interface
 
 import os
 import logging
+from collections import Mapping
 import six
 
 from ..utils import osutils
@@ -71,8 +72,9 @@ class DictMeta(type):
                 """Setter"""
                 if not value in options:
                     raise ValueError(
-                        "%s: Invalid option for %s"%(
-                            cls.__name__, name))
+                        "%s: Invalid option for '%s'. "
+                        "Valid options are:\n\t%s"%(
+                            cls.__name__, name, options))
                 self.data[name] = value
         else:
             def setter(self, value):
@@ -207,6 +209,29 @@ class DictFile(object):
         """Merge entries from one dictionary to another"""
         self.data.merge(*args)
 
+    @property
+    def contents(self):
+        """Access entries within the Caelus CML dictionary"""
+        return self.data
+
+    @property
+    def keys(self):
+        """Return list of variable names in the dictionary"""
+        return list(self.data.keys())
+
+    def __getitem__(self, key):
+        "Dictionary style access to file entries"
+        if key not in self.data:
+            raise KeyError("No entry by name %s"%key)
+        return self.data[key]
+
+    def __setitem__(self, key, value):
+        """Dictionary style setter for file entries"""
+        if hasattr(self, key):
+            setattr(self, key, value)
+        else:
+            self.data[key] = value
+
     def __str__(self):
         strbuf = six.StringIO()
         pprint = printer.DictPrinter(strbuf)
@@ -248,6 +273,21 @@ class ControlDict(DictFile):
         ("maxCo", None),
         ("runTimeModifiable", True),
     ]
+
+    @property
+    def functions(self):
+        """function object definitions in controlDict"""
+        return (self.data.functions
+                if "functions" in self.data else None)
+
+    @functions.setter
+    def functions(self, value):
+        if not isinstance(value, Mapping):
+            raise TypeError("functions must be a dictionary type")
+        else:
+            if "functions" not in self.data:
+                self.data.functions = caelusdict.CaelusDict()
+            self.data.functions.merge(value)
 
 class DecomposeParDict(DictFile):
     """system/decomposeParDict interface"""
@@ -356,3 +396,51 @@ class LESProperties(TurbModelProps):
             if value == "cubeRootVol":
                 coeffs.deltaCoeff = 1
             self.data[key] = coeffs
+
+class FvSchemes(DictFile):
+    """system/fvSchemes interface"""
+
+    _default_filename = "system/fvSchemes"
+
+    _dict_properties = [
+        ("ddtSchemes", None),
+        ("gradSchemes", None),
+        ("divSchemes", None),
+        ("laplacianSchemes", None),
+        ("interpolationSchemes", None),
+        ("snGradSchemes", None),
+        ("fluxRequired", None)
+    ]
+
+class FvSolution(DictFile):
+    """system/fvSolution interface"""
+
+    _default_filename = "system/fvSolution"
+
+    _dict_properties = [
+        ("solvers", None),
+        ("SIMPLE", None),
+        ("PIMPLE", None),
+        ("PISO", None),
+        ("potentialFlow", None),
+        ("relaxationFactors", None)
+    ]
+
+class BlockMeshDict(DictFile):
+    """constant/polyMesh/blockMeshDict interface"""
+
+    _default_filename = "constant/polyMesh/blockMeshDict"
+
+    _dict_properties = [
+        ("convertToMeters", 1.0),
+        ("vertices", None),
+        ("blocks", None),
+        ("edges", None),
+        ("boundary", None),
+        ("mergePatchPairs", None)
+    ]
+
+class PolyMeshBoundary(DictFile):
+    """constant/polyMesh/boundary interface"""
+
+    _default_filename = "constant/polyMesh/boundary"
