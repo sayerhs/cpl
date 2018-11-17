@@ -43,6 +43,7 @@ User Manual
    user/configuration
    user/cli_apps
    user/tasks
+   user/tuts
 
 
 .. _developer_manual:

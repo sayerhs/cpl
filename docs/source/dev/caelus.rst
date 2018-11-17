@@ -10,4 +10,5 @@ Caelus Python API
    caelus.utils
    caelus.run
    caelus.post
+   caelus.io
    caelus.scripts
