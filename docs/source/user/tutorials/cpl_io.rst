@@ -3,14 +3,29 @@
 Mainpulating CML input files with CPL
 =====================================
 
+CPL provides a pythonic interface to read, create, modify, and write out input
+files necessary for running simulations using CML executables within a case
+directory. Users can interact with input files as python objects and use python
+data structures and functions to manipulate them. The modified objects can then
+be written out to files and CPL will pretty-print the files in the apporpriate
+locations in the case directory. Most CML/OpenFOAM objects have a one-to-one
+correspondence with python data structures within CPL. For example, OpenFOAM
+dictionaries are accessed as Python dictionaries, specifically an instance of
+:class:`~caelus.io.caelusdict.CaelusDict` which provides both attribute and
+dictionary-style access to entries. FOAM ``List<Scalar>`` data types are
+accessible as NumPy arrays, whereas generic lists containing mixed datatype
+entries (e.g., the `blocks` entry in :file:`blockMeshDict`) are represented as
+lists.
+
 .. currentmodule:: caelus.io.dictfile
 
 This tutorial provides a walkthrough of using :mod:`caelus.io` module to read,
 manipulate, and write out input files in a CML case directory. The code snippets
 shown in this tutorial will use the ``ACCM_airFoil2D`` tutorial in the
 :file:`${PROJECT_DIR}/tutorials/incompressible/simpleSolver/ras/ACCM_airFoil2D`
-directory. To execute the example code snippets shown in this tutorial, you must
-execute them from this case directory and have the following module loaded
+directory. To execute the example code snippets shown in this tutorial, it is
+recommended that execute them from this case directory and have the following
+modules loaded in your script or interactive shell
 
 .. code-block:: python
 
