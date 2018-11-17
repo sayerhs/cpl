@@ -195,8 +195,10 @@ class DictPrinter(object):
         buf = self.buf
         indenter = self.indenter
         curr_keywd_fmt = self.keyword_fmt
-        tab_width = indenter.tab_width + max(
-            len(key) for key in value.keys())
+        tab_width = indenter.tab_width
+        if value:
+            tab_width = tab_width + max(
+                len(key) for key in value.keys())
         self.keyword_fmt = "%%-%ds"%tab_width
         buf.write("\n" + indenter.indent_str + "{\n")
         indenter.indent()

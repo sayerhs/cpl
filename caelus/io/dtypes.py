@@ -19,7 +19,7 @@ class FoamType(object):
     def write_value(self, fh=sys.stdout, indent_str=''):
         """Write as a Caelus/OpenFOAM entry
 
-        This method is called by :ref:`~caelus.io.printer.DictPrinter` to
+        This method is called by :class:`~caelus.io.printer.DictPrinter` to
         format the data suitable for writing to a Caelus input file that can be
         read by the solvers.
 
@@ -79,7 +79,7 @@ class DimValue(FoamType):
     """A dimensioned value
 
     A dimensioned value contains three parts: the name, units, and the value.
-    Units are of type :ref:`Dimension` and value can be a scalar, vector,
+    Units are of type :class:`Dimension` and value can be a scalar, vector,
     tensor or a symmetric tensor.
     """
 
@@ -178,7 +178,7 @@ class Field(FoamType):
     This class represents both uniform and non-uniform fields. The attribute
     ``ftype`` indicates the type of field and the ``value`` contains the value
     for the given field. Uniform fields can be scalar, vector, tensor, or
-    symmetric tensors. Non-uniform fields are typically a :ref:`ListTemplate`
+    symmetric tensors. Non-uniform fields are typically a :class:`ListTemplate`
     entity.
     """
 
@@ -220,6 +220,10 @@ class Field(FoamType):
         else:
             self.write_nonuniform(fh)
 
+    def __repr__(self):
+        return "<%s: %s>"%(self.__class__.__name__,
+                           self.ftype)
+
 class BoundaryList(FoamType):
     """polyMesh/boundary file"""
 
@@ -245,6 +249,9 @@ class MultipleValues(FoamType):
     def write_value(self, fh=sys.stdout, indent_str=''):
         fh.write(" ".join(np.str(val) for val in self.value))
         fh.write(";\n")
+
+    def __repr__(self):
+        return "<MultipleValues: %s>"%self.value
 
     def __str__(self):
         return " ".join(np.str(val) for val in self.value)

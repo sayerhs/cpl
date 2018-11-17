@@ -30,7 +30,7 @@ class DictMeta(type):
 
     If the default_value is not None, then this value will be used to
     automatically initialize the particular entry by
-    :ref:`~caelus.io.dictfile.DictFile.create_default_entries` method. If
+    :meth:`~caelus.io.dictfile.DictFile.create_default_entries` method. If
     ``valid_values`` are provided, any attempt to set/modify this value will be
     checked to ensure that only the allowed values are used.
     """
@@ -89,7 +89,7 @@ class DictFile(object):
     The default constructor does not read a file, but instead creates a new
     input file object. If a property list is provided, this is used to
     initialize the default entries. To read an existing file, the use of
-    :ref:`DictFile.read_if_present` method is recommended.
+    :meth:`DictFile.read_if_present` method is recommended.
     """
 
     #: Default filename for the file type (to be overriden by subclasses)
@@ -151,13 +151,15 @@ class DictFile(object):
         return obj
 
     @classmethod
-    def read_if_present(cls, casedir=None, filename=None, debug=False):
+    def read_if_present(cls, casedir=None, filename=None, debug=False,
+                        populate_defaults=True):
         """Read the file if present, else create object with default values
 
         Args:
             casedir (path): Path to the case directory
             filename (path): Filename to read
             debug (bool): Turn on detailed errors
+            populate_defaults (bool): Populate the defaults
         """
         cdir = osutils.abspath(casedir or os.getcwd())
         name = filename or cls._default_filename
@@ -168,6 +170,8 @@ class DictFile(object):
             obj.filename = name
             obj.header = obj.create_header()
             obj.data = caelusdict.CaelusDict()
+            if populate_defaults:
+                obj.create_default_entries()
             return obj
 
     def create_default_entries(self):
@@ -214,7 +218,6 @@ class DictFile(object):
         """Access entries within the Caelus CML dictionary"""
         return self.data
 
-    @property
     def keys(self):
         """Return list of variable names in the dictionary"""
         return list(self.data.keys())
@@ -319,6 +322,20 @@ class TurbulenceProperties(DictFile):
          ("laminar", "RASModel", "LESModel")),
     ]
 
+    def get_turb_file(self):
+        """Return the appropriate RASProperties or LESProperties file"""
+        sim_type = self.simulationType
+
+        # RANS
+        if sim_type == "RASModel":
+            return RASProperties.read_if_present()
+        # LES
+        if sim_type == "LESModel":
+            return LESProperties.read_if_present()
+        # Guard for laminar
+        return None
+
+
 class TurbModelProps(DictFile):
     """Common interface for LES/RAS models"""
 
@@ -366,11 +383,13 @@ class RASProperties(TurbModelProps):
     """constant/RASProperties interface"""
 
     _default_filename = "constant/RASProperties"
+    _model_name = "RASModel"
 
 class LESProperties(TurbModelProps):
     """constant/LESProperties interface"""
 
     _default_filename = "constant/LESProperties"
+    _model_name = "LESModel"
 
     def create_default_entries(self):
         """Create the default turbulence model entries
@@ -379,6 +398,7 @@ class LESProperties(TurbModelProps):
         class, this also triggers the default entries for delta.
         """
         super(LESProperties, self).create_default_entries()
+        self.model = "Smagorinksy"
         self.delta = "cubeRootVol"
 
     @property
