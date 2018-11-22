@@ -178,7 +178,8 @@ class DictPrinter(object):
         elif isinstance(value, bool):
             if indented:
                 buf.write(self.indenter.indent_str)
-            buf.write(np.str(value).lower())
+            pvalue = "on" if value else "off"
+            buf.write(pvalue)
             buf.write("\n" if recursive else ";\n")
         else:
             if indented:
