@@ -252,7 +252,7 @@ class ControlDict(DictFile):
     _default_filename = "system/controlDict"
 
     _dict_properties = [
-        ("application", "pisoSolver"),
+        ("application", None),
         ("startFrom", "latestTime",
          ("firstTime", "startTime", "latestTime")),
         ("startTime", 0),
@@ -464,3 +464,12 @@ class PolyMeshBoundary(DictFile):
     """constant/polyMesh/boundary interface"""
 
     _default_filename = "constant/polyMesh/boundary"
+
+class ChangeDictionaryDict(DictFile):
+    """system/changeDictionaryDict interface"""
+
+    _default_filename = "system/changeDictionaryDict"
+
+    _dict_properties = [
+        ("dictionaryReplacement", None)
+    ]
