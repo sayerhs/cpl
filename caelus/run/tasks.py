@@ -17,6 +17,7 @@ from . import core as run_cmds
 from ..post.logs import SolverLog
 from ..post.plots import CaelusPlot
 from ..config import cmlenv
+from ..io import dictfile as cmlio
 from .cmd import CaelusCmd
 
 _lgr = logging.getLogger(__name__)
@@ -252,3 +253,28 @@ class Tasks(object):
         tasks.tasks = options.tasks
         tasks.task_file = self.task_file
         tasks(case_dir=casedir, env=self.env)
+
+    def cmd_change_inputs(self, options):
+        """Change input files in case directory"""
+        dictfile_map = dict(
+            controlDict=cmlio.ControlDict,
+            fvSchemes=cmlio.FvSchemes,
+            fvSolution=cmlio.FvSolution,
+            decomposeParDict=cmlio.DecomposeParDict,
+            changeDictionaryDict=cmlio.ChangeDictionaryDict,
+            transportProperties=cmlio.TransportProperties,
+            turbulenceProperties=cmlio.TurbulenceProperties,
+            RASProperties=cmlio.RASProperties,
+            LESProperties=cmlio.LESProperties,
+            blockMeshDict=cmlio.BlockMeshDict,
+        )
+        for key, value in options.items():
+            obj = None
+            if key in dictfile_map:
+                cls = dictfile_map[key]
+                obj = cls.read_if_present()
+            else:
+                obj = cmlio.DictFile.read_if_present(filename=key)
+            obj.data.merge(value)
+            _lgr.info("Updating file: %s", key)
+            obj.write()
