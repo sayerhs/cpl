@@ -201,7 +201,7 @@ def clone_case(casedir,
                       "processor*", "lines",
                       "surfaces", "probes*", "forces*", "sets",
                       "VTK", "*.foam", "surfaceSampling", "postProcessing",
-                      "*.log", "log.*", "*logs"]
+                      "*.log", "log.*", "*logs", "*.job", "*.pdf", "*.png"]
 
     if not copy_zero:
         default_ignore += ["0"]
