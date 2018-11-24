@@ -543,7 +543,8 @@ class CMLSimulation(JSONSerializer):
         return "<%s: %s>"%(self.__class__.__name__, self.name)
 
 
-class CMLSimCollection(JSONSerializer, metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class CMLSimCollection(JSONSerializer):
     """Interface representing a collection of cases
 
     Implementations must implement :meth:`setup` that provides a concrete
