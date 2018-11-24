@@ -89,8 +89,22 @@ matrix appear as subdirectories to the top-level analysis directory.
 
    Run pre-processing tasks upon successful setup.
 
+.. _cli_caelus_sim_status:
 
-caelus status -- Print status of the parametric runs
-----------------------------------------------------
+caelus_sim status -- Print status of the parametric runs
+--------------------------------------------------------
 
-This command prints out the status of the runs so far.
+This command prints out the status of the runs so far. The meanings of the
+different status types are described in the table below
+
+  =========== =================================================
+  Status      Description
+  =========== =================================================
+  Setup       Case setup successfully
+  Prepped     Pre-processing completed
+  Submitted   Solver initialized
+  Running     Solver is running
+  Solved      Solve has completed
+  DONE        Post-processing completed
+  FAILED      Some action failed
+  =========== =================================================
