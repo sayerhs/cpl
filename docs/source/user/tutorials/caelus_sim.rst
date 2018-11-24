@@ -398,3 +398,24 @@ actions on cases that have completed the solve.
    WARNING: Re_2.0e+06/aoa_+02.00: No previous solve detected, skipping post
    WARNING: Re_1.0e+06/aoa_-04.00: No previous solve detected, skipping post
    WARNING: Re_1.0e+06/aoa_-02.00: No previous solve detected, skipping post
+
+   #
+   # Check status of simulation
+   #
+   bash:/tmp/run/airfoil_demo$ caelus_sim status
+   INFO: Caelus Python Library (CPL) v0.1.1
+
+   Run status for: airfoil_demo
+   Directory: /private/tmp/run/airfoil_demo
+   ===============================================
+   #. NAME                     STATUS
+   ===============================================
+   1. Re_1.0e+06/aoa_+00.00    DONE
+   2. Re_1.0e+06/aoa_+02.00    FAILED
+   3. Re_2.0e+06/aoa_+00.00    Prepped
+   4. Re_2.0e+06/aoa_+02.00    Prepped
+   5. Re_1.0e+06/aoa_-04.00    Setup
+   6. Re_1.0e+06/aoa_-02.00    Setup
+   ===============================================
+   TOTAL = 6; SUCCESS = 1; FAILED = 1
+   ===============================================
