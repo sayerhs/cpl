@@ -2,8 +2,6 @@
 caelus.io -- CML Input File Manipulation
 =========================================
 
-.. automodule:: caelus.io
-
 .. automodule:: caelus.io.dictfile
    :members:
    :show-inheritance:
