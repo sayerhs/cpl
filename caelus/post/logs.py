@@ -21,6 +21,7 @@ tabular files suitable for loading with ``numpy.loadtxt`` or
 """
 
 import os
+import logging
 from os.path import join
 from collections import OrderedDict
 import json
@@ -29,6 +30,8 @@ import numpy as np
 
 from ..utils import osutils
 from ..utils.coroutines import coroutine, grep
+
+_lgr = logging.getLogger(__name__)
 
 class LogProcessor(object):
     """Process the log file and extract information for analysis.
@@ -49,6 +52,8 @@ class LogProcessor(object):
         exec_time=r"ExecutionTime = (\S+) s  ClockTime = (\S+) s",
         convergence=r"(\S+) solution converged in (\S+) iterations",
         completion=r"^End$",
+        exiting="^.*(CAELUS|OpenFOAM).*exiting",
+        fatal_error="^.*(CAELUS|OpenFOAM).*FATAL ERROR"
     )
 
     def __init__(self, logfile,
@@ -95,6 +100,8 @@ class LogProcessor(object):
         self.converged = False
         #: Flag indicating solver completion in logs (if End is found)
         self.solve_completed = False
+        #: Flag indicating whether the solver failed
+        self.failed = False
         #: Timestep when the steady state solver converged
         self.converged_time = -1
 
@@ -194,11 +201,12 @@ class LogProcessor(object):
         """Return the current state of the logs processor"""
         curr_state = dict(
             # case_dir=os.path.relpath(self.case_dir, self.logs_dir),
-            # logfile=os.path.relpath(self.logfile, self.logs_dir),
+            logfile=os.path.relpath(self.logfile, self.logs_dir),
             time=self.time,
             converged=self.converged,
             solve_completed=self.solve_completed,
             converged_time=self.converged_time,
+            failed=self.failed,
             fields=list(self.res_files.keys()),
             bounding_fields=list(self.bound_files.keys()))
         return curr_state
@@ -335,6 +343,24 @@ class LogProcessor(object):
             _ = (yield)
             self.solve_completed = True
 
+    @coroutine
+    def exiting_processor(self):
+        """Process exiting option"""
+        while True:
+            _ = (yield)
+            self.failed = True
+            self.converged = False
+            self.solve_completed = False
+
+    @coroutine
+    def fatal_error_processor(self):
+        """Process CAELUS FATAL ERROR line"""
+        while True:
+            _ = (yield)
+            self.failed = True
+            self.converged = False
+            self.solve_completed = False
+
 class SolverLog(object):
     """Caelus solver log file interface.
 
@@ -373,7 +399,6 @@ class SolverLog(object):
             logs = LogProcessor(logfile,
                                 self.casedir, logs_dir)
             logs()
-            self.solve_completed = logs.solve_completed
 
         self.fields = []
         self.bounding_fields = []
@@ -381,6 +406,8 @@ class SolverLog(object):
             os.path.join(self.logs_dir, ".logs_state.json")))
         for key, val in data.items():
             setattr(self, key, val)
+        if self.failed:
+            _lgr.warning("Detected failed run in %s", self.casedir)
 
     def residual(self, field, all_cols=False):
         """Return the residual time-history for a field"""
