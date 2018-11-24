@@ -35,7 +35,7 @@ def normalize_variable_param(varspec):
 def iter_case_params(sim_options):
     """Normalize the keys and yield all possible run setups"""
     casefmt = sim_options.get("case_format", "case_{idx:04d}")
-    const_params = sim_options.get("constant_parameters", CaelusDict)
+    const_params = sim_options.get("constant_parameters", CaelusDict())
     run_matrix = sim_options["run_matrix"]
     code = None
     extract_vars = None
