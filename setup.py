@@ -49,5 +49,6 @@ setup(
         [console_scripts]
         caelus=caelus.scripts.caelus:main
         caelus_tutorials=caelus.scripts.caelus_tutorials:main
+        caelus_sim=caelus.scripts.caelus_sim:main
     """,
 )
