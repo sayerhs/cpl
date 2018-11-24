@@ -1,8 +1,17 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=invalid-name, protected-acess, bare-except
 
-"""
-CPL Interface to CML case diretory
+"""\
+CML Simulation
+--------------
+
+This module defines :class:`CMLSimulation` that provides a pythonic interface
+to detail with a CML case directory. In addition to implementing methods to
+perform actions, it also tracks the state of the analysis at any given time.
+
+The module also provides an abstract interface :class:`CMLSimCollection` that
+provides basic infrastructure to manage and manipulate a collection of
+simulations as a group.
 """
 
 import os
@@ -56,7 +65,27 @@ class CMLSimMeta(type):
 
 @six.add_metaclass(CMLSimMeta)
 class CMLSimulation(JSONSerializer):
-    """Pythonic interface to CML/OpenFOAM simulation"""
+    """Pythonic interface to CML/OpenFOAM simulation
+
+    This class defines the notion of an analysis. It provides methods to
+    interact with an analysis directory from within python, and provides basic
+    infrastructure to track the status of the simulation.
+
+    After successful :meth:`setup`, the simulation moves through a series of
+    stages, that can be queried via :meth:`setup` method:
+
+      =========== =================================================
+      Status      Description
+      =========== =================================================
+      Setup       Case setup successfully
+      Prepped     Pre-processing completed
+      Submitted   Solver initialized
+      Running     Solver is running
+      Solved      Solve has completed
+      DONE        Post-processing completed
+      FAILED      Some action failed
+      =========== =================================================
+    """
     _dictfile_attrs = cmlio.cml_std_files
 
     _json_public_ = ("name run_config run_flags "
@@ -76,6 +105,7 @@ class CMLSimulation(JSONSerializer):
             case_name (str): Unique identifier for the case
             env (CMLEnv): CML environment used to setup/run the case
             basedir (path): Location where the case is located/created
+            parent (CMLSimCollection): Instance of the group manager
         """
         #: CML environment used to run this case
         self.env = cml_env or cmlenv.cml_get_version()
@@ -91,9 +121,10 @@ class CMLSimulation(JSONSerializer):
         #: Keep track of files accessed
         self._dicts_accessed = []
 
-        #: Dictionary containing run configuration
+        #: Dictionary containing run configuration (internal use only)
         self.run_config = CaelusDict()
 
+        #: Dictionary tracking status (internal use only)
         self.run_flags = CaelusDict(
             updated=False,
             prepped=False,
@@ -102,11 +133,12 @@ class CMLSimulation(JSONSerializer):
             post_done=False,
             failed=False
         )
+        #: Job IDs for SLURM/PBS jobs (internal use only)
         self.job_ids = []
 
     @classmethod
     def load(cls, env=None, casedir=None, parent=None, json_file=None):
-        """Load a serialized simulation case"""
+        """Loads a previously setup case from persistence file"""
         cdir = osutils.abspath(casedir) if casedir else  os.getcwd()
         jfile = json_file or cls.json_file()
         jfile = osutils.abspath(os.path.join(cdir, jfile))
@@ -173,7 +205,11 @@ class CMLSimulation(JSONSerializer):
             purge_mesh=(not preserve_polymesh))
 
     def update(self, input_mods=None):
-        """Update the case directory to reflect the changes made"""
+        """Update the input files within a case directory
+
+        Args:
+            input_mods (CaelusDict): Dictionary with changes
+        """
         with osutils.set_work_dir(self.casedir):
             if input_mods is not None:
                 self._update_input_files(input_mods)
@@ -187,9 +223,13 @@ class CMLSimulation(JSONSerializer):
     def prep_case(self, prep_tasks=None, force=False):
         """Execute pre-processing tasks for this case
 
+        If not tasks are provided, then uses the section ``prep`` from
+        ``run_configuration`` that was passed during the setup phase.
+
         Args:
             prep_tasks (list): List of tasks for Tasks
             force (bool): Force prep again if already run
+
         """
         if self.run_flags.prepped and not force:
             _lgr.warning("%s: Detected previous prep, skipping",
@@ -248,7 +288,11 @@ class CMLSimulation(JSONSerializer):
                     self.run_flags.failed= True
 
     def solve(self, force=False):
-        """Execute solve for this case"""
+        """Execute solve for this case
+
+        Args:
+            force (bool): Force resubmit even if previously submitted
+        """
         rflags = self.run_flags
         if rflags.solve_submitted and not force:
             _lgr.info("%s: Detected previous solve, skipping",
@@ -319,6 +363,10 @@ class CMLSimulation(JSONSerializer):
             return
 
         clog = self.case_log()
+        if clog is None:
+            _lgr.warning("%s: Solve has not started, skipping post",
+                         self.name)
+            return
         if not clog.solve_completed:
             _lgr.warning("%s: Solve was not completed, skipping post",
                          self.name)
@@ -360,7 +408,11 @@ class CMLSimulation(JSONSerializer):
                 self.run_flags.failed = True
 
     def status(self):
-        """Determine status of the run"""
+        """Determine status of the run
+
+        Returns:
+            str: Status of the run as a string
+        """
         run_flags = self.run_flags
         status_list = """failed post completed running submitted prep setup""".split()
         status_names= """FAILED DONE Solved Running Submitted Prepped Setup""".split()
@@ -377,15 +429,16 @@ class CMLSimulation(JSONSerializer):
             and not status_flags["completed"]):
             try:
                 clog = self.case_log()
-                if clog.solve_completed:
-                    run_flags["solve_completed"] = clog.solve_completed
-                    status_flags["completed"] = clog.solve_completed
-                elif clog.failed:
-                    status_flags["failed"] = True
-                    status_flags["running"] = False
-                    status_flags["completed"] = False
-                else:
-                    status_flags["running"] = True
+                if clog is not None:
+                    if clog.solve_completed:
+                        run_flags["solve_completed"] = clog.solve_completed
+                        status_flags["completed"] = clog.solve_completed
+                    elif clog.failed:
+                        status_flags["failed"] = True
+                        status_flags["running"] = False
+                        status_flags["completed"] = False
+                    else:
+                        status_flags["running"] = True
             except:
                 status_flags["running"] = False
                 status_flags["completed"] = False
@@ -445,7 +498,7 @@ class CMLSimulation(JSONSerializer):
 
         logfile = os.path.join(self.casedir, self.logfile)
         if not osutils.path_exists(logfile):
-            raise IOError("No log file found for case: %s"%self.name)
+            return None
 
         with osutils.set_work_dir(self.casedir):
             clog = SolverLog(
@@ -491,7 +544,17 @@ class CMLSimulation(JSONSerializer):
 
 
 class CMLSimCollection(JSONSerializer, metaclass=abc.ABCMeta):
-    """Interface representing a collection of cases"""
+    """Interface representing a collection of cases
+
+    Implementations must implement :meth:`setup` that provides a concrete
+    implementation of how the case is setup (either from a template or
+    otherwise).
+
+    Provides :meth:`prep`, :meth:`solve`, :meth:`post`, and :meth:`status` to
+    interact with the collection as a whole. Prep, solve, and post can accept a
+    list of shell-style wildcard patterns that will restrict the actions to
+    matching cases only.
+    """
 
     def __init__(self, name, env=None, basedir=None):
         """
@@ -502,8 +565,8 @@ class CMLSimCollection(JSONSerializer, metaclass=abc.ABCMeta):
         """
         #: Unique name for this parametric collection of cases
         self.name = name
-        #: Location where parametric run setup is located
         bdir = basedir or os.getcwd()
+        #: Location where parametric run setup is located
         self.basedir = osutils.abspath(bdir)
         #: Location of the parametric run
         self.casedir = os.path.join(self.basedir, self.name)
@@ -564,28 +627,47 @@ class CMLSimCollection(JSONSerializer, metaclass=abc.ABCMeta):
         """Logic to set up the analysis"""
 
     def prep(self, cnames=None, force=False):
-        """Run prep actions on the cases"""
+        """Run prep actions on the cases
+
+        Args:
+            cnames (list): Shell-style wildcard patterns
+            force (bool): Force rerun
+        """
         cases = self.filter_cases(cnames) if cnames else self.cases
         for c in cases:
             c.prep_case(force=force)
             c.save_state()
 
     def solve(self, cnames=None, force=False):
-        """Run solve actions on the cases"""
+        """Run solve actions on the cases
+
+        Args:
+            cnames (list): Shell-style wildcard patterns
+            force (bool): Force rerun
+        """
         cases = self.filter_cases(cnames) if cnames else self.cases
         for c in cases:
             c.solve(force=force)
             c.save_state()
 
     def post(self, cnames=None, force=False):
-        """Run post-processing tasks on the cases"""
+        """Run post-processing tasks on the cases
+
+        Args:
+            cnames (list): Shell-style wildcard patterns
+            force (bool): Force rerun
+        """
         cases = self.filter_cases(cnames) if cnames else self.cases
         for c in cases:
             c.post_case(force=force)
             c.save_state()
 
     def status(self):
-        """Return the status of the runs"""
+        """Return the status of the runs
+
+        Yields:
+            tuple: (name, status) for each case
+        """
         for c in self.cases:
             yield (c.name, c.status())
 

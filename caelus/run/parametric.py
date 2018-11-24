@@ -14,10 +14,8 @@ import json
 import numpy as np
 
 from ..utils import osutils
-from ..utils.tojson import JSONSerializer
-from ..config import cmlenv
 from ..io.caelusdict import CaelusDict
-from .case import CMLSimulation, CMLSimCollection
+from .case import CMLSimCollection
 
 _lgr = logging.getLogger(__name__)
 
@@ -88,7 +86,7 @@ class CMLParametricRun(CMLSimCollection):
             name (str): Unique name for this parametric run
             sim_dict (CaelusDict): Dictionary with simulation settings
             env (CMLEnv): CML execution environment
-            basedir (path): Path where the parametric run diretories are created
+            basedir (path): Path where the parametric run directories are created
         """
         super(CMLParametricRun, self).__init__(name, env, basedir)
         #: Dictionary containing the run settings
