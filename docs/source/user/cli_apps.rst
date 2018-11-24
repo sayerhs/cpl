@@ -52,4 +52,5 @@ Available command-line applications
    :maxdepth: 3
 
    cli_apps/caelus
+   cli_apps/caelus_sim
    cli_apps/caelus_tutorials
