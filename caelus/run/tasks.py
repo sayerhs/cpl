@@ -256,18 +256,7 @@ class Tasks(object):
 
     def cmd_change_inputs(self, options):
         """Change input files in case directory"""
-        dictfile_map = dict(
-            controlDict=cmlio.ControlDict,
-            fvSchemes=cmlio.FvSchemes,
-            fvSolution=cmlio.FvSolution,
-            decomposeParDict=cmlio.DecomposeParDict,
-            changeDictionaryDict=cmlio.ChangeDictionaryDict,
-            transportProperties=cmlio.TransportProperties,
-            turbulenceProperties=cmlio.TurbulenceProperties,
-            RASProperties=cmlio.RASProperties,
-            LESProperties=cmlio.LESProperties,
-            blockMeshDict=cmlio.BlockMeshDict,
-        )
+        dictfile_map = cmlio.cml_std_files
         for key, value in options.items():
             obj = None
             if key in dictfile_map:

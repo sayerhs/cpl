@@ -473,3 +473,24 @@ class ChangeDictionaryDict(DictFile):
     _dict_properties = [
         ("dictionaryReplacement", None)
     ]
+
+class CmlControls(DictFile):
+    """cmlControls interface"""
+
+    _default_filename = "cmlControls"
+
+
+#: Mapping of standard files known to exist in a case directory
+cml_std_files = dict(
+    cmlControls=CmlControls,
+    controlDict=ControlDict,
+    fvSchemes=FvSchemes,
+    fvSolution=FvSolution,
+    decomposeParDict=DecomposeParDict,
+    changeDictionaryDict=ChangeDictionaryDict,
+    transportProperties=TransportProperties,
+    turbulenceProperties=TurbulenceProperties,
+    RASProperties=RASProperties,
+    LESProperties=LESProperties,
+    blockMeshDict=BlockMeshDict,
+)
