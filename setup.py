@@ -43,6 +43,7 @@ setup(
         'caelus.utils',
         'caelus.post',
         'caelus.run',
+        'caelus.io',
         'caelus.scripts',
     ],
     entry_points="""
