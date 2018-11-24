@@ -145,7 +145,7 @@ def clean_casedir(casedir,
                  that is not a valid Caelus case directory.
     """
     base_patterns = ["system", "constant", "*.yaml", "*.yml", "*.py",
-                     "*.job", "README*", "readme*"]
+                     "*.job", "README*", "readme*", "cmlControls"]
     zero_pat = ["0"] if preserve_zero else []
     time_pat = (["[1-9]*", "0.[0-9]*", "-[0-9]*"]
                 if preserve_times else [])

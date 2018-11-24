@@ -368,10 +368,12 @@ class SolverLog(object):
         if not has_logs and logfile is None:
             raise RuntimeError("Cannot find processed logs data. "
                                "Provide a valid log file.")
+        self.solve_completed = False
         if force_reload or not has_logs:
             logs = LogProcessor(logfile,
                                 self.casedir, logs_dir)
             logs()
+            self.solve_completed = logs.solve_completed
 
         self.fields = []
         self.bounding_fields = []
