@@ -35,7 +35,7 @@ To follow along with this tutorial, we recommend that the user download the
 tutorial we will assume that the user is executing the commands from within
 :file:`$HOME/run` directory. Once downloaded please unzip the zip file.
 
-.. code-block:: bash
+.. code-block:: console
 
    # Files downloaded for the tutorial walkthrough
    bash:/tmp/run$ ls
@@ -236,7 +236,7 @@ Now that we have the requisite inputs for setting up a parametric run, we will
 use :program:`caelus_sim setup` command to setup a case (see
 :ref:`cli_apps_caelus_sim` for more details).
 
-.. code-block:: bash
+.. code-block:: console
 
    bash:/tmp/run$ caelus_sim setup
    INFO: Caelus Python Library (CPL) v0.1.1
@@ -250,7 +250,7 @@ that contains six Caelus case directories for the various combinations of
 Reynolds number and angles of attack. User can query the status of the analysis
 by executing the ``status`` sub-command.
 
-.. code-block:: bash
+.. code-block:: console
 
    bash:/tmp/run/airfoil_demo$ ls
    Re_1.0e+06      Re_2.0e+06      caelus_sim.yaml
@@ -301,7 +301,7 @@ wildcard arguments to select a subset of cases where the command is executed. In
 this tutorial, we will demonstrate this behavior by executing ``prep`` only on
 the cases where :math:`Re = 2\times 10^6`.
 
-.. code-block:: bash
+.. code-block:: console
 
    #
    # Submit prep only for Re=2e6
@@ -343,7 +343,7 @@ In the next step, we will directly invoke ``solve`` on the positive angle of
 attack cases for :math:`Re = 1\times 10^6` to demonstrate the automatic
 invocation of ``prep`` if not already performed.
 
-.. code-block:: bash
+.. code-block:: console
 
    #
    # Submit solve only for positive aoa and Re=1e6
@@ -385,7 +385,7 @@ invocation of ``prep`` if not already performed.
 User can execute the ``post`` step and it will only execute post-processing
 actions on cases that have completed the solve.
 
-.. code-block:: bash
+.. code-block:: console
 
    #
    # Execute post-processing actions
