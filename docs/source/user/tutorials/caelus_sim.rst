@@ -142,7 +142,19 @@ An example of using this file to set the turbulence model in
 
 Notice how the :file:`cmlControls` file is included in line 11, and the property
 ``RASModel`` is set with ``$turbulenceModel`` (see line 27 in
-:file:`cmlControls` snippet above).
+:file:`cmlControls` snippet above). The user is referred to
+:file:`constant/transportProperties`, :file:`0.orig/U`, :file:`0.orig/k`, and
+``functions`` section of :file:`system/controlDict` for further examples of how
+the inputs from :file:`cmlControls` is used to customize the case.
+
+.. tip::
+
+   Currently, :file:`cmlControls` and CPL's dictionary manipulation capabilities
+   are restricted to text files only. If you want to customize binary files
+   within :file:`0/` directory, then we recommend using :file:`cmlControls` to
+   modify :file:`system/changeDictionaryDict` and execute CML's
+   :program:`changeDictionary` executable in the pre-processing phase to modify
+   binary files.
 
 Inputs for setting up parametric run
 ------------------------------------
