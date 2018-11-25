@@ -19,6 +19,7 @@ from ..post.plots import CaelusPlot
 from ..config import cmlenv
 from ..io import dictfile as cmlio
 from .cmd import CaelusCmd
+from .hpc_queue import python_execute
 
 _lgr = logging.getLogger(__name__)
 
@@ -157,6 +158,20 @@ class Tasks(object):
         if status != 0:
             raise RuntimeError(
                 "Error executing command: %s", cml_exe)
+
+    def cmd_run_python(self, options):
+        """Execute a python script"""
+        pyscript = options.script
+        pysfull = osutils.abspath(pyscript)
+        pyargs = options.get("script_args", "")
+        pylog = options.get("log_file", None)
+        if not osutils.path_exists(pysfull):
+            raise FileNotFoundError("Python file not found: %s", pyscript)
+        status = python_execute(
+            pysfull, pyargs, env=self.env, log_file=pylog)
+        if status != 0:
+            raise RuntimeError(
+                "Error executing python script: %s"%pyscript)
 
     def cmd_copy_files(self, options):
         """Copy given file(s) to the destination."""

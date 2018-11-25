@@ -117,8 +117,40 @@ executable. Several other options are available and are documented below. Exampl
           parallel: true
           mpi_extra_args: "--hostfile my_hostfile"
 
+run_python -- Run user python scripts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This task will run a python script within the case directory. Like
+``run_command`` task, CPL will ensure that the apporpriate CML version as well
+as python environment is setup correctly prior to invoking the script. The task
+must provide one mandatory parameter :taskopt:`run_python.script` that contains
+the path to the python script to be executed. User can pass additional options
+to this task as documented below.
+
+.. code-block:: yaml
+
+   - run_python:
+       script: "../mytestscript.py"
+       script_args: "-v -f option1 arg1 arg2"
+       log_file: "mycustom.log"
+
+.. taskopt:: run_python.script
+
+   Path to the custom python script.
+
+.. taskopt:: run_python.script_args
+
+   Arguments that must be passed to the python script during invocation. As with
+   ``run_command`` quote the arguments appropriately to ensure that it is passed
+   correctly to the script.
+
+.. taskopt:: run_python.log_file
+
+   The filename where the outputs and error messages from the script is
+   redirected.
+
 copy_files -- Copy files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 This task copies files in a platform-agnostic manner.
 
@@ -135,7 +167,7 @@ This task copies files in a platform-agnostic manner.
    The destination where the files are to be copied.
 
 copy_tree -- Recursively copy directories
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This task takes an existing directory (``src``) and copies it to the
 destination. Internally, this task uses :pythonlib:`copytree
