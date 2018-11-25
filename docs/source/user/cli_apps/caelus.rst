@@ -30,7 +30,7 @@ Action      Purpose
    the previous section. Care must be take to include the common options before
    the subcommand, i.e.,
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Correct usage
       caelus -vvv cfg -f caelus.yaml
@@ -50,7 +50,7 @@ for debugging.
 
 .. program:: caelus cfg
 
-.. code-block:: bash
+.. code-block:: console
 
    $ caelus cfg -h
    usage: caelus cfg [-h] [-f CONFIG_FILE] [-b]
@@ -85,7 +85,7 @@ directory, and name of the new case that is created. By default, the new case
 directory is created in the current working directory and must not already
 exist. CPL will not attempt to overwrite existing directories during clone.
 
-.. code-block:: bash
+.. code-block:: console
 
    $ caelus clone -h
    usage: caelus clone [-h] [-m] [-z] [-s] [-e EXTRA_PATTERNS] [-d BASE_DIR]
@@ -129,7 +129,7 @@ exist. CPL will not attempt to overwrite existing directories during clone.
    the source directory that must be skipped while cloning the case directory.
    This option can be repeated multiple times to provide more than one pattern.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Skip all bash files and text files in the source directory
       caelus clone -e "*.sh" -e "*.txt" old_case_dir new_case_dir
@@ -151,7 +151,7 @@ directory. The behavior can be modified to read other file names and locations.
 
 .. program:: caelus tasks
 
-.. code-block:: bash
+.. code-block:: console
 
    $ caelus tasks -h
    usage: caelus tasks [-h] [-f FILE]
@@ -186,7 +186,7 @@ specify the case directory.
 
 .. program:: caelus run
 
-.. code-block:: bash
+.. code-block:: console
 
    $ caelus run -h
    usage: caelus run [-h] [-p] [-l LOG_FILE] [-d CASE_DIR] [-m MACHINEFILE]
@@ -242,7 +242,7 @@ arguments with ``--``.
 
 .. program:: caelus runpy
 
-.. code-block:: bash
+.. code-block:: console
 
    $ caelus runpy -h
    usage: caelus runpy [-h] [-l LOG_FILE] [-d CASE_DIR]
@@ -284,7 +284,7 @@ directory.
 
 .. program:: caelus logs
 
-.. code-block:: bash
+.. code-block:: console
 
    $ caelus logs -h
    usage: caelus logs [-h] [-l LOGS_DIR] [-d CASE_DIR] [-p] [-f PLOT_FILE] [-w]
@@ -344,7 +344,7 @@ directory.
    used to only include specific fields in residual plot. Multiple fields
    can be provided to this option. For example,
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Plot pressure and momentum residuals from simpleSolver case log
       caelus logs -p -i "p Ux Uy Uz" simpleSolver.log
@@ -355,7 +355,7 @@ directory.
    used to exclude specific fields in residual plot. Multiple fields
    be provided to this option. For example,
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Exclude TKE and omega residuals from simpleSolver case log
       caelus logs -p -e "k epsilon" simpleSolver.log
@@ -370,7 +370,7 @@ additional files and directories.
 
 .. program:: caelus clean
 
-.. code-block:: bash
+.. code-block:: console
 
    $ caelus clean -h
    usage: caelus clean [-h] [-d CASE_DIR] [-m] [-z] [-t] [-P] [-p PRESERVE]

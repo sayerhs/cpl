@@ -50,7 +50,7 @@ Caelus CML distribution.
    A shell wildcard pattern to match tutorial names that must be executed. This
    option can be used multiple times to match different patterns. For example,
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Run all simpleSolver cases and pisoSolver's cavity case
       caelus_tutorials -i "*simpleSolver* -i "*cavity*"
@@ -63,7 +63,7 @@ Caelus CML distribution.
    tutorial run. This option can be used multiple times to match different
    patterns. For example,
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Skip motorBikeSS and motorBikeLES cases
       caelus_tutorials -e "*motorBike*"

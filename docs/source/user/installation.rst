@@ -59,7 +59,7 @@ Install CPL
 
 #. Obtain the CPL source from the public Git repository.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change to directory where you want to develop/store sources
       git clone https://bitbucket.org/appliedccm/CPL
@@ -67,7 +67,7 @@ Install CPL
 
 #. Create a custom conda environment
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Ensure working directory is CPL
       conda env create -f etc/caelus2.yml
@@ -90,7 +90,7 @@ Install CPL
 
 #. Activate the custom environment and install CPL within this environment
 
-   .. code-block:: bash
+   .. code-block:: console
 
       source activate caelus2
       pip install .
@@ -118,7 +118,7 @@ Prepare system for virtual environment
 
 #. Install necessary packages
 
-  .. code-block:: bash
+  .. code-block:: console
 
     # Install necessary packages
     pip install virtualenv virtualenvwrapper
@@ -129,7 +129,7 @@ Prepare system for virtual environment
 
 #. Update your `~/.bashrc` or `~/.profile` with the following lines:
 
-   .. code-block:: bash
+   .. code-block:: console
 
       export WORKON_HOME=~/ENVS/
       source /usr/local/bin/virtualenvwrapper.sh
@@ -156,7 +156,7 @@ Install CPL
 
 #. Obtain the CPL source from the public Git repository.
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Change to directory where you want to develop/store sources
       git clone https://bitbucket.org/appliedccm/CPL
@@ -164,14 +164,14 @@ Install CPL
 
 #. Create a virtual environment with all dependencies for CPL
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Create a caelus Python 2.7 environment
       mkvirtualenv -a $(pwd) -r requirements.txt caelus2
 
 #. Activate virtual environment and install CPL into it
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Ensure that we are in the right environment
       workon caelus2
@@ -209,7 +209,7 @@ A local version of this documentation can be built using sphinx. See
 :ref:`install_dev_git` for more details on installing the developer environment
 and sources.
 
-.. code-block:: bash
+.. code-block:: console
 
    # Change working directory to CPL
    cd docs/

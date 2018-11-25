@@ -27,7 +27,7 @@ Action       Purpose
    previously. Care must be taken to include the common options before the
    subcommand, i.e.,
 
-   .. code-block:: bash
+   .. code-block:: console
 
       # Correct usage
       caelus_sim -v setup
@@ -45,7 +45,7 @@ matrix appear as subdirectories to the top-level analysis directory.
 
 .. program:: caelus_sim setup
 
-.. code-block:: bash
+.. code-block:: console
 
    $ caelus_sim setup -h
    usage: caelus_sim setup [-h] [-n SIM_NAME] [-d BASE_DIR] [-s] [-p]
