@@ -201,8 +201,7 @@ class LogProcessor(object):
     def current_state(self):
         """Return the current state of the logs processor"""
         curr_state = dict(
-            # case_dir=os.path.relpath(self.case_dir, self.logs_dir),
-            logfile=os.path.relpath(self.logfile, self.logs_dir),
+            logfile=os.path.basename(self.logfile),
             time=self.time,
             converged=self.converged,
             solve_completed=self.solve_completed,
@@ -392,22 +391,29 @@ class SolverLog(object):
         self.logs_dir = os.path.join(self.casedir, logs_dir)
         has_logs = os.path.exists(
             os.path.join(self.logs_dir, ".logs_state.json"))
+
+        data = {}
         if not has_logs and logfile is None:
             raise RuntimeError("Cannot find processed logs data. "
                                "Provide a valid log file.")
+        elif has_logs and logfile:
+            inpfile = os.path.basename(logfile)
+            data = json.load(open(
+                os.path.join(self.logs_dir, ".logs_state.json")))
+            oldfile = os.path.basename(data.get("logfile", None))
+            if (oldfile is None) or (inpfile != oldfile):
+                force_reload = True
+
         self.solve_completed = False
         self.failed = False
         self.fields = []
         self.bounding_fields = []
-        data = {}
         if force_reload or not has_logs:
             logs = LogProcessor(logfile,
                                 self.casedir, logs_dir)
             logs()
             data = logs.current_state
-        else:
-            data = json.load(open(
-                os.path.join(self.logs_dir, ".logs_state.json")))
+
         for key, val in data.items():
             setattr(self, key, val)
         if not self.solve_completed:
