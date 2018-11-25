@@ -116,7 +116,8 @@ class LogProcessor(object):
         pat_builtin = [grep(*x) for x in self._init_builtins()]
         patterns = pat_builtin + self._user_rules
         self._process_file(patterns)
-        self._save_state()
+        if self.solve_completed:
+            self._save_state()
 
     def watch_file(self, target=None, wait_time=0.1):
         """Process a log file for an in-progress run.
@@ -395,17 +396,22 @@ class SolverLog(object):
             raise RuntimeError("Cannot find processed logs data. "
                                "Provide a valid log file.")
         self.solve_completed = False
+        self.failed = False
+        self.fields = []
+        self.bounding_fields = []
+        data = {}
         if force_reload or not has_logs:
             logs = LogProcessor(logfile,
                                 self.casedir, logs_dir)
             logs()
-
-        self.fields = []
-        self.bounding_fields = []
-        data = json.load(open(
-            os.path.join(self.logs_dir, ".logs_state.json")))
+            data = logs.current_state
+        else:
+            data = json.load(open(
+                os.path.join(self.logs_dir, ".logs_state.json")))
         for key, val in data.items():
             setattr(self, key, val)
+        if not self.solve_completed:
+            _lgr.warning("Solve not completed in %s", self.casedir)
         if self.failed:
             _lgr.warning("Detected failed run in %s", self.casedir)
 
