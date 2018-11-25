@@ -219,3 +219,15 @@ def copy_tree(srcdir, destdir, symlinks=False, ignore_func=None):
     if os.path.exists(destdir):
         shutil.rmtree(destdir)
     shutil.copytree(srcdir, destdir, symlinks, ignore_func)
+
+def split_path(fname):
+    """Split a path into directory, basename, extension
+
+    Returns:
+        tuple: (directory, basename, extension)
+    """
+    abs_fname = abspath(fname)
+    fdir = os.path.dirname(abs_fname)
+    ftmp = os.path.basename(abs_fname)
+    base, ext = os.path.splitext(ftmp)
+    return (fdir, base, ext)
