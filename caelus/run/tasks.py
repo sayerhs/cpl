@@ -165,10 +165,12 @@ class Tasks(object):
         pysfull = osutils.abspath(pyscript)
         pyargs = options.get("script_args", "")
         pylog = options.get("log_file", None)
+        log_to_file = options.get("log_to_file", True)
         if not osutils.path_exists(pysfull):
             raise FileNotFoundError("Python file not found: %s", pyscript)
         status = python_execute(
-            pysfull, pyargs, env=self.env, log_file=pylog)
+            pysfull, pyargs, env=self.env, log_file=pylog,
+            log_to_file=log_to_file)
         if status != 0:
             raise RuntimeError(
                 "Error executing python script: %s"%pyscript)

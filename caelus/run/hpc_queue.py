@@ -55,7 +55,8 @@ def caelus_execute(cmd, env=None, stdout=sys.stdout, stderr=sys.stderr):
         cmd_popen, stdout=stdout, stderr=stderr, env=renv.environ)
     return task
 
-def python_execute(pyscript, script_args="", env=None, log_file=None):
+def python_execute(pyscript, script_args="", env=None,
+                   log_file=None, log_to_file=True):
     """Execute a python script with the right environment
 
     This function will setup the correct CPL and CML environment and execute
@@ -73,23 +74,26 @@ def python_execute(pyscript, script_args="", env=None, log_file=None):
         script_args (str): Extra arguments to be passed to the python script
         env (CMLEnv): CML environment used for execution
         log_file (filename): Filename to redirect output to
+        log_to_file (bool): Should outputs be redirected to log file
 
     Returns:
         status (int): The status of the execution
 
     """
     spath = osutils.abspath(pyscript)
-    if not log_file:
+    if not log_file and log_to_file:
         _, sbase, _ = osutils.split_path(spath)
         log_file = "py_%s.log"%sbase
     pycmd = "%s %s %s"%(sys.executable, spath, script_args)
-    with open(log_file, 'w') as fh:
-        task = caelus_execute(pycmd, env, fh, stderr=subprocess.STDOUT)
-        status = task.wait()
-        if status != 0:
-            _lgr.error("Python script %s failed; status = %d",
-                       spath, status)
-        return status
+    fh = open(log_file, 'w') if log_file else sys.stdout
+    task = caelus_execute(pycmd, env, fh, stderr=subprocess.STDOUT)
+    status = task.wait()
+    if status != 0:
+        _lgr.error("Python script %s failed; status = %d",
+                    spath, status)
+    if log_file is not None:
+        fh.close()
+    return status
 
 @six.add_metaclass(abc.ABCMeta)
 class HPCQueue():

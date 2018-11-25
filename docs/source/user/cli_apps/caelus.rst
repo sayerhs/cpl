@@ -19,6 +19,7 @@ Action      Purpose
 ``clone``   Clone a case directory
 ``tasks``   Automatic execution of workflow from a YAML file
 ``run``     Run a CML executable in the appropriate environment
+``runpy``   Run a python script in the appropriate environment
 ``logs``    Parse a solver log file and extract data for analysis
 ``clean``   Clean a case directory after execution
 =========== ==================================================================
@@ -169,12 +170,19 @@ directory. The behavior can be modified to read other file names and locations.
 caelus run -- run a Caelus executable in the appropriate environment
 --------------------------------------------------------------------
 
-Run a single Caelus application. The application name is the one mandatory argument.
-Additional command arguments can be specified. The behavior can be modified to enble
-parallel execution of the application. By default, the application runs from the
-current directory. This behavior can be modified to specify the case directory. Note:
-when passing ``cmd_args``, ``--`` is required between ``run`` and ``cmd_name`` so the
-cmd_args are parsed correctly. E.g. ``caelus run -- renumberMesh "-overwrite"``
+Run a single Caelus application. The application name is the one mandatory
+argument. Additional command arguments can be specified. The behavior can be
+modified to enble parallel execution of the application. By default, the
+application runs from the current directory. This behavior can be modified to
+specify the case directory.
+
+.. note::
+
+   When passing ``cmd_args``, ``--`` is required between ``run`` and
+   ``cmd_name`` so the cmd_args are parsed correctly. E.g. ``caelus run --
+   renumberMesh "-overwrite"``. This ensures that the arguments meant for the
+   CML executable are not parsed as arguments to the ``caelus`` executable
+   during the run.
 
 .. program:: caelus run
 
@@ -210,6 +218,48 @@ cmd_args are parsed correctly. E.g. ``caelus run -- renumberMesh "-overwrite"``
    if :confval:`job_scheduler <caelus.cpl.system.job_scheduler>` is not
    ``local_mpi``. This option has no effect if the :option:`parallel option
    <caelus run -p>` is not used.
+
+.. option:: -l log_file, --log-file log_file
+
+   By default, a log file named ``<application>.log`` is created. This option
+   allows the user to modify the behavior and create a differently named log
+   file.
+
+.. option:: -d casedir, --case-dir casedir
+
+   By default, executables run from the current working directory. This option
+   allows the user to modify the behavior and specify the path to the case
+   directory.
+
+caelus runpy -- Run a custom python script
+------------------------------------------
+
+Runs a user-provided python script in the case directory. CPL ensures that the
+correct version of CML and python environment are setup prior to the invocation
+of the python script. Like :program:`caelus run`, it is recommended that the
+arguments meant for the user script be separated from :program:`caelus runpy`
+arguments with ``--``.
+
+.. program:: caelus runpy
+
+.. code-block:: bash
+
+   $ caelus runpy -h
+   usage: caelus runpy [-h] [-l LOG_FILE] [-d CASE_DIR]
+                       script [script_args [script_args ...]]
+
+   Run a custom python script with CML and CPL environment
+
+   positional arguments:
+     script                path to the python script
+     script_args           additional arguments passed to command
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     -l LOG_FILE, --log-file LOG_FILE
+                           filename to redirect command output
+     -d CASE_DIR, --case-dir CASE_DIR
+                           path to the case directory
 
 .. option:: -l log_file, --log-file log_file
 

@@ -19,6 +19,7 @@ from .core import CaelusSubCmdScript
 from ..run.tasks import Tasks
 from ..run.core import clone_case, get_mpi_size, clean_casedir
 from ..run import cmd
+from ..run.hpc_queue import python_execute
 from ..post.logs import SolverLog
 from ..post.plots import CaelusPlot, LogWatcher
 from ..build.build import CMLBuilder
@@ -67,6 +68,10 @@ class CaelusCmd(CaelusSubCmdScript):
             "run",
             description="Run a Caelus executable in the correct environment",
             help="run a Caelus executable in the correct environment")
+        runpy = subparsers.add_parser(
+            "runpy",
+            description="Run a custom python script with CML and CPL environment",
+            help="run a custom python script")
         logs = subparsers.add_parser(
             "logs",
             description="Process logfiles for a Caelus run",
@@ -142,6 +147,21 @@ class CaelusCmd(CaelusSubCmdScript):
             'cmd_args', nargs='*',
             help="additional arguments passed to command")
         run.set_defaults(func=self.run_cmd)
+
+        # Run python script
+        runpy.add_argument(
+            '-l', '--log-file', default=None,
+            help="filename to redirect command output")
+        runpy.add_argument(
+            '-d', '--case-dir', default=os.getcwd(),
+            help="path to the case directory")
+        runpy.add_argument(
+            'script',
+            help="path to the python script")
+        runpy.add_argument(
+            'script_args', nargs='*',
+            help="additional arguments passed to command")
+        runpy.set_defaults(func=self.run_python)
 
         # Logs action
         logs.add_argument(
@@ -296,6 +316,31 @@ class CaelusCmd(CaelusSubCmdScript):
         else:
             _lgr.info("Command executed successfully; see %s for output",
                       cml_cmd.output_file)
+
+    def run_python(self):
+        """Run a python executable"""
+        args = self.args
+        cenv = cml_get_version()
+        pyscript = args.script
+        pysfull = osutils.abspath(pyscript)
+        if not osutils.path_exists(pysfull):
+            _lgr.fatal("Cannot find python script: %s", pyscript)
+            self.parser.exit(1)
+
+        script_args = ' '.join(args.script_args)
+        log_file = args.log_file
+        log_to_file = True if log_file else False
+        msg_str = "; see %s for details"%log_file if log_to_file else ""
+        _lgr.info("Executing python script: %s", pyscript)
+        status = python_execute(
+            pysfull, script_args, env=cenv,
+            log_file=log_file, log_to_file=log_to_file)
+        if status != 0:
+            _lgr.error("Error executing python script: %s%s",
+                       pyscript, msg_str)
+            self.parser.exit(status)
+        else:
+            _lgr.info("Script executed successfully%s", msg_str)
 
     def clone_case(self):
         """Clone a case directory"""
