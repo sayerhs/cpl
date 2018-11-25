@@ -6,46 +6,14 @@ Caelus Job Manager Interface
 
 """
 
-import sys
 import os
-import shlex
-import subprocess
 import logging
 
-from ..config import config, cmlenv
+from ..config import config
 from ..utils import osutils
 from .hpc_queue import get_job_scheduler
 
 _lgr = logging.getLogger(__name__)
-
-def caelus_execute(cmd, env=None, stdout=sys.stdout, stderr=sys.stderr):
-    """Execute a CML command with the right environment setup
-
-    A wrapper around subprocess.Popen to set up the correct environment before
-    invoing the CML executable.
-
-    The command can either be a string or a list of arguments as appropriate
-    for Caelus executables.
-
-    Examples:
-      caelus_execute("blockMesh -help")
-
-    Args:
-        cmd (str or list): The command to be executed
-        env (CMLEnv): An instance representing the CML installation (default: la
-test)
-        stdout: A file handle where standard output is redirected
-        stderr: A file handle where standard error is redirected
-
-    Returns:
-        subprocess.Popen : The task instance
-    """
-    renv = env or cmlenv.cml_get_latest_version()
-    cmd_popen = cmd if isinstance(cmd, list) else shlex.split(cmd)
-    _lgr.debug("Executing shell command: %s", ' '.join(cmd_popen))
-    task = subprocess.Popen(
-        cmd_popen, stdout=stdout, stderr=stderr, env=renv.environ)
-    return task
 
 class CaelusCmd(object):
     """CML execution interface.
