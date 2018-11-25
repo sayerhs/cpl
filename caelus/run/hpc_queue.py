@@ -55,6 +55,42 @@ def caelus_execute(cmd, env=None, stdout=sys.stdout, stderr=sys.stderr):
         cmd_popen, stdout=stdout, stderr=stderr, env=renv.environ)
     return task
 
+def python_execute(pyscript, script_args="", env=None, log_file=None):
+    """Execute a python script with the right environment
+
+    This function will setup the correct CPL and CML environment and execute
+    the python script within this environment. The user should only provide the
+    name of the script and not ``python script`` as this it is this functions
+    job to detect the correct python executable and execute within that
+    environment.
+
+    If ``log_file`` isn't provided it automatically creates a "py_*.log" file
+    to redirect output messages from the script where ``*`` is replaced with
+    the basename of the python script.
+
+    Args:
+        pyscript (path): Filename of the python script
+        script_args (str): Extra arguments to be passed to the python script
+        env (CMLEnv): CML environment used for execution
+        log_file (filename): Filename to redirect output to
+
+    Returns:
+        status (int): The status of the execution
+
+    """
+    spath = osutils.abspath(pyscript)
+    if not log_file:
+        _, sbase, _ = osutils.split_path(spath)
+        log_file = "py_%s.log"%sbase
+    pycmd = "%s %s %s"%(sys.executable, spath, script_args)
+    with open(log_file, 'w') as fh:
+        task = caelus_execute(pycmd, env, fh, stderr=subprocess.STDOUT)
+        status = task.wait()
+        if status != 0:
+            _lgr.error("Python script %s failed; status = %d",
+                       spath, status)
+        return status
+
 @six.add_metaclass(abc.ABCMeta)
 class HPCQueue():
     """Abstract base class for job submission interface
@@ -172,9 +208,9 @@ class HPCQueue():
         """
         renv = self.cml_env or cmlenv.cml_get_latest_version()
         path_var = (renv.bin_dir + os.pathsep + renv.user_bindir +
-            os.pathsep + renv.mpi_bindir)
+                    os.pathsep + renv.mpi_bindir)
         lib_var = (renv.lib_dir + os.pathsep + renv.user_libdir +
-            os.pathsep + renv.mpi_libdir)
+                   os.pathsep + renv.mpi_libdir)
         self.env_config = textwrap.dedent(env_cfg)%(
             renv.project_dir, path_var, lib_var)
 
