@@ -396,13 +396,14 @@ class SolverLog(object):
         if not has_logs and logfile is None:
             raise RuntimeError("Cannot find processed logs data. "
                                "Provide a valid log file.")
-        elif has_logs and logfile:
-            inpfile = os.path.basename(logfile)
+        elif has_logs:
             data = json.load(open(
                 os.path.join(self.logs_dir, ".logs_state.json")))
-            oldfile = os.path.basename(data.get("logfile", None))
-            if (oldfile is None) or (inpfile != oldfile):
-                force_reload = True
+            if logfile:
+                inpfile = os.path.basename(logfile)
+                oldfile = os.path.basename(data.get("logfile", None))
+                if (oldfile is None) or (inpfile != oldfile):
+                    force_reload = True
 
         self.solve_completed = False
         self.failed = False
