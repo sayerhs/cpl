@@ -73,7 +73,27 @@ def test_cmlsim_load(cmlsim_casedir,template_casedir):
         solve="simpleSolver"
     )
     case.run_config = run_config
+    case.update()
     case.save_state()
+
+def test_cmlsim_accesssors(cmlsim_casedir):
+    casedir = cmlsim_casedir
+    env = cmlenv.cml_get_version()
+
+    case = CMLSimulation.load(env, str(casedir))
+    cdict = case.controlDict
+    assert(cdict.writeFormat == "binary")
+    cdict = case.fvSchemes
+    assert(cdict.interpolationSchemes["interpolate(U)"] == "linear")
+    cdict = case.fvSolution
+    assert(cdict.PISO.nCorrectors == 2)
+    cdict = case.transportProperties
+    assert(cdict.transportModel == "Newtonian")
+    cdict = case.turbulenceProperties
+    assert(cdict.simulationType == "RASModel")
+    cdict = case.RASProperties
+    assert(cdict.model == "realizableKE")
+    assert(not cdict.coeffs)
 
 def test_cmlsim_prep(cmlsim_casedir):
     casedir = cmlsim_casedir
