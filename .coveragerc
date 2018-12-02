@@ -1,5 +1,6 @@
 [run]
 omit = 
     caelus/scripts/*
+    caelus/build/*
     caelus/io/caeluslextab.py
     caelus/io/caelusyacctab.py
