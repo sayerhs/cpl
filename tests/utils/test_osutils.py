@@ -22,3 +22,10 @@ def test_backup_file(tmpdir):
 def test_misc_osutils():
     osutils.username()
     osutils.user_home_dir()
+
+def test_split_path():
+    myfilename="/home/username/caelus/logs/test.py"
+    dname, base, ext = osutils.split_path(myfilename)
+    assert(dname == "/home/username/caelus/logs")
+    assert(base == "test")
+    assert(ext == ".py")
