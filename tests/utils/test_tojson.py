@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=missing-docstring,redefined-outer-name
 
+import json
 import numpy as np
 from caelus.utils import tojson, struct
 
@@ -44,5 +45,8 @@ def test_to_json():
 def test_encode():
     obj = Serializable()
     json_obj = obj.encode()
-    expected = """{"name": "test_serializer", "cases": ["case1", "case2", "case3", "case4", "case5"], "status": {"submitted": true, "completed": false, "failed": false}, "vector": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "conv_val": "     1234.87"}"""
-    assert(json_obj == expected)
+    dobj = json.loads(json_obj)
+    assert(dobj["name"] == "test_serializer")
+    assert(len(dobj["cases"]) == 5)
+    assert(not dobj["status"]["failed"])
+    assert(dobj["conv_val"] == "     1234.87")
