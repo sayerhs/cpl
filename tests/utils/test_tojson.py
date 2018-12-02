@@ -30,13 +30,14 @@ def test_to_json():
     obj = Serializable()
     val = obj.to_json()
     keys = "name cases status vector conv_val".split()
-    dtypes = dict(
+    dtypes = struct.Struct(
         name=str,
         cases=list,
         status=struct.Struct,
         vector=np.ndarray,
         conv_val=str)
-    assert(list(val.keys()) == keys)
+    for k in val.keys():
+        assert(k in keys)
     for key, dtyp in dtypes.items():
         assert(isinstance(val[key], dtyp))
 

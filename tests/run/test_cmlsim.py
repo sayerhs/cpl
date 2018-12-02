@@ -17,7 +17,7 @@ def cmlsim_casedir(tmpdir_factory):
 def test_cmlsim_basic(cmlsim_casedir, template_casedir):
     name = "caelus_case"
     casedir = cmlsim_casedir
-    basedir = os.path.dirname(casedir)
+    basedir = os.path.dirname(str(casedir))
     env = cmlenv.cml_get_version()
     case = CMLSimulation(name, env, basedir)
     assert(not os.path.exists(str(casedir)))
