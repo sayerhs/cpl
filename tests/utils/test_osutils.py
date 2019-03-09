@@ -24,8 +24,10 @@ def test_misc_osutils():
     osutils.user_home_dir()
 
 def test_split_path():
-    myfilename="/home/username/caelus/logs/test.py"
+    myfilename = pth.normpath("/home/username/caelus/logs/test.py")
+    dname_req = pth.normpath("/home/username/caelus/logs")
     dname, base, ext = osutils.split_path(myfilename)
-    assert(dname == "/home/username/caelus/logs")
+    if not osutils.ostype() == "windows":
+        assert(dname == dname_req)
     assert(base == "test")
     assert(ext == ".py")
