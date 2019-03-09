@@ -5,6 +5,7 @@ caelus.run -- CML Execution Utilities
 .. automodule:: caelus.run.tasks
    :members:
    :show-inheritance:
+   :member-order: groupwise
 
 .. automodule:: caelus.run.case
    :members:
@@ -14,6 +15,12 @@ caelus.run -- CML Execution Utilities
 .. automodule:: caelus.run.parametric
    :members:
    :show-inheritance:
+   :member-order: groupwise
+
+.. automodule:: caelus.run.cmd
+   :members:
+   :show-inheritance:
+   :member-order: groupwise
 
 .. automodule:: caelus.run.core
    :members:

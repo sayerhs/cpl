@@ -80,12 +80,10 @@ class CaelusCmd(CaelusSubCmdScript):
             "clean",
             description="Clean a case directory",
             help="clean case directory")
-        # SCons supplied with CML can only handle Python 2
-        if six.PY2:
-            build = subparsers.add_parser(
-                "build",
-                description="Compile Caelus CML",
-                help="compile Caelus CML sources")
+        build = subparsers.add_parser(
+            "build",
+            description="Compile Caelus CML",
+            help="compile Caelus CML sources")
 
         # Configuration action
         cpl_config.add_argument(
@@ -215,30 +213,29 @@ class CaelusCmd(CaelusSubCmdScript):
             help="shell wildcard patterns of extra files to preserve")
         clean.set_defaults(func=self.clean_case)
 
-        if six.PY2:
-            build.add_argument(
-                '-c', '--clean', action='store_true',
-                help="clean CML build")
-            build.add_argument(
-                '-j', '--jobs', type=int, default=-1,
-                help="number of parallel jobs")
-            build_dir_pat = build.add_mutually_exclusive_group(required=False)
-            build_dir_pat.add_argument(
-                '-a', '--all', action='store_true',
-                help="Build both project and user directories (default: no)")
-            build_dir_pat.add_argument(
-                '-p', '--project', action='store_true',
-                help="Build Caelus CML project (default: no)")
-            build_dir_pat.add_argument(
-                '-u', '--user', action='store_true',
-                help="Build user project (default: no)")
-            build_dir_pat.add_argument(
-                '-d', '--source-dir', default=os.getcwd(),
-                help="Build sources in path (default: CWD)")
-            build.add_argument(
-                'scons_args', nargs='*',
-                help="additional arguments passed to SCons")
-            build.set_defaults(func=self.cml_build)
+        build.add_argument(
+            '-c', '--clean', action='store_true',
+            help="clean CML build")
+        build.add_argument(
+            '-j', '--jobs', type=int, default=-1,
+            help="number of parallel jobs")
+        build_dir_pat = build.add_mutually_exclusive_group(required=False)
+        build_dir_pat.add_argument(
+            '-a', '--all', action='store_true',
+            help="Build both project and user directories (default: no)")
+        build_dir_pat.add_argument(
+            '-p', '--project', action='store_true',
+            help="Build Caelus CML project (default: no)")
+        build_dir_pat.add_argument(
+            '-u', '--user', action='store_true',
+            help="Build user project (default: no)")
+        build_dir_pat.add_argument(
+            '-d', '--source-dir', default=os.getcwd(),
+            help="Build sources in path (default: CWD)")
+        build.add_argument(
+            'scons_args', nargs='*',
+            help="additional arguments passed to SCons")
+        build.set_defaults(func=self.cml_build)
 
     def write_config(self):
         """Dump the configuration file"""
