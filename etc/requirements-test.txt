@@ -16,6 +16,6 @@ ply
 pytz
 Jinja2
 #### Additional packages for development
-pytest
+pytest>=3.6
 pytest-cov
 coveralls
