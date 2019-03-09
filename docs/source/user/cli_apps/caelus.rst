@@ -22,6 +22,7 @@ Action      Purpose
 ``runpy``   Run a python script in the appropriate environment
 ``logs``    Parse a solver log file and extract data for analysis
 ``clean``   Clean a case directory after execution
+``build``   Compile CML sources
 =========== ==================================================================
 
 .. note::
