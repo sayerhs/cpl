@@ -9,7 +9,8 @@
 
 The ``caelus_sim`` is a shell executable that provides a command-line interface
 to setup and execute a parametric analysis. Currently, the following
-sub-commands are available through :program:`caelus_sim` executable.
+sub-commands are available through :program:`caelus_sim` executable. Please see
+:ref:`tuts_caelus_sim` tutorial for a detailed description of usage.
 
 ============ =========================================================
 Action       Purpose
