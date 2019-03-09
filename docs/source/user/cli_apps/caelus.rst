@@ -419,3 +419,84 @@ additional files and directories.
 
    A shell-wildcard patterns of files or directories that will not
    be cleaned.
+
+
+caelus build -- Compile CML sources
+-----------------------------------
+
+``caelus build`` is a wrapper to SCons shipped with CML sources that can be used
+to build executables in both CML project and user directories. The command can
+be executed from any directory when building project or user directories. It
+determines the actual paths to the project and user directories based on the
+:ref:`user configuration <configuration>` files, and the SCons configuration
+within those projects. The user can override the default project and user
+directories by specifying the :option:`--cml-version <cpl --cml-version>` flag
+when invoking this command.
+
+.. warning::
+
+   When using CPL with Python 3.x versions, you will need a recent version of
+   CML to invoke ``caelus build``. This is because the SCons versions shipped
+   with CML versions ``v8.04`` and older can only run on Python 2.x.
+
+.. program:: caelus build
+
+.. code-block:: console
+
+   $ caelus build -h
+   usage: caelus build [-h] [-c] [-j JOBS] [-a | -p | -u | -d SOURCE_DIR]
+                       [scons_args [scons_args ...]]
+
+   Compile Caelus CML
+
+   positional arguments:
+     scons_args            additional arguments passed to SCons
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     -c, --clean           clean CML build
+     -j JOBS, --jobs JOBS  number of parallel jobs
+     -a, --all             Build both project and user directories (default: no)
+     -p, --project         Build Caelus CML project (default: no)
+     -u, --user            Build user project (default: no)
+     -d SOURCE_DIR, --source-dir SOURCE_DIR
+                           Build sources in path (default: CWD)
+
+The positional arguments are passed directly to SCons providing user with full
+control over how the SCons build must be handled. It is recommended that the
+user separate the *optional arguments* to ``caelus build`` command from the
+arguments that must be passed to SCons using double dashes (``--``).
+
+.. option:: -d, --source-dir
+
+   Build sources in the current working directory. This is the default option.
+   If the user is in the top-level directory containing the :file:`SConstruct`
+   file, then it builds the entire project. If the user is in a sub-directory
+   containing a :file:`SConscript` file, then it just builds the libraries and
+   executables defined in that directory and sub-directories. An example would
+   be to recompile just the turbulence model libraries during development phase.
+
+.. option:: -p, --project
+
+   Build the sources in project directory only.
+
+.. option:: -u, --user
+
+   Build the sources in user directory only.
+
+.. option:: -a, --all
+
+   Build both the project and the user directories. The command will abort
+   compilation if the compilation of the project files fail and will not attempt
+   to build the sources in user directory.
+
+.. option:: -j, --jobs
+
+   The number of concurrent compilation jobs that must be launched with SCons.
+   The default value is determined by the number of CPU cores available on the
+   user's system.
+
+.. option:: -c, --clean
+
+   Instead of recompiling the sources, execute the ``clean`` command through
+   SCons.
