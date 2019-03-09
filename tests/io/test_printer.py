@@ -64,18 +64,6 @@ def test_arrays(cprinter, cparse):
     expected = """\
 convertToMeters     0.1;
 
-vertices
-(
-    ( 0.   0.   0. )
-    ( 1.   0.   0. )
-    ( 1.   1.   0. )
-    ( 0.   1.   0. )
-    ( 0.   0.   0.1)
-    ( 1.   0.   0.1)
-    ( 1.   1.   0.1)
-    ( 0.   1.   0.1)
-);
-
 blocks
 (
     hex
@@ -151,8 +139,6 @@ functions
         {
             type        uniform;
             axis        x;
-            start       ( -1.00100000e+00   1.00000000e-07   1.10000000e-03);
-            end         ( -1.00100000e+00   1.00000000e-07   1.00110000e+00);
             nPoints     20;
         }
 
@@ -198,7 +184,6 @@ functions
         rhoInf                 1;
         liftDir                (0 0 1);
         dragDir                (1 0 0);
-        CofR                   ( 0.72  0.    0.  );
         pitchAxis              (0 1 0);
         magUInf                20;
         lRef                   1.42;
