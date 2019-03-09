@@ -98,12 +98,19 @@ class Tasks(object):
         return self
 
     def __call__(self, case_dir=None, env=None):
-        """Execute tasks """
+        """Execute the tasks
+
+        Args:
+            case_dir: Absolute path to the case directory (default: CWD)
+            env (CMLEnv): Environment used for the runs
+        """
         self._validate_tasks()
         self.case_dir = case_dir or os.getcwd()
+        self.case_dir = osutils.abspath(self.case_dir)
         self.env = env or cmlenv.cml_get_version()
         self.dep_job_id = None
         self.task_set_count = 0
+        self.used_job_scheduler = False
         act_map = self.task_map
         num_tasks = len(self.tasks)
         _lgr.info("Begin executing tasks in %s", self.case_dir)
@@ -134,7 +141,10 @@ class Tasks(object):
             raise RuntimeError("Invalid tasks provided")
 
     def cmd_run_command(self, options):
-        """Execute a Caelus CML binary."""
+        """Execute a Caelus CML binary.
+
+        This method is an interface to :class:`CaelusCmd`
+        """
         cml_exe = options.cmd_name
         log_file = options.get("log_file", None)
         cml_cmd = CaelusCmd(cml_exe,
@@ -155,9 +165,9 @@ class Tasks(object):
         job_dep = [self.dep_job_id] if self.dep_job_id else None
         status = cml_cmd(job_dependencies=job_dep)
         self.dep_job_id = cml_cmd.job_id
+        self.used_job_scheduler = cml_cmd.runner.is_job_scheduler()
         if status != 0:
-            raise RuntimeError(
-                "Error executing command: %s", cml_exe)
+            raise RuntimeError("Error executing command: %s"%cml_exe)
 
     def cmd_run_python(self, options):
         """Execute a python script"""
@@ -225,6 +235,10 @@ class Tasks(object):
     def cmd_process_logs(self, options):
         """Process logs for a case"""
         log_file = options.log_file
+        lgfile = os.path.join(self.case_dir, log_file)
+        if self.used_job_scheduler and not os.path.exists(lgfile):
+            _lgr.info("Skipping process_logs; job submitted on scheduler")
+            return
         logs_dir = options.get("logs_directory", "logs")
         _lgr.info("Processing log file: %s", log_file)
         clog = SolverLog(
