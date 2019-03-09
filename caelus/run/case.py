@@ -72,7 +72,7 @@ class CMLSimulation(JSONSerializer):
     infrastructure to track the status of the simulation.
 
     After successful :meth:`setup`, the simulation moves through a series of
-    stages, that can be queried via :meth:`setup` method:
+    stages, that can be queried via :meth:`status` method:
 
       =========== =================================================
       Status      Description
@@ -285,7 +285,7 @@ class CMLSimulation(JSONSerializer):
                 if status != 0:
                     _lgr.fatal("Error encountered during decomposePar for: %s",
                                self.name)
-                    self.run_flags.failed= True
+                    self.run_flags.failed = True
 
     def solve(self, force=False):
         """Execute solve for this case
@@ -303,7 +303,7 @@ class CMLSimulation(JSONSerializer):
             self.prep_case()
         solve_opts = self.run_config.get("solve", None)
         if not solve_opts:
-            raise KeyError("Cannot find solve settings for case: %s",
+            raise KeyError("Cannot find solve settings for case: %s"%
                            self.name)
         status = 0
         if isinstance(solve_opts, (list,)):
@@ -415,7 +415,7 @@ class CMLSimulation(JSONSerializer):
         """
         run_flags = self.run_flags
         status_list = """failed post completed running submitted prep setup""".split()
-        status_names= """FAILED DONE Solved Running Submitted Prepped Setup""".split()
+        status_names = """FAILED DONE Solved Running Submitted Prepped Setup""".split()
         status_flags = {}
         for k in status_list:
             status_flags[k] = False
@@ -483,7 +483,8 @@ class CMLSimulation(JSONSerializer):
         elif self.solver is not None:
             logname = "%s.log"%self.solver
         else:
-            raise ValueError("Cannot determine log file for case: %s", self.name)
+            raise ValueError("Cannot determine log file for case: %s"%
+                             self.name)
         setattr(self, "_logfile", logname)
         return self._logfile
 

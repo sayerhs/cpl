@@ -9,7 +9,6 @@ import os
 import logging
 import itertools
 from collections import Mapping
-import json
 
 import numpy as np
 
@@ -123,8 +122,8 @@ class CMLParametricRun(CMLSimCollection):
         osutils.ensure_directory(os.path.dirname(cdir))
         case = self.simulation_class()(
             cname, cml_env=self.env,
-            basedir=self.casedir,parent=self)
-        case.clone(tmpl_dir,**clone_opts)
+            basedir=self.casedir, parent=self)
+        case.clone(tmpl_dir, **clone_opts)
         case.run_config = runconf
         with osutils.set_work_dir(cdir):
             case.update()
