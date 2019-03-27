@@ -41,12 +41,14 @@ class CMLBuilder(object):
     def __init__(self,
                  cml_env=None,
                  scons_exe=None,
-                 scons_args=None):
+                 scons_args=None,
+                 build_log=None):
         """
         Args:
             cml_env (CMLEnv): Caelus CML environment information
             scons_exe (path): Path to SCons executable
             scons_args (list): List of arguments to pass to SCons
+            build_log (file): Filename to redirect all compiler output
         """
         self.cfg = config.get_config()
         self.env = cml_env or cmlenv.cml_get_latest_version()
@@ -60,7 +62,11 @@ class CMLBuilder(object):
         cml_logs_dir = os.path.join(
             config.get_cpl_root(), "cml_build_logs")
         cml_logs_dir = osutils.ensure_directory(cml_logs_dir)
-        self.build_log = os.path.join(cml_logs_dir, "cml_build.log")
+        build_log_default = os.path.join(cml_logs_dir, "cml_build.log")
+
+        #: Log file where all output and error are captured
+        self.build_log = (build_log or
+                            build_log_default)
 
     def preprocess_scons_args(self):
         """Utility function to preprocess a few SCons args"""

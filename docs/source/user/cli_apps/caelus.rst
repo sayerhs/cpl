@@ -445,7 +445,8 @@ when invoking this command.
 .. code-block:: console
 
    $ caelus build -h
-   usage: caelus build [-h] [-c] [-j JOBS] [-a | -p | -u | -d SOURCE_DIR]
+   usage: caelus build [-h] [-l LOG_FILE] [-c] [-j JOBS]
+                       [-a | -p | -u | -d SOURCE_DIR]
                        [scons_args [scons_args ...]]
 
    Compile Caelus CML
@@ -455,6 +456,8 @@ when invoking this command.
 
    optional arguments:
      -h, --help            show this help message and exit
+     -l LOG_FILE, --log-file LOG_FILE
+                          filename to redirect build output
      -c, --clean           clean CML build
      -j JOBS, --jobs JOBS  number of parallel jobs
      -a, --all             Build both project and user directories (default: no)

@@ -213,6 +213,10 @@ class CaelusCmd(CaelusSubCmdScript):
             help="shell wildcard patterns of extra files to preserve")
         clean.set_defaults(func=self.clean_case)
 
+        # Build action
+        build.add_argument(
+            '-l', '--log-file', default=None,
+            help="filename to redirect build output")
         build.add_argument(
             '-c', '--clean', action='store_true',
             help="clean CML build")
@@ -444,7 +448,9 @@ class CaelusCmd(CaelusSubCmdScript):
             scons_args.append("--clean")
         if args.jobs > 0:
             scons_args.append("--jobs=%d"%args.jobs)
-        builder = CMLBuilder(cml_env=cenv, scons_args=scons_args)
+        builder = CMLBuilder(cml_env=cenv,
+                             scons_args=scons_args,
+                             build_log=args.log_file)
 
         _lgr.info("Caelus CML version: %s", cenv.version)
         prj_successful = True

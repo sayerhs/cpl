@@ -244,7 +244,7 @@ class CaelusSimCmd(CaelusSubCmdScript):
         num_width = math.ceil(math.log10(len(cfdsim.case_names)))
         case_width = max(len(c) for c in cfdsim.case_names)
         tbl_width = num_width + case_width + 25
-        line = "="*tbl_width
+        line = "="*int(tbl_width)
         fmt = "%%%dd. %%-%ds    %%s"%(num_width, case_width)
         fmt1 = "%%-%ds. %%-%ds    STATUS\n"%(num_width, case_width)
         total = len(cfdsim.case_names)
