@@ -34,6 +34,7 @@ functionality.
 .. code-block:: python
 
     from caelus.config.cmlenv import cml_get_version
+    from caelus.io import DictFile, DecomposeParDict
     from caelus.run.cmd import CaelusCmd
     from caelus.run.core import get_mpi_size
     from caelus.post.logs import LogProcessor, SolverLog
@@ -95,11 +96,9 @@ to run applications with.
 
 .. code-block:: python
 
-    if os.path.isfile("system/decomposeParDict"):
-        parallel = True
-        decompDict = DictFile.load("system/decomposeParDict")
-    else:
-        parallel = False
+    decomp_dict = DecomposeParDict.read_if_present()
+
+    parallel = True if decomp_dict['numberOfSubDomains'] > 1 else False
 
     status = 0
     solver_cmd = CaelusCmd("vofSolver", cml_env=cenv)
@@ -107,11 +106,12 @@ to run applications with.
     if parallel:
         print("Executing decomposePar... ")
         decomp_cmd = CaelusCmd("decomposePar", cml_env=cenv)
+        decomp_cmd.cml_exe_args = ("-force")
         status = decomp_cmd()
         if status != 0:
             print("ERROR running decomposePar. Exiting!")
             sys.exit(1)
-        solver_cmd.num_mpi_ranks = decompDict['numberOfSubdomains']
+        solver_cmd.num_mpi_ranks = decomp_dict['numberOfSubdomains']
         solver_cmd.parallel = True
         print("Executing vofSolver in parallel on %d cores..."%solver_cmd.num_mpi_ranks)
 
