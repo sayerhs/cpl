@@ -8,3 +8,4 @@ Tutorials
 
    tutorials/caelus_sim
    tutorials/cpl_io
+   tutorials/cpl_script
