@@ -191,23 +191,25 @@ class DictFile(object):
         default_header['object'] = '"%s"'%obj
         return default_header
 
-    def write(self, filename=None,
-              update_object=True,
+    def write(self, casedir=None, filename=None, update_object=True,
               write_header=True):
         """Write a formatted Caelus input file
 
         Args:
-            filename (path): Path to file
+            casedir (path): Path to the case directory
+            filename (path): Filename to write
             update_object (bool): Ensure object type is consistent
             write_header (bool): Write header for the file
         """
+        cdir = osutils.abspath(casedir or os.getcwd())
         self.filename = filename or self.filename
         header = None
-        if write_header:
-            header = self.create_header() if update_object else self.header
-        _lgr.info("Writing Caelus input file: %s", self.filename)
-        with printer.foam_writer(self.filename, header) as fh:
-            fh(self.data)
+        with osutils.set_work_dir(cdir):
+            if write_header:
+                header = self.create_header() if update_object else self.header
+            _lgr.info("Writing Caelus input file: %s", self.filename)
+            with printer.foam_writer(self.filename, header) as fh:
+                fh(self.data)
 
     def merge(self, *args):
         """Merge entries from one dictionary to another"""
