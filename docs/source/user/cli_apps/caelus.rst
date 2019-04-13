@@ -15,7 +15,6 @@ actions) are available through the :program:`caelus` script.
 Action      Purpose
 =========== ==================================================================
 ``cfg``     Print CPL configuration to stdout or file
-``env``     Generate an environment file for sourcing within bash or csh shell
 ``clone``   Clone a case directory
 ``tasks``   Automatic execution of workflow from a YAML file
 ``run``     Run a CML executable in the appropriate environment
