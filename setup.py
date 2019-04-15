@@ -8,7 +8,7 @@ Mechanics Library (CML).
 
 from setuptools import setup
 
-VERSION = "0.1.1"
+VERSION = "1.0.1"
 
 classifiers = [
     "Development Status :: 3 -Alpha",
