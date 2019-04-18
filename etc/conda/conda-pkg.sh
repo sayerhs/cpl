@@ -35,7 +35,7 @@ conda build --output-folder ./channels caelus
 
 # Convert to other platforms
 pushd channels
-conda convert -p osx-64 -p linux-64 ./$arch_type/caelus-${caelus_version}-py27_0.tar.bz2
+conda convert -p osx-64 -p linux-64 ./$arch_type/caelus-${caelus_version}-py37_0.tar.bz2
 popd
 
 # Create the installer that bundles CPL and its dependencies

@@ -10,7 +10,7 @@ set caelus_version="v1.0.1"
 set script_dir="%~dp0"
 
 REM Activate base/root environment for build and constructor
-call activate.bat
+call conda activate
 
 set arch_type="win-64"
 
@@ -28,4 +28,4 @@ call constructor --platform=win-64 .
 dir caelus*.exe
 cd ..
 
-call deactivate.bat
+call conda deactivate
