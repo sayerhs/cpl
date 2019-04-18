@@ -6,11 +6,11 @@ version: v1.0.1
 install_in_dependency_order: True
 
 channels:
-  - http://repo.continuum.io/pkgs/free/
+  - https://repo.anaconda.com/pkgs/main/
   - file://LOCAL_CHANNEL_PATH
 
 specs:
-  - python 2.7*
+  - python >=3.7
   - conda
   - pip
   - six
@@ -24,14 +24,7 @@ specs:
   - caelus
 
 exclude:
-  - libgcc           [linux]
-  - libgfortran      [linux]
-  - pycairo          [linux]
-  - cairo            [linux]
-  - gstreamer        [linux]
-  - gst-plugins-base [linux]
 
 
 company: "Applied CCM"
 
-add_to_path_default: True
