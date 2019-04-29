@@ -45,6 +45,7 @@ setup(
         'caelus.run',
         'caelus.io',
         'caelus.scripts',
+        'caelus.build',
     ],
     entry_points="""
         [console_scripts]
