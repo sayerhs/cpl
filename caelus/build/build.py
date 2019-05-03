@@ -29,7 +29,9 @@ def get_scons_exe(projdir):
             # Pick the first directory. CML only distributes one SCons, so we
             # don't bother checking
             scdir = sconsdirs[0]
-            scons_exe = os.path.join(extpath, scdir, "scons.py")
+            ostype = osutils.ostype()
+            scons_exe = "scons.bat" if ostype == "windows" else "scons.py"
+            scons_exe = os.path.join(extpath, scdir, scons_exe)
             assert osutils.path_exists(scons_exe), "Cannot find SCons executable"
             return scons_exe
         else:
