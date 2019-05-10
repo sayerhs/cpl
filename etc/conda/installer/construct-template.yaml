@@ -15,7 +15,7 @@ specs:
   - pip
   - six
   - nomkl            [not win]
-  - mkl 2017.0.1*    [win]
+  - mkl              [win]
   - numpy
   - matplotlib
   - pyyaml
@@ -25,6 +25,9 @@ specs:
 
 exclude:
 
+# https://github.com/conda/constructor/issues/86
+post_install: post_install.sh  [unix]
+post_install: post_install.bat  [win]
 
 company: "Applied CCM"
 
