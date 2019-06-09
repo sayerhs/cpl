@@ -9,7 +9,7 @@ set -e
 # Run from the script directory
 cd ${0%/*} || exit 1
 
-caelus_version="v1.0.1"
+caelus_version="v1.0.2"
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Set up conda environment
