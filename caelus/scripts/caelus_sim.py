@@ -11,6 +11,7 @@ import math
 import logging
 
 from ..utils import osutils
+from ..utils import import_utils
 from .core import CaelusSubCmdScript
 from ..io.caelusdict import CaelusDict
 from ..run.parametric import CMLParametricRun
@@ -85,6 +86,10 @@ class CaelusSimCmd(CaelusSubCmdScript):
             "status",
             description="show status of cases in this analysis",
             help="Print out status for the analysis")
+        runpy = subparsers.add_parser(
+            "runpy",
+            description="run a Python script",
+            help="Run a python script to process the parametric run")
 
         # Configuration options
         setup.add_argument(
@@ -141,6 +146,14 @@ class CaelusSimCmd(CaelusSubCmdScript):
             '-d', '--case-dir', default=None,
             help="path to the analysis directory")
         status.set_defaults(func=self.status)
+
+        runpy.add_argument(
+            '-d', '--case-dir', default=None,
+            help="path to the analysis directory")
+        runpy.add_argument(
+            "python_script",
+            help="Path to the python script to run")
+        runpy.set_defaults(func=self.runpy)
 
     def setup(self):
         """Setup the simulation"""
@@ -235,6 +248,25 @@ class CaelusSimCmd(CaelusSubCmdScript):
         cfdsim = self.reload_case()
         try:
             cfdsim.post(cnames, force)
+        finally:
+            cfdsim.save_state()
+
+    def runpy(self):
+        "Execute a python script with a collection"
+        args = self.args
+        pyscript = args.python_script
+        try:
+            pymod = import_utils.import_script(pyscript)
+        except Exception:
+            _lgr.exception("Error importing python script: %s", pyscript)
+
+        if not hasattr(pymod, "main"):
+            _lgr.fatal("No main function defined in script: %s", pyscript)
+            self.parser.exit(1)
+
+        cfdsim = self.reload_case()
+        try:
+            getattr(pymod, "main")(cfdsim)
         finally:
             cfdsim.save_state()
 
