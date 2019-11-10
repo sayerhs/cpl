@@ -90,6 +90,11 @@ class CaelusSimCmd(CaelusSubCmdScript):
             "runpy",
             description="run a Python script",
             help="Run a python script to process the parametric run")
+        shell = subparsers.add_parser(
+            "shell",
+            description="run an interactive python shell",
+            help="Run an interactive shell to process parametric run object")
+
 
         # Configuration options
         setup.add_argument(
@@ -154,6 +159,11 @@ class CaelusSimCmd(CaelusSubCmdScript):
             "python_script",
             help="Path to the python script to run")
         runpy.set_defaults(func=self.runpy)
+
+        shell.add_argument(
+            '-d', '--case-dir', default=None,
+            help="path to the analysis directory")
+        shell.set_defaults(func=self.shell)
 
     def setup(self):
         """Setup the simulation"""
@@ -248,6 +258,21 @@ class CaelusSimCmd(CaelusSubCmdScript):
         cfdsim = self.reload_case()
         try:
             cfdsim.post(cnames, force)
+        finally:
+            cfdsim.save_state()
+
+    def shell(self):
+        """Execute an interactive shell"""
+        cfdsim = self.reload_case()
+        try:
+            import IPython
+            IPython.embed(
+                header="caelus_sim iteractive shell. "
+                "Use 'cfdsim' to interact with %s"%cfdsim.name,
+                colors="neutral")
+        except ImportError:
+            print("Interactive shell requires IPython installed")
+            self.parser.exit(1)
         finally:
             cfdsim.save_state()
 
