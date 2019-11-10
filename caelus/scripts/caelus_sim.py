@@ -11,7 +11,7 @@ import math
 import logging
 
 from ..utils import osutils
-from ..utils import import_utils
+from ..utils import pyutils
 from .core import CaelusSubCmdScript
 from ..io.caelusdict import CaelusDict
 from ..run.parametric import CMLParametricRun
@@ -256,9 +256,10 @@ class CaelusSimCmd(CaelusSubCmdScript):
         args = self.args
         pyscript = args.python_script
         try:
-            pymod = import_utils.import_script(pyscript)
+            pymod = pyutils.import_script(pyscript)
         except Exception:
             _lgr.exception("Error importing python script: %s", pyscript)
+            self.parser.exit(1)
 
         if not hasattr(pymod, "main"):
             _lgr.fatal("No main function defined in script: %s", pyscript)
