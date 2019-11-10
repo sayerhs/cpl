@@ -728,6 +728,7 @@ class CMLSimCollection(JSONSerializer):
     def save_state(self, **kwargs):
         """Dump persistence file in JSON format"""
         with osutils.set_work_dir(self.casedir):
+            self.udf.sim_epilogue(self)
             with open(self.json_file(), 'w') as fh:
                 json.dump(self.to_json(), fh,
                           cls=self._json_dumper_, **kwargs)
