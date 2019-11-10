@@ -31,7 +31,7 @@ def normalize_variable_param(varspec):
         return varspec
     return [varspec]
 
-def iter_case_params(sim_options):
+def iter_case_params(sim_options, case_name_func):
     """Normalize the keys and yield all possible run setups"""
     casefmt = sim_options.get("case_format", "case_{idx:04d}")
     const_params = sim_options.get("constant_parameters", CaelusDict())
@@ -66,14 +66,16 @@ def iter_case_params(sim_options):
             rdict['idx'] = idx  # Global index
             rdict['gid'] = i    # Group index
             rdict['cid'] = j    # Case index (within this group)
-            case_name = casefmt.format(**rdict)
+            case_name = case_name_func(
+                case_format=casefmt,
+                case_params=rdict)
             yield (case_name, case_params)
             idx += 1
 
 class CMLParametricRun(CMLSimCollection):
     """A class to handle parametric runs"""
 
-    _json_public_ = ("name sim_dict case_names".split())
+    _json_public_ = ("name sim_dict case_names _udf_script".split())
 
     def __init__(self,
                  name,
@@ -90,6 +92,22 @@ class CMLParametricRun(CMLSimCollection):
         super(CMLParametricRun, self).__init__(name, env, basedir)
         #: Dictionary containing the run settings
         self.sim_dict = sim_dict
+        self.udf = self.udf_instance(self.udf_script, self.udf_params)
+        self.udf.sim_init_udf(simcoll=self, is_reload=False)
+
+    @property
+    def udf_script(self):
+        """Return the UDF script"""
+        if not hasattr(self, "_udf_script"):
+            self._udf_script = self.sim_dict.pop("udf_script", None)
+            if self._udf_script is not None:
+                self._udf_script = osutils.abspath(self._udf_script)
+        return self._udf_script
+
+    @property
+    def udf_params(self):
+        """Return the parameters for UDF script"""
+        return self.sim_dict.get("udf_params", None)
 
     def setup(self):
         """Setup the parametric case directories"""
@@ -108,8 +126,8 @@ class CMLParametricRun(CMLSimCollection):
             cases = [self.setup_case(cname, tmpl_dir, cparams, runconf,
                                      tmpl_info)
                      for cname, cparams in
-                     iter_case_params(setup_params)]
-        self.cases = cases
+                     iter_case_params(setup_params, self.udf.sim_case_name)]
+        self.cases = [case for case in cases if case is not None]
         self.case_names = [case.name for case in self.cases]
         fname = os.path.join(self.casedir, "caelus_sim.yaml")
         with open(fname, 'w') as fh:
@@ -120,14 +138,22 @@ class CMLParametricRun(CMLSimCollection):
         """Helper function to setup the cases"""
         cdir = os.path.join(self.casedir, cname)
         osutils.ensure_directory(os.path.dirname(cdir))
+        skip_setup = self.udf.case_setup_prologue(
+            name=cname, case_params=cparams, run_config=runconf)
+
+        if skip_setup:
+            return None
+
         case = self.simulation_class()(
             cname, cml_env=self.env,
             basedir=self.casedir, parent=self)
         case.clone(tmpl_dir, **clone_opts)
         case.run_config = runconf
+        case.udf = self.udf
         with osutils.set_work_dir(cdir):
             case.update()
             cmlctrls = case.cmlControls
             cmlctrls.data.update(cparams)
             cmlctrls.write()
+            self.udf.case_setup_epilogue(case)
         return case
