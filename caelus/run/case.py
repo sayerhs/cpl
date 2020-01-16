@@ -391,7 +391,7 @@ class CMLSimulation(JSONSerializer):
         """Reconstruct a parallel case"""
         rconf = self.run_config
         num_ranks = rconf.get("num_ranks", 1)
-        dorecon = rconf.get("reconstruct_case", False)
+        dorecon = rconf.get("reconstruct", False)
         if dorecon and (num_ranks > 1):
             _lgr.info("Reconstructing parallel run in case: %s",
                       self.name)
