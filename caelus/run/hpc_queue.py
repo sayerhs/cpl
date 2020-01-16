@@ -49,7 +49,8 @@ def caelus_execute(cmd, env=None, stdout=sys.stdout, stderr=sys.stderr):
         subprocess.Popen : The task instance
     """
     renv = env or cmlenv.cml_get_latest_version()
-    cmd_popen = cmd if isinstance(cmd, list) else shlex.split(cmd)
+    posix = False if osutils.ostype() == "windows" else True
+    cmd_popen = cmd if isinstance(cmd, list) else shlex.split(cmd, posix=posix)
     _lgr.debug("Executing shell command: %s", ' '.join(cmd_popen))
     task = subprocess.Popen(
         cmd_popen, stdout=stdout, stderr=stderr, env=renv.environ)
