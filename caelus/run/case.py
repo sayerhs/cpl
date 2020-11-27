@@ -27,12 +27,14 @@ import numpy as np
 from ..config import cmlenv
 from ..utils import osutils
 from ..utils.tojson import JSONSerializer
+from ..utils.pyutils import import_script
 from ..post.logs import SolverLog
 from ..io.caelusdict import CaelusDict
 from ..io import dictfile as cmlio
 from . import core as rcore
 from . import tasks
 from .cmd import CaelusCmd
+from .udf import SimUDFBase
 
 _lgr = logging.getLogger(__name__)
 
@@ -124,6 +126,9 @@ class CMLSimulation(JSONSerializer):
         #: Dictionary containing run configuration (internal use only)
         self.run_config = CaelusDict()
 
+        #: User-defined customization class
+        self.udf = SimUDFBase()
+
         #: Dictionary tracking status (internal use only)
         self.run_flags = CaelusDict(
             updated=False,
@@ -149,6 +154,7 @@ class CMLSimulation(JSONSerializer):
         self.casedir = cdir
         self.basedir = os.path.dirname(self.casedir)
         self.parent = parent
+        self.udf = SimUDFBase()
         self._dicts_accessed = []
         for k in self._json_public_:
             setattr(self, k, data.get(k, None))
@@ -221,6 +227,24 @@ class CMLSimulation(JSONSerializer):
             self.run_flags.prepped = False
 
     def prep_case(self, prep_tasks=None, force=False):
+        """Execute pre-processing tasks for this case
+
+        If not tasks are provided, then uses the section ``prep`` from
+        ``run_configuration`` that was passed during the setup phase.
+
+        Args:
+            prep_tasks (list): List of tasks for Tasks
+            force (bool): Force prep again if already run
+
+        """
+        skip_prep = self.udf.case_prep_prologue(case=self, force=force)
+
+        if not skip_prep:
+            self._prep_case_default(prep_tasks, force)
+
+        self.udf.case_post_epilogue(case=self, force=force)
+
+    def _prep_case_default(self, prep_tasks=None, force=False):
         """Execute pre-processing tasks for this case
 
         If not tasks are provided, then uses the section ``prep`` from
@@ -351,6 +375,15 @@ class CMLSimulation(JSONSerializer):
         return status
 
     def post_case(self, post_tasks=None, force=False):
+        """Execute post-processing tasks for this case"""
+        skip_post = self.udf.case_post_prologue(case=self, force=force)
+
+        if not skip_post:
+            self._post_case_default(post_tasks, force)
+
+        self.udf.case_post_epilogue(case=self, force=force)
+
+    def _post_case_default(self, post_tasks=None, force=False):
         """Execute post-processing tasks for this case"""
         if self.run_flags.post_done and not force:
             _lgr.info("%s: Detected previous post-processing, skipping",
@@ -587,6 +620,9 @@ class CMLSimCollection(JSONSerializer):
         #: Names of cases
         self.case_names = []
 
+        #: UDF function
+        self.udf = SimUDFBase()
+
     @classmethod
     def simulation_class(cls):
         """Concrete instance of a Simulation
@@ -594,6 +630,16 @@ class CMLSimCollection(JSONSerializer):
         Default is :class:`CMLSimulation`
         """
         return CMLSimulation
+
+    @classmethod
+    def udf_instance(cls, custom_script=None, udf_params=None):
+        """Return a UDF instance"""
+        if custom_script is None:
+            return SimUDFBase()
+
+        udfpar = udf_params or CaelusDict()
+        udf_module = import_script(osutils.abspath(custom_script))
+        return getattr(udf_module, "get_udf_instance")(udfpar)
 
     @classmethod
     def load(cls, env=None, casedir=None, json_file=None):
@@ -616,12 +662,18 @@ class CMLSimCollection(JSONSerializer):
         for k in self._json_public_:
             setattr(self, k, data.get(k, None))
 
+        self.udf = cls.udf_instance(self.udf_script, self.udf_params)
+
         self.cases = [
             self.simulation_class().load(
                 env=self.env, casedir=os.path.join(self.casedir, cname),
                 parent=self)
             for cname in self.case_names
         ]
+        for case in self.cases:
+            case.udf = self.udf
+
+        self.udf.sim_init_udf(simcoll=self, is_reload=True)
         return self
 
     @abc.abstractmethod
@@ -676,6 +728,7 @@ class CMLSimCollection(JSONSerializer):
     def save_state(self, **kwargs):
         """Dump persistence file in JSON format"""
         with osutils.set_work_dir(self.casedir):
+            self.udf.sim_epilogue(self)
             with open(self.json_file(), 'w') as fh:
                 json.dump(self.to_json(), fh,
                           cls=self._json_dumper_, **kwargs)
@@ -715,6 +768,16 @@ class CMLSimCollection(JSONSerializer):
         if json_file is not None:
             _lgr.error("Detected nested analysis directories. Aborting setup")
             raise FileExistsError("Refusing to create nested analysis directories")
+
+    @property
+    def udf_script(self):
+        """Return the UDF script"""
+        return None
+
+    @property
+    def udf_params(self):
+        """Return the parameters for UDF script"""
+        return None
 
     def __repr__(self):
         return "<%s: %s (%d cases)>"%(
