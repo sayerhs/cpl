@@ -17,6 +17,8 @@ non-standard locations by customizing their Caelus Python configuration file.
 
 import os
 import glob
+import shlex
+import subprocess
 import itertools
 import logging
 import json
@@ -25,6 +27,10 @@ from . import config
 from ..utils import osutils
 
 _lgr = logging.getLogger(__name__)
+
+def is_foam_var(key):
+    """Test if the variable is an OpenFOAM variable"""
+    return key.startswith("WM_") or key.startswith("FOAM_")
 
 def discover_versions(root=None):
     """Discover Caelus versions if no configuration is provided.
@@ -319,6 +325,169 @@ class CMLEnv(object):
                     "CML build environment loaded from SCons: %s (%s)",
                            env_file, self._build_option)
 
+class FOAMEnv:
+    """OpenFOAM environment interface"""
+
+    _root_dir = ""
+    _project_dir = ""
+    _version = ""
+
+    def __init__(self, cfg):
+        """
+        Args:
+            cfg (CaleusCfg): The CML configuration object
+        """
+        self._cfg = cfg
+        self._version = cfg.version
+        self._project_dir = osutils.abspath(cfg.path)
+        self._root_dir = os.path.dirname(self._project_dir)
+        self._env = self._process_foam_env(self._project_dir)
+        self._build_option = self._env.get("WM_OPTIONS", "")
+
+    def __repr__(self):
+        return "<OpenFOAM %s>"%(self.version)
+
+    @property
+    def root(self):
+        """Return the root path for the OpenFOAM install
+
+        Typically on Linux/OSX this is the :file:`~/OpenFOAM` directory.
+        """
+        return self._root_dir
+
+    @property
+    def project_dir(self):
+        """Return the project directory path
+
+        Typically :file:`~/Caelus/caelus-VERSION`
+        """
+        return self._env.get('WM_PROJECT_DIR', self._project_dir)
+
+    @property
+    def version(self):
+        """Return the Caelus version"""
+        return self._env.get('WM_PROJECT_VERSION', self._version)
+
+    @property
+    def build_option(self):
+        """Return the build option"""
+        return self._env.get('WM_OPTIONS', "")
+
+    @property
+    def build_dir(self):
+        """Return the build platform directory"""
+        bdir = os.path.join(self.project_dir, "platforms", self._build_option)
+        if not osutils.path_exists(bdir):
+            raise IOError("Cannot find OpenFOAM platform directory: %s"%
+                          bdir)
+        return bdir
+
+    @property
+    def bin_dir(self):
+        """Return the bin directory for executables"""
+        bindir = self._env.get("FOAM_APPBIN", '')
+        if not os.path.exists(bindir):
+            raise IOError("Cannot find OpenFOAM bin directory: %s"%
+                          bindir)
+        return bindir
+
+    @property
+    def lib_dir(self):
+        """Return the lib directory for executables"""
+        libdir = self._env.get("FOAM_LIBBIN", '')
+        if not os.path.exists(libdir):
+            raise IOError("Cannot find OpenFOAM lib directory: %s"%
+                          libdir)
+        return libdir
+
+    @property
+    def user_dir(self):
+        """Return the user directory"""
+        return self._env.get("WM_PROJECT_USER_DIR", '')
+
+    @property
+    def user_libdir(self):
+        """Return the user lib directory"""
+        return self._env.get("FOAM_USER_LIBBIN", '')
+
+    @property
+    def user_bindir(self):
+        """Return the user binary directory"""
+        return self._env.get("FOAM_USER_APPBIN", '')
+
+    @property
+    def mpi_dir(self):
+        """Return the path to MPI dir"""
+        return self._env.get('MPI_ARCH_PATH', '')
+
+    @property
+    def mpi_libdir(self):
+        """Return the path to MPI libraries"""
+        mpidir = self.mpi_dir
+        return os.path.join(mpidir, 'lib') if mpidir else ''
+
+    @property
+    def mpi_bindir(self):
+        """Return the path to MPI binraries"""
+        mpidir = self.mpi_dir
+        return os.path.join(mpidir, 'bin') if mpidir else ''
+
+    @property
+    def environ(self):
+        """Return the environment"""
+        return self._env
+
+    def _process_foam_env(self, project_dir):
+        """Process the bashrc file and get all necessary variables"""
+        extra_vars = "PATH MPI_ARCH_PATH".split()
+        bashrc_path = os.path.join(project_dir, "etc", "bashrc")
+        if not os.path.exists(bashrc_path):
+            raise FileNotFoundError(
+                "Cannot find OpenFOAM config file: %s"%bashrc_path)
+        bash_cmd = ("bash --noprofile --norc -c 'source %s && env'"%
+                    bashrc_path)
+        cmd_env = {k : os.environ.get(k, "")
+                   for k in "HOME USER".split()}
+        pp = subprocess.Popen(bash_cmd, env=cmd_env,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
+                              shell=True)
+        out, err = pp.communicate()
+        retcode = pp.wait()
+        if retcode:
+            _lgr.exception("Error initializing OpenFOAM environment: %s"%
+                           self.version)
+
+        # No errors... process the bash variables
+        outbuf = out.decode('UTF-8')
+        bash_vars = dict([l.split("=",1) for l in outbuf.splitlines()
+                            if "=" in l])
+        foam_keys = [k for k in bash_vars.keys()
+                        if is_foam_var(k)]
+        env = { k: bash_vars[k] for k in foam_keys }
+        env.update((k, bash_vars[k]) for k in extra_vars
+                   if k in bash_vars)
+        return env
+
+def get_cmlenv_instance(cml):
+    """Return a Caelus or OpenFOAM instance
+
+    Args:
+        cml (dict): A configuration dictionary
+    """
+    version = cml.version
+    project_dir = cml.get(
+        "path",
+        os.path.join(config.get_caelus_root(), "caelus-%s"%version))
+    if os.path.exists(os.path.join(project_dir, "SConstruct")):
+        return CMLEnv(cml)
+    elif os.path.exists(os.path.join(project_dir, "wmake")):
+        return FOAMEnv(cml)
+    else:
+        raise FileNotFoundError(
+            "Cannot find a proper Caleus/OpenFOAM version: %s"%version)
+
+
 def _cml_env_mgr():
     """Caelus CML versions manager"""
     cml_versions = {}
@@ -334,12 +503,12 @@ def _cml_env_mgr():
                 _lgr.warning(
                     "No valid versions provided; check configuration file.")
             for cml in cml_filtered:
-                cenv = CMLEnv(cml)
+                cenv = get_cmlenv_instance(cml)
                 cml_versions[cenv.version] = cenv
         else:
             cml_discovered = discover_versions()
             for cml in cml_discovered:
-                cenv = CMLEnv(cml)
+                cenv = get_cmlenv_instance(cml)
                 cml_versions[cenv.version] = cenv
         did_init[0] = True
 
