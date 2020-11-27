@@ -433,9 +433,19 @@ class FOAMEnv:
         return os.path.join(mpidir, 'bin') if mpidir else ''
 
     @property
+    def site_libdir(self):
+        """Return the site lib directory"""
+        return self._env.get("FOAM_SITE_LIBBIN", '')
+
+    @property
     def environ(self):
         """Return the environment"""
         return self._env
+
+    @property
+    def foam_bashrc(self):
+        """Return the path to the bashrc file"""
+        return self._bashrc_file
 
     def _process_foam_env(self, project_dir):
         """Process the bashrc file and get all necessary variables"""
@@ -467,6 +477,7 @@ class FOAMEnv:
         env = { k: bash_vars[k] for k in foam_keys }
         env.update((k, bash_vars[k]) for k in extra_vars
                    if k in bash_vars)
+        self._bashrc_file = bashrc_path
         return env
 
 def get_cmlenv_instance(cml):

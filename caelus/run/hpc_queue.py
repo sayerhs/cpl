@@ -200,7 +200,7 @@ class HPCQueue():
             if key in settings:
                 setattr(self, key, settings[key])
 
-    def process_run_env(self):
+    def process_cml_run_env(self):
         """Populate the run variables for script"""
         env_cfg = """
         # CAELUS environment updates
@@ -218,6 +218,30 @@ class HPCQueue():
                    os.pathsep + renv.mpi_libdir)
         self.env_config = textwrap.dedent(env_cfg)%(
             renv.project_dir, path_var, lib_var)
+
+    def process_foam_run_env(self):
+        """Populate the run variables for OpenFOAM execution"""
+        env_cfg = """
+        # OpenFOAM configuration
+        source %s
+        export LD_LIBRARY_PATH=%s:${LD_LIBRARY_PATH}
+
+        """
+        renv = self.cml_env
+        bashrc_path = self.cml_env.foam_bashrc
+        libs = "lib_dir user_libdir site_libdir mpi_libdir".split()
+        libvar = os.pathsep.join(getattr(renv, vv)
+                                 for vv in libs
+                                 if getattr(renv, vv))
+        self.env_config = textwrap.dedent(env_cfg)%(
+            bashrc_path, libvar)
+
+    def process_run_env(self):
+        """Process runtime environment for scripts"""
+        if self.cml_env and isinstance(self.cml_env, cmlenv.FOAMEnv):
+            self.process_foam_run_env()
+        else:
+            self.process_cml_run_env()
 
     @abc.abstractmethod
     def get_queue_settings(self):
