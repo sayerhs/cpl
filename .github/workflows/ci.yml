@@ -5,9 +5,9 @@ on:
     branches:
       - master
       - dev
-    pull_request:
-      - master
-      - dev
+  pull_request:
+    - master
+    - dev
 
 jobs:
   build:
