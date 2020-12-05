@@ -462,7 +462,7 @@ class FOAMEnv:
 
     def _process_foam_env(self, project_dir):
         """Process the bashrc file and get all necessary variables"""
-        extra_vars = "PATH MPI_ARCH_PATH".split()
+        extra_vars = "PATH LD_LIBRARY_PATH MPI_ARCH_PATH".split()
         bashrc_path = os.path.join(project_dir, "etc", "bashrc")
         if not os.path.exists(bashrc_path):
             raise FileNotFoundError(
@@ -490,8 +490,23 @@ class FOAMEnv:
         env = { k: bash_vars[k] for k in foam_keys }
         env.update((k, bash_vars[k]) for k in extra_vars
                    if k in bash_vars)
+        self._adjust_library_path(env)
         self._bashrc_file = bashrc_path
         return env
+
+    def _adjust_library_path(self, env):
+        """Adjust the LD_LIBRARY_PATH variable
+
+        Make sure that the paths from the OpenFOAM bashrc file as well as the
+        default environment are properly handled in the environment.
+        """
+        ld_foam = env.get("LD_LIBRARY_PATH", "")
+        ld_osenv = os.environ.get("LD_LIBRARY_PATH", "")
+        ld_path = os.pathsep.join(ff for ff in [ld_foam, ld_osenv]
+                                  if ff)
+        if ld_path:
+            env['LD_LIBRARY_PATH'] = (ld_path + os.pathsep +
+                                      "${LD_LIBRARY_PATH}")
 
 def get_cmlenv_instance(cml):
     """Return a Caelus or OpenFOAM instance
