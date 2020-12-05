@@ -147,7 +147,10 @@ class CMLEnv(object):
         self._process_scons_env_file()
 
     def __repr__(self):
-        return "<Caelus v%s>"%(self.version)
+        return "<CMLEnv v%s>"%(self.version)
+
+    def __str__(self):
+        return "Caleus CML version %s"%(self.version)
 
     @property
     def root(self):
@@ -345,7 +348,10 @@ class FOAMEnv:
         self._build_option = self._env.get("WM_OPTIONS", "")
 
     def __repr__(self):
-        return "<OpenFOAM %s>"%(self.version)
+        return "<FoamEnv %s>"%(self.version)
+
+    def __str__(self):
+        return "OpenFOAM version %s"%(self.version)
 
     @property
     def root(self):

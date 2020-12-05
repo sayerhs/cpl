@@ -273,7 +273,7 @@ class CaelusCmd(CaelusSubCmdScript):
         """Run tasks"""
         args = self.args
         cenv = cml_get_version()
-        _lgr.info("Caelus CML version: %s", cenv.version)
+        _lgr.info("Using CML: %s", cenv)
         task_file = osutils.abspath(args.file)
         dpath = os.path.dirname(task_file)
         if dpath and not os.path.isabs(dpath):
@@ -293,7 +293,7 @@ class CaelusCmd(CaelusSubCmdScript):
             cml_env=cenv, output_file=args.log_file)
         cml_cmd.cml_exe_args = ' '.join(args.cmd_args)
         cml_cmd.parallel = args.parallel
-        _lgr.info("Caelus CML version: %s", cenv.version)
+        _lgr.info("Using CML: %s", cenv)
         if args.parallel:
             cml_cmd.num_mpi_ranks = get_mpi_size(args.case_dir)
             if args.machinefile is not None:
@@ -452,7 +452,7 @@ class CaelusCmd(CaelusSubCmdScript):
                              scons_args=scons_args,
                              build_log=args.log_file)
 
-        _lgr.info("Caelus CML version: %s", cenv.version)
+        _lgr.info("Using CML: %s", cenv)
         prj_successful = True
         if build_project:
             _lgr.info("Compiling project sources")
