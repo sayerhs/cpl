@@ -261,4 +261,5 @@ def get_builder(cenv, args):
     elif isinstance(cenv, cmlenv.FOAMEnv):
         return make_foam_builder(cenv, args)
     else:
-        raise RuntimeError("Invalid arguments to create builder")
+        _lgr.error("Unknown CML type: %s", cenv)
+        return None
