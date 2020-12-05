@@ -365,7 +365,20 @@ class FOAMEnv:
 
     @property
     def version(self):
-        """Return the Caelus version"""
+        """Return the project version
+
+        This is the project version as defined in the Caelus configuration
+        file. For the exact version reported in OpenFOAM WMake use
+        :meth:`foam_version`
+        """
+        return self._version
+
+    @property
+    def foam_version(self):
+        """Return the OpenFOAM version
+
+        Unlike ``version`` this reports the version from ``WM_PROJECT_VERSION``
+        """
         return self._env.get('WM_PROJECT_VERSION', self._version)
 
     @property
