@@ -22,7 +22,7 @@ from ..run import cmd
 from ..run.hpc_queue import python_execute
 from ..post.logs import SolverLog
 from ..post.plots import CaelusPlot, LogWatcher
-from ..build.build import CMLBuilder
+from ..build.build import get_builder
 
 _lgr = logging.getLogger(__name__)
 
@@ -237,7 +237,7 @@ class CaelusCmd(CaelusSubCmdScript):
             '-d', '--source-dir', default=os.getcwd(),
             help="Build sources in path (default: CWD)")
         build.add_argument(
-            'scons_args', nargs='*',
+            'build_args', nargs='*',
             help="additional arguments passed to SCons")
         build.set_defaults(func=self.cml_build)
 
@@ -443,16 +443,11 @@ class CaelusCmd(CaelusSubCmdScript):
             self.parser.exit(1)
 
         cenv = cml_get_version()
-        scons_args = args.scons_args
-        if args.clean:
-            scons_args.append("--clean")
-        if args.jobs > 0:
-            scons_args.append("--jobs=%d"%args.jobs)
-        builder = CMLBuilder(cml_env=cenv,
-                             scons_args=scons_args,
-                             build_log=args.log_file)
-
         _lgr.info("Using CML: %s", cenv)
+        builder = get_builder(cenv, args)
+        if builder is None:
+            self.parser.exit(1)
+
         prj_successful = True
         if build_project:
             _lgr.info("Compiling project sources")
