@@ -438,14 +438,20 @@ class FOAMEnv:
     def mpi_dir(self):
         """Return the path to MPI dir"""
         if not hasattr(self, "_mpi_dir"):
-            mpi_dir = self._cfg.get(
-                "mpi_root",
-                self._env.get('MPI_ARCH_PATH', None))
-            if not mpi_dir:
+            cfg = self._cfg
+            if "mpi_root" in cfg:
+                self._mpi_dir = cfg["mpi_root"]
+            elif "mpi_libdir" in cfg:
+                self._mpi_dir = os.path.dirname(cfg["mpi_lib_path"])
+            elif "mpi_bindir" in cfg:
+                self._mpi_dir = os.path.dirname(cfg["mpi_bin_path"])
+            else:
+                self._mpi_dir = self._env.get('MPI_ARCH_PATH', '')
+
+            if not os.path.exists(self._mpi_dir):
                 raise ValueError(
-                    "Cannot determine MPI directory. Please specify "
-                    "'mpi_root' in Caelus configuration file")
-            self._mpi_dir = mpi_dir
+                    "Cannot determine OpenFOAM MPI installation. "
+                    "Please specify 'mpi_root' in Caelus configuration.")
         return self._mpi_dir
 
     @property
