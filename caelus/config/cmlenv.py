@@ -463,7 +463,7 @@ class FOAMEnv:
         if not hasattr(self, "_mpi_bindir"):
             self._mpi_bindir = self._cfg.get(
                 "mpi_bin_path",
-                os.path.join(self.mpi_dir, "lib"))
+                os.path.join(self.mpi_dir, "bin"))
         return self._mpi_bindir
 
     @property
