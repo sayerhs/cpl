@@ -474,7 +474,21 @@ class FOAMEnv:
     @property
     def environ(self):
         """Return the environment"""
-        return self._env
+        senv = self._env
+        senv['PATH'] = (
+            self.bin_dir + os.pathsep +
+            self.mpi_bindir + os.pathsep +
+            self.user_bindir + os.pathsep +
+            self._env.get('PATH', ''))
+        lib_var = 'LD_LIBRARY_PATH'
+        if osutils.ostype() == "darwin":
+            lib_var = 'DYLD_FALLBACK_LIBRARY_PATH'
+        senv[lib_var] = (
+            self.lib_dir + os.pathsep +
+            self.mpi_libdir + os.pathsep +
+            self.user_libdir + os.pathsep +
+            self._env.get(lib_var, ''))
+        return senv
 
     @property
     def foam_bashrc(self):
