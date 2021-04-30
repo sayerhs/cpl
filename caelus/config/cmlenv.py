@@ -437,19 +437,34 @@ class FOAMEnv:
     @property
     def mpi_dir(self):
         """Return the path to MPI dir"""
-        return self._env.get('MPI_ARCH_PATH', '')
+        if not hasattr(self, "_mpi_dir"):
+            mpi_dir = self._cfg.get(
+                "mpi_root",
+                self._env.get('MPI_ARCH_PATH', None))
+            if not mpi_dir:
+                raise ValueError(
+                    "Cannot determine MPI directory. Please specify "
+                    "'mpi_root' in Caelus configuration file")
+            self._mpi_dir = mpi_dir
+        return self.mpi_dir
 
     @property
     def mpi_libdir(self):
         """Return the path to MPI libraries"""
-        mpidir = self.mpi_dir
-        return os.path.join(mpidir, 'lib') if mpidir else ''
+        if not hasattr(self, "_mpi_libdir"):
+            self._mpi_libdir = self._cfg.get(
+                "mpi_lib_path",
+                os.path.join(self.mpi_dir, "lib"))
+        return self._mpi_libdir
 
     @property
     def mpi_bindir(self):
         """Return the path to MPI binraries"""
-        mpidir = self.mpi_dir
-        return os.path.join(mpidir, 'bin') if mpidir else ''
+        if not hasattr(self, "_mpi_bindir"):
+            self._mpi_bindir = self._cfg.get(
+                "mpi_bin_path",
+                os.path.join(self.mpi_dir, "lib"))
+        return self._mpi_bindir
 
     @property
     def site_libdir(self):
@@ -481,7 +496,7 @@ class FOAMEnv:
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
                               shell=True)
-        out, err = pp.communicate()
+        out, _ = pp.communicate()
         retcode = pp.wait()
         if retcode:
             _lgr.exception("Error initializing OpenFOAM environment: %s"%
@@ -489,11 +504,11 @@ class FOAMEnv:
 
         # No errors... process the bash variables
         outbuf = out.decode('UTF-8')
-        bash_vars = dict([l.split("=",1) for l in outbuf.splitlines()
-                            if "=" in l])
+        bash_vars = dict([l.split("=", 1) for l in outbuf.splitlines()
+                          if "=" in l])
         foam_keys = [k for k in bash_vars.keys()
-                        if is_foam_var(k)]
-        env = { k: bash_vars[k] for k in foam_keys }
+                     if is_foam_var(k)]
+        env = {k: bash_vars[k] for k in foam_keys}
         env.update((k, bash_vars[k]) for k in extra_vars
                    if k in bash_vars)
         self._adjust_library_path(env)
