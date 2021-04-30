@@ -441,9 +441,9 @@ class FOAMEnv:
             cfg = self._cfg
             if "mpi_root" in cfg:
                 self._mpi_dir = cfg["mpi_root"]
-            elif "mpi_libdir" in cfg:
+            elif "mpi_lib_path" in cfg:
                 self._mpi_dir = os.path.dirname(cfg["mpi_lib_path"])
-            elif "mpi_bindir" in cfg:
+            elif "mpi_bin_path" in cfg:
                 self._mpi_dir = os.path.dirname(cfg["mpi_bin_path"])
             else:
                 self._mpi_dir = self._env.get('MPI_ARCH_PATH', '')
