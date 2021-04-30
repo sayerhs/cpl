@@ -446,7 +446,7 @@ class FOAMEnv:
                     "Cannot determine MPI directory. Please specify "
                     "'mpi_root' in Caelus configuration file")
             self._mpi_dir = mpi_dir
-        return self.mpi_dir
+        return self._mpi_dir
 
     @property
     def mpi_libdir(self):
