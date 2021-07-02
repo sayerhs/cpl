@@ -242,7 +242,7 @@ class CMLSimulation(JSONSerializer):
         if not skip_prep:
             self._prep_case_default(prep_tasks, force)
 
-        self.udf.case_post_epilogue(case=self, force=force)
+        self.udf.case_prep_epilogue(case=self, force=force)
 
     def _prep_case_default(self, prep_tasks=None, force=False):
         """Execute pre-processing tasks for this case
@@ -261,7 +261,7 @@ class CMLSimulation(JSONSerializer):
             return
         if not self.run_flags.updated:
             self.update()
-        _lgr.info("Executing post-processing tasks for case: %s",
+        _lgr.info("Executing pre-processing tasks for case: %s",
                   self.name)
         tasklist = prep_tasks or self.run_config.get("prep", None)
         try:

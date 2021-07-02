@@ -8,7 +8,7 @@
 #    conda env create -f etc/caelus3.yml
 #
 
-name: caelus3
+name: caelus3-dev
 
 dependencies:
   - python=3
