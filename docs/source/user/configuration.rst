@@ -5,7 +5,7 @@ Configuring Caelus Python Library
 
 CPL provides a YAML-based configuration utility that can be used to customize
 the library depending on the operating system and user's specific needs. A good
-example is to provide non-standard install locations for the Caelus CML
+example is to provide non-standard install locations for the OpenFOAM or Caelus CML
 executables, as well as using different versions of CML with CPL simultaneously.
 
 The use of configuration file is optional, CPL provides defaults that should
@@ -34,11 +34,11 @@ preceeding files.
 
 #. The file ``caelus.yaml`` in the current working directory, if it exists.
 
-While CPL provides a way to auto-discovered installed CML versions, often it
-will be necessary to provide at least a system-wide or per-user configuration
-file to allow CPL to use the right CML executables present in your system. A
-sample CPL configuration is shown below :download:`download caelus.yaml
-<../data/caelus_config.yaml>`:
+While CPL provides a way to auto-discovered installed OpenFOAM and CML versions,
+often it will be necessary to provide at least a system-wide or per-user 
+configuration file to allow CPL to use the right CML executables present in 
+your system. A sample CPL configuration is shown below :download:
+`download caelus.yaml<../data/caelus_config.yaml>`:
 
 .. literalinclude:: ../data/caelus_config.yaml
    :language: yaml
@@ -251,20 +251,21 @@ CML version configuration
 
 .. confval:: caelus.caelus_cml
 
-   The primary purpose of CPL is to interact with CML executables and utilities.
-   This section informs CPL of the various CML installations available on a
-   system and the desired *version* used by CPL when invoking CML executables.
+   The primary purpose of CPL is to interact with OpenFOAM and CML executables 
+   and utilities. This section informs CPL of the various CML installations 
+   available on a system and the desired *version* used by CPL when invoking 
+   OpenFOAM or CML executables.
 
 .. confval:: caelus.caelus_cml.default
 
-   A string parameter indicating default version used when invoking CML
-   executables. It must be one of the :confval:`version
+   A string parameter indicating default version used when invoking OpenFOAM or 
+   CML executables. It must be one of the :confval:`version
    <caelus.caelus_cml.versions.version>` entries provided in the file.
    Alternately, the user can specify ``latest`` to indicate that the latest
    version must be used. If users rely on auto-discovery of Caelus versions in
    default install locations, then it is recommended that this value be
    ``latest`` so that CPL picks the latest CML version. For example, with the
-   following configuration, CPL will choose version ``7.04`` when attempting to
+   following configuration, CPL will choose version ``10.04`` when attempting to
    execute programs like ``pisoSolver``.
 
    .. code-block:: yaml
@@ -274,11 +275,14 @@ CML version configuration
           default: "latest"
 
           versions:
-            - version: "6.10"
-              path: ~/Caelus/caelus-6.10
+            - version: "9.04"
+              path: ~/Caelus/caelus-9.04
 
-            - version: "7.04"
-              path: ~/Caelus/caelus-7.04
+            - version: "10.04"
+              path: ~/Caelus/caelus-10.04
+
+            - version: "v2012"
+              path: ~/OpenFOAM/OpenFOAM-v2012
 
 .. confval:: caelus.caelus_cml.versions
 
@@ -290,33 +294,34 @@ CML version configuration
 
 .. confval:: caelus.caelus_cml.versions.version
 
-   A unique string identifier that is used to tag this specific instance of CML
-   installation. Typically, this is the version number of the Caelus CML
-   release, e.g., ``7.04``. However, as indicated in the example CPL
-   configuration file, users can use any unique tag to identify a specific
-   version. If is identifier does not follow the conventional version number
-   format, then it is recommended that the user provide a specific version in
-   :confval:`caelus.caelus_cml.default` instead of using ``latest``.
+   A unique string identifier that is used to tag this specific instance of
+   OpenFOAM or CML installation. Typically, this is the version number of the 
+   OpenFOAM or Caelus CML release, e.g., ``10.04``. However, as indicated in 
+   the example CPL configuration file, users can use any unique tag to identify 
+   a specific version. If this identifier does not follow the conventional 
+   version number format, then it is recommended that the user provide a 
+   specific version in :confval:`caelus.caelus_cml.default` instead of using 
+   ``latest``.
 
 .. confval:: caelus.caelus_cml.versions.path
 
    The path to the Caelus install. This is equivalent to the directory pointed
-   by the :envvar:`CAELUS_PROJECT_DIR` environment variable, e.g.,
-   :file:`/home/caelus_user/projects/caelus/caelus-7.04`.
+   by the :envvar:`WM_PROJECT_DIR` or :envvar:`CAELUS_PROJECT_DIR` environment 
+   variable, e.g., :file:`/home/caelus_user/projects/caelus/caelus-10.04`.
 
 .. confval:: caelus.caelus_cml.versions.build_option
 
-   A string parameter identifying the Caelus build, if multiple builds are
-   present within a CML install, to be used with CPL. This is an **expert** only
-   option used by developers who are testing multiple compilers and build
-   options. It is recommended that the normal users let CPL autodetect the build
-   option.
+   A string parameter identifying the OpenFOAM or Caelus build, if multiple 
+   builds are present within a CML install, to be used with CPL. This is an 
+   **expert** only option used by developers who are testing multiple compilers 
+   and build options. It is recommended that the normal users let CPL autodetect 
+   the build option.
 
 .. confval:: caelus.caelus_cml.versions.mpi_root
 
-   Path to the MPI installation used to compile Caelus for parallel execution.
-   By default, CPL expects the MPI library to be present within the project
-   directory.
+   Path to the MPI installation used to compile OpenFOAM or Caelus for parallel 
+   execution. By default, CPL expects the MPI library to be present within the 
+   project directory.
 
 .. confval:: caelus.caelus_cml.versions.mpi_bin_path
 

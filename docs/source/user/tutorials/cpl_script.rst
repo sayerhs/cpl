@@ -40,8 +40,8 @@ functionality.
     from caelus.post.logs import LogProcessor, SolverLog
     from caelus.post.plots import CaelusPlot
 
-An environment specifies the particular CML version and installation
-location. This examples loads the default (no argument to
+An environment specifies the particular OpenFOAM or CML version and 
+installation location. This examples loads the default (no argument to
 :class:`~caelus.config.cmlenv.cml_get_version` returns the default).
 
 .. code-block:: python
@@ -74,18 +74,18 @@ Use built-in Python modules for filesystem related tasks.
 
     shutil.copy2("0/alpha1.org", "0/alpha1")
 
-The solution is initialized solution using `funkySetFields` with
+The solution is initialized solution using `setFields` with
 the :class:`~caelus.run.cmd.CaelusCmd` as shown previously.
 
 .. code-block:: python
 
     status = 0
-    print("Executing funkySetFields... ")
-    caelus_cmd = CaelusCmd("funkySetFields", cml_env=cenv)
+    print("Executing setFields... ")
+    caelus_cmd = CaelusCmd("setFields", cml_env=cenv)
     caelus_cmd.cml_exe_args = "-latestTime"
     status = caelus_cmd()
     if status != 0:
-        print("ERROR running funkySetFields. Exiting!")
+        print("ERROR running setFields. Exiting!")
         sys.exit(1)
 
 An automated way to detect and set up a parallel run is to check for a

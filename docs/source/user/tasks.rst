@@ -59,14 +59,14 @@ the options that can be used to customize execution of those tasks.
   relative to the execution directory where the command is invoked.
 
 
-run_command -- Run CML executables
+run_command -- Run OpenFOAM or CML executables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This *task type* is used to execute a Caelus CML executable (e.g.,
+This *task type* is used to execute an OpenFOAM or Caelus CML executable (e.g.,
 :program:`blockMesh` or :program:`pimpleSolver`). CPL will ensure that the
-appropriate version of CML is selected and the runtime enviornment is setup
-properly prior to executing the task. The task must provide one mandatory
-parameter :taskopt:`run_command.cmd_name` that is the name of the CML
+appropriate version of OpenFOAM or CML is selected and the runtime enviornment
+is setup properly prior to executing the task. The task must provide one mandatory
+parameter :taskopt:`run_command.cmd_name` that is the name of the OpenFOAM or CML
 executable. Several other options are available and are documented below. Example:
 
 .. code-block:: yaml
@@ -82,15 +82,15 @@ executable. Several other options are available and are documented below. Exampl
 
 .. taskopt:: run_command.cmd_args
 
-   Extra arguments that must be passed to the CML executable. It is recommended
-   that arguments be enclosed in a double-quoted string. Default value is an
-   empty string.
+   Extra arguments that must be passed to the OpenFOAM or CML executable. It is 
+   recommended that arguments be enclosed in a double-quoted string. Default value
+   is an empty string.
 
 .. taskopt:: run_command.log_file
 
    The filename where the output of the command is redirected. By default, it is
-   the CML executable name with the ``.log`` extension appended to it. The user
-   can change this to any valid filename of their choice using this option.
+   the OpenFOAM or CML executable name with the ``.log`` extension appended to it. 
+   The user can change this to any valid filename of their choice using this option.
 
 
 .. taskopt:: run_command.parallel
@@ -121,11 +121,11 @@ run_python -- Run user python scripts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This task will run a python script within the case directory. Like
-``run_command`` task, CPL will ensure that the apporpriate CML version as well
-as python environment is setup correctly prior to invoking the script. The task
-must provide one mandatory parameter :taskopt:`run_python.script` that contains
-the path to the python script to be executed. User can pass additional options
-to this task as documented below.
+``run_command`` task, CPL will ensure that the apporpriate OpenFOAM or CML 
+version as well as python environment is setup correctly prior to invoking the 
+script. The task must provide one mandatory parameter :taskopt:`run_python.script` 
+that contains the path to the python script to be executed. User can pass 
+additional options to this task as documented below.
 
 .. code-block:: yaml
 
@@ -311,7 +311,7 @@ case directory. :download:`Download <../data/caelus_task_set.yaml>` an example.
 
 .. taskopt:: task_set.case_dir
 
-   The path to a valid Caelus case directory where the sub-tasks are to be
+   The path to a valid case directory where the sub-tasks are to be
    executed. This parameter is mandatory.
 
 .. taskopt:: task_set.name

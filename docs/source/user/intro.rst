@@ -4,9 +4,9 @@ Introduction
 ============
 
 The primary motivation for CPL is to provide a platform-agnostic capability to
-automate the CFD simulation workflow with Caelus CML package. The package is
+automate the CFD simulation workflow with OpenFOAM and Caelus CML packages. The package is
 configurable to adapt to different user needs and system configurations and can
-interact with multiple CML versions simultaneous without the need to source
+interact with multiple software versions simultaneous without the need to source
 *environment* files (e.g., using :file:`caelus-bashrc` on Unix systems).
 
 Some highlights of CPL include:
@@ -19,7 +19,7 @@ Some highlights of CPL include:
   The YAML files can be read, manipulated, and written out to disk using
   libraries available in several programming languages, not just Python.
 
-- Provides modules and python classes to work with Caelus case directories,
+- Provides modules and python classes to work with OpenFOAM and Caelus case directories,
   process and plot logs, etc. The API is documented to allow users to build
   custom workflows that are currently not part of CPL.
 

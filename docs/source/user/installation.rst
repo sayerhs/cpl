@@ -3,25 +3,24 @@
 Installing Caelus Python Library (CPL)
 ======================================
 
-CPL is a python package for use with `Caelus CML <http://www.caelus-cml.com>`_
+CPL is a python package for use with OpenFOAM or `Caelus CML <http://www.caelus-cml.com>`_
 simulation suite. Therefore, it is assumed that users have a properly
-functioning CML installation on their system. In addition to Caelus CML and
+functioning OpenFOAM or CML installation on their system. In addition to OpenFoAM/Caelus CML and
 python, it also requires several scientific python libraries:
 
    - `NumPy <http://www.numpy.org>`_ -- Arrays, linear algebra
    - `Pandas <http://pandas.pydata.org>`_ -- Data Analysis library
    - `Matplotlib <https://matplotlib.org>`_ -- Plotting package
 
-The quickest way to install CPL is to use the `official installer
-<http://www.caelus-cml.com/download/>`_ provided by Applied CCM. Once installed,
-please proceed to :ref:`check_install` to learn how to use CPL.
-
-For users wishing to install CPL from the git repository, this user
-guide recommends the use of `Anaconda Python Distribution
+The quickey way to install CPL is to install through `Anaconda Python Distribution
 <http://docs.continuum.io/anaconda/index>`_. This distribution provides a
 comprehensive set of python packages necessary to get up and running with CPL.
-An alternate approach using Python *virtualenv* is described at the end of this
-section, but will require some Python expertise on the part of the user.
+Once installed, please proceed to :ref:`check_install` to learn how to use CPL.
+
+For users wishing to install CPL from the git repository, this user
+guide recommends the use of Anaconda. An alternate approach using Python 
+*virtualenv* is described at the end of this section, but will require some 
+Python expertise on the part of the user.
 
 The default installation instructions use Python v2.7. However, CPL is
 designed to work with both Python v2.7 and Python v3.x versions.
@@ -54,7 +53,16 @@ Install Anaconda
 
 .. _install_dev_git:
 
-Install CPL
+Install CPL from conda-forge (recommended)
+-----------
+
+#. Install CPL using the Anaconda package manager.
+
+   .. code-block:: console
+
+      conda install -c conda-forge caelus
+
+Install CPL from source
 -----------
 
 #. Obtain the CPL source from the public Git repository.

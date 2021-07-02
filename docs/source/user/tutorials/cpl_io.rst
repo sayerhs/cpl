@@ -1,14 +1,14 @@
 .. _tuts_cpl_io_user:
 
-Mainpulating CML input files with CPL
+Mainpulating input files with CPL
 =====================================
 
 CPL provides a pythonic interface to read, create, modify, and write out input
-files necessary for running simulations using CML executables within a case
-directory. Users can interact with input files as python objects and use python
-data structures and functions to manipulate them. The modified objects can then
-be written out to files and CPL will pretty-print the files in the apporpriate
-locations in the case directory. Most CML/OpenFOAM objects have a one-to-one
+files necessary for running simulations using OpenFOAM or CML executables within 
+a case directory. Users can interact with input files as python objects and use 
+python data structures and functions to manipulate them. The modified objects can 
+then be written out to files and CPL will pretty-print the files in the apporpriate
+locations in the case directory. Most OpenFOAM/CML objects have a one-to-one
 correspondence with python data structures within CPL. For example, OpenFOAM
 dictionaries are accessed as Python dictionaries, specifically an instance of
 :class:`~caelus.io.caelusdict.CaelusDict` which provides both attribute and
@@ -20,7 +20,7 @@ lists.
 .. currentmodule:: caelus.io.dictfile
 
 This tutorial provides a walkthrough of using :mod:`caelus.io` module to read,
-manipulate, and write out input files in a CML case directory. The code snippets
+manipulate, and write out input files in a case directory. The code snippets
 shown in this tutorial will use the ``ACCM_airFoil2D`` tutorial in the
 :file:`${PROJECT_DIR}/tutorials/incompressible/simpleSolver/ras/ACCM_airFoil2D`
 directory. To execute the example code snippets shown in this tutorial, it is
@@ -32,10 +32,10 @@ modules loaded in your script or interactive shell
    import numpy as np
    import caelus.io as cio
 
-The most general interface to a CML input file is through the
+The most general interface to an input file is through the
 :class:`DictFile` class. It provides three ways of creating
 an input file object that can be manipulated using CPL in python scripts. Using
-the constructor creates a default CML file object that can be populated by the
+the constructor creates a default file object that can be populated by the
 user. In most situations, however, the user would load a template file using
 :meth:`~DictFile.read_if_present` or :meth:`~DictFile.load` functions. The
 former as the name indicates will load the file if present in the case
@@ -111,7 +111,7 @@ corresponding to :math:`\alpha = 6^\circ`.
 Specialized CPL classes for CML input files
 -------------------------------------------
 
-While :class:`DictFile` provides a generic interface to all CML input files, CPL
+While :class:`DictFile` provides a generic interface to all input files, CPL
 also defines specialized classes that provide additional functionality for those
 specific input files. The available classes that provide customized
 functionality are listed below
@@ -162,7 +162,7 @@ error if the user provides invalid value
 Accessing keywords with special characters
 ------------------------------------------
 
-While most keywords can be accessed as attributes, certain CML/OpenFOAM keywords
+While most keywords can be accessed as attributes, certain OpenFOAM/CML keywords
 contain invalid characters and therefore must be accessed as dictionary keys
 only. The :file:`fvSolution` and :file:`fvSchemes` provide good examples of
 such keywords.
@@ -177,7 +177,7 @@ such keywords.
    turbSolver = fvsol.solvers['"(k|omega|nuTilda)"']
 
 Note the nested quotation marks for the ``"(k|omega|nuTilda)"`` keyword.
-CML/OpenFOAM requires the double quotes because keyword starts with a
+OpenFOAM/CML requires the double quotes because keyword starts with a
 non-alphabetical character. Wrapping the entire thing in single quotes protects
 the double quotes within Python.
 
