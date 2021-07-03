@@ -188,18 +188,11 @@ class CaelusParser(object):
             try:
                 if all(isinstance(ii, int) for ii in p[2]):
                     p[0] = np.asarray(p[2], dtype=np.int_)
-                elif all(isinstance(ii, float) for ii in p[2]):
-                    p[0] = np.asarray(p[2], dtype=np.float_)
                 elif all(isinstance(ii, (np.ndarray, list)) for ii in p[2]):
                     p[0] = np.asarray(p[2])
                 else:
-                    p[0] = p[2]
-                # tmp = np.asarray(p[2])
-                # if tmp.dtype == np.int_ or tmp.dtype == np.float_:
-                #     p[0] = tmp
-                # else:
-                #     p[0] = p[2]
-            except ValueError:
+                    p[0] = np.asarray(p[2], dtype=np.float_)
+            except (ValueError, TypeError):
                 p[0] = p[2]
         else:
             p[0] = []
@@ -209,18 +202,11 @@ class CaelusParser(object):
         try:
             if all(isinstance(ii, int) for ii in p[3]):
                 p[0] = np.asarray(p[3], dtype=np.int_)
-            elif all(isinstance(ii, float) for ii in p[3]):
-                p[0] = np.asarray(p[3], dtype=np.float_)
             elif all(isinstance(ii, (np.ndarray, list)) for ii in p[3]):
                 p[0] = np.asarray(p[3])
             else:
-                p[0] = p[3]
-            # tmp = np.asarray(p[3])
-            # if tmp.dtype == np.int_ or tmp.dtype == np.float_:
-            #     p[0] = tmp
-            # else:
-            #     p[0] = p[3]
-        except ValueError:
+                p[0] = np.asarray(p[3], dtype=np.float_)
+        except (ValueError, TypeError):
             p[0] = p[3]
 
     def p_tokid_list(self, p):
@@ -231,20 +217,13 @@ class CaelusParser(object):
             if all(isinstance(ii, int) for ii in p[2]):
                 p[0] = dtypes.ListTemplate(
                     p[1], np.asarray(p[2], dtype=np.int_))
-            elif all(isinstance(ii, float) for ii in p[2]):
-                p[0] = dtypes.ListTemplate(
-                    p[1], np.asarray(p[2], dtype=np.float_))
             elif all(isinstance(ii, (np.ndarray, list)) for ii in p[2]):
                 p[0] = dtypes.ListTemplate(
                     p[1], np.asarray(p[2]))
             else:
-                p[0] = dtypes.ListTemplate(p[1], p[2])
-            # tmp = np.asarray(p[2])
-            # if tmp.dtype == np.int_ or tmp.dtype == np.float_:
-            #     p[0] = dtypes.ListTemplate(p[1], tmp)
-            # else:
-            #     p[0] = dtypes.ListTemplate(p[1], p[2])
-        except ValueError:
+                p[0] = dtypes.ListTemplate(
+                    p[1], np.asarray(p[2], dtype=np.float_))
+        except (ValueError, TypeError):
             p[0] = dtypes.ListTemplate(p[1], p[2])
 
     def p_list_items(self, p):
