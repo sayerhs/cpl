@@ -186,11 +186,19 @@ class CaelusParser(object):
         # p[0] = p[2] if p[2] else []
         if p[2]:
             try:
-                tmp = np.asarray(p[2])
-                if tmp.dtype == np.int_ or tmp.dtype == np.float_:
-                    p[0] = tmp
+                if all(isinstance(ii, int) for ii in p[2]):
+                    p[0] = np.asarray(p[2], dtype=np.int_)
+                elif all(isinstance(ii, float) for ii in p[2]):
+                    p[0] = np.asarray(p[2], dtype=np.float_)
+                elif all(isinstance(ii, (np.ndarray, list)) for ii in p[2]):
+                    p[0] = np.asarray(p[2])
                 else:
                     p[0] = p[2]
+                # tmp = np.asarray(p[2])
+                # if tmp.dtype == np.int_ or tmp.dtype == np.float_:
+                #     p[0] = tmp
+                # else:
+                #     p[0] = p[2]
             except ValueError:
                 p[0] = p[2]
         else:
@@ -199,11 +207,19 @@ class CaelusParser(object):
     def p_numbered_list(self, p):
         """ numbered_list : INT_CONST LPAREN list_items RPAREN"""
         try:
-            tmp = np.asarray(p[3])
-            if tmp.dtype == np.int_ or tmp.dtype == np.float_:
-                p[0] = tmp
+            if all(isinstance(ii, int) for ii in p[3]):
+                p[0] = np.asarray(p[3], dtype=np.int_)
+            elif all(isinstance(ii, float) for ii in p[3]):
+                p[0] = np.asarray(p[3], dtype=np.float_)
+            elif all(isinstance(ii, (np.ndarray, list)) for ii in p[3]):
+                p[0] = np.asarray(p[3])
             else:
                 p[0] = p[3]
+            # tmp = np.asarray(p[3])
+            # if tmp.dtype == np.int_ or tmp.dtype == np.float_:
+            #     p[0] = tmp
+            # else:
+            #     p[0] = p[3]
         except ValueError:
             p[0] = p[3]
 
@@ -212,11 +228,22 @@ class CaelusParser(object):
                        | LIST numbered_list
         """
         try:
-            tmp = np.asarray(p[2])
-            if tmp.dtype == np.int_ or tmp.dtype == np.float_:
-                p[0] = dtypes.ListTemplate(p[1], tmp)
+            if all(isinstance(ii, int) for ii in p[2]):
+                p[0] = dtypes.ListTemplate(
+                    p[1], np.asarray(p[2], dtype=np.int_))
+            elif all(isinstance(ii, float) for ii in p[2]):
+                p[0] = dtypes.ListTemplate(
+                    p[1], np.asarray(p[2], dtype=np.float_))
+            elif all(isinstance(ii, (np.ndarray, list)) for ii in p[2]):
+                p[0] = dtypes.ListTemplate(
+                    p[1], np.asarray(p[2]))
             else:
                 p[0] = dtypes.ListTemplate(p[1], p[2])
+            # tmp = np.asarray(p[2])
+            # if tmp.dtype == np.int_ or tmp.dtype == np.float_:
+            #     p[0] = dtypes.ListTemplate(p[1], tmp)
+            # else:
+            #     p[0] = dtypes.ListTemplate(p[1], p[2])
         except ValueError:
             p[0] = dtypes.ListTemplate(p[1], p[2])
 
@@ -248,7 +275,7 @@ class CaelusParser(object):
 
     def p_int_list(self, p):
         """ int_list : number LPAREN int_list_items RPAREN"""
-        p[0] = np.array(p[3], dtype=np.int)
+        p[0] = np.array(p[3], dtype=int)
 
     def p_int_list_items(self, p):
         """ int_list_items : INT_CONST int_list_items
