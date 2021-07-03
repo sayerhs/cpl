@@ -461,7 +461,7 @@ class CaelusCmd(CaelusSubCmdScript):
         if build_user and prj_successful:
             _lgr.info("Compiling user sources")
             status = builder.build_user_dir()
-            if status or builder.rcode != 0:
+            if not status or builder.rcode != 0:
                 _lgr.error("Compilation failed in user directory. See log for details.")
             else:
                 _lgr.info("User sources compiled successfully.")

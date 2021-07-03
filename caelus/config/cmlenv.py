@@ -559,6 +559,7 @@ def get_cmlenv_instance(cml):
     project_dir = cml.get(
         "path",
         os.path.join(config.get_caelus_root(), "caelus-%s"%version))
+    project_dir = osutils.abspath(project_dir)
     if os.path.exists(os.path.join(project_dir, "SConstruct")):
         return CMLEnv(cml)
     elif os.path.exists(os.path.join(project_dir, "wmake")):
