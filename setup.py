@@ -11,7 +11,7 @@ from setuptools import setup
 VERSION = "2.0.0"
 
 classifiers = [
-    "Development Status :: 3 -Alpha",
+    "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: POSIX",
     "Operating System :: POSIX :: Linux",
@@ -20,13 +20,13 @@ classifiers = [
     "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: Implementation :: CPython",
-    "Topic :: Scientific/Engineering :: Physics"
+    "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Scientific/Engineering :: Visualization",
     "Topic :: Utilities",
 ]
 
 setup(
-    name="caelus",
+    name="py-caelus",
     version=VERSION,
     url="http://www.caelus-cml.com",
     license="Apache License, Version 2.0",
