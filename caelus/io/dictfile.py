@@ -7,7 +7,11 @@ Caelus/OpenFOAM Input File Interface
 
 import os
 import logging
-from collections import Mapping
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
+
 import six
 
 from ..utils import osutils

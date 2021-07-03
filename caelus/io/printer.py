@@ -7,7 +7,11 @@ Caelus Input File Pretty-printer
 
 import sys
 import re
-from collections import Mapping
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
+
 from contextlib import contextmanager
 
 import numpy as np
@@ -184,7 +188,7 @@ class DictPrinter(object):
         else:
             if indented:
                 buf.write(self.indenter.indent_str)
-            buf.write(np.str('' if value is None else value))
+            buf.write(str('' if value is None else value))
             buf.write("\n" if recursive else ";\n")
 
     def write_dict(self, value):
@@ -283,7 +287,7 @@ class DictPrinter(object):
         if (len(value) <= 10 and all(isinstance(val, str) for val in value)):
             buf.write("( ")
             for val in value:
-                buf.write(np.str(val)+ " " if val is not None else ' ')
+                buf.write(str(val)+ " " if val is not None else ' ')
             if recursive:
                 buf.write(")")
             else:

@@ -47,7 +47,7 @@ class Dimension(FoamType):
         Args:
             units (list): A list of 5 or 7 entries
         """
-        self.units = np.zeros((7,), dtype=np.int)
+        self.units = np.zeros((7,), dtype=int)
         if units is None and not kwargs:
             raise RuntimeError("Either units or dimensional types must be provided")
         num_units = len(units)
@@ -92,7 +92,7 @@ class DimValue(FoamType):
         """Write out the dimensional value"""
         fh.write("%s "%self.name)
         fh.write("[" + ' '.join("%d"%uval for uval in self.dims.units) + "] ")
-        fh.write(np.str(self.value))
+        fh.write(str(self.value))
         fh.write(";\n")
 
     def __repr__(self):
@@ -190,10 +190,10 @@ class Field(FoamType):
         """Write a uniform field"""
         fh.write(self.ftype)
         if isinstance(self.value, np.ndarray):
-            fh.write(" (" + ' '.join(np.str(fval) for fval in self.value)
+            fh.write(" (" + ' '.join(str(fval) for fval in self.value)
                      + ");\n")
         else:
-            fh.write(" " + np.str(self.value) + ";\n")
+            fh.write(" " + str(self.value) + ";\n")
 
     def write_nonuniform(self, fh=sys.stdout):
         """Write a non-uniform field"""
@@ -247,14 +247,14 @@ class MultipleValues(FoamType):
         self.value = value
 
     def write_value(self, fh=sys.stdout, indent_str=''):
-        fh.write(" ".join(np.str(val) for val in self.value))
+        fh.write(" ".join(str(val) for val in self.value))
         fh.write(";\n")
 
     def __repr__(self):
         return "<MultipleValues: %s>"%self.value
 
     def __str__(self):
-        return " ".join(np.str(val) for val in self.value)
+        return " ".join(str(val) for val in self.value)
 
 class ListTemplate(FoamType):
     """List<T> type entries"""

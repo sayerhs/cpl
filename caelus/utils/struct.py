@@ -8,7 +8,11 @@ Implements :class:`~caelus.utils.struct.Struct`.
 
 """
 
-from collections import OrderedDict, MutableMapping, Mapping
+from collections import OrderedDict
+try:
+    from collections.abc import Mapping, MutableMapping
+except ImportError:
+    from collections import Mapping, MutableMapping
 from abc import ABCMeta
 import yaml
 import six

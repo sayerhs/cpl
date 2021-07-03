@@ -16,7 +16,10 @@ simulations as a group.
 
 import os
 import logging
-from collections import Mapping
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
 import json
 import fnmatch
 import abc

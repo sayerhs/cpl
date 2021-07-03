@@ -16,7 +16,12 @@ import shlex
 import subprocess
 import logging
 import textwrap
-from collections import Mapping, OrderedDict
+from collections import OrderedDict
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
+
 import six
 
 from ..config import cmlenv
