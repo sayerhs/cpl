@@ -59,6 +59,10 @@ class CaelusLexer(object):
     ### Lexer implementation
     ###
 
+    states = (
+        ('list', 'inclusive'),
+    )
+
     # Keywords encountered within input files
     keywords = ('DIMENSIONS', 'UNIFORM', 'NONUNIFORM', 'LIST')
 
@@ -173,8 +177,29 @@ class CaelusLexer(object):
 
 
     # Delimiters
-    t_LPAREN   = r'\('
+    # t_LPAREN   = r'\('
     t_RPAREN   = r'\)'
+
+    def t_LPAREN(self, t):
+        r'\('
+        t.lexer.code_start = t.lexer.lexpos
+        t.lexer.level = 1
+        t.lexer.begin('list')
+        return t
+
+    def t_list_LPAREN(self, t):
+        r'\('
+        t.lexer.level += 1
+        return t
+
+    def t_list_RPAREN(self, t):
+        r'\)'
+        t.lexer.level -= 1
+
+        if t.lexer.level == 0:
+            t.lexer.begin('INITIAL')
+        return t
+
     t_LBRACKET = r'\['
     t_RBRACKET = r'\]'
     t_LBRACE   = r'\{'
@@ -231,6 +256,11 @@ class CaelusLexer(object):
             t.type = "CODESTREAM"
         elif t.value[1:] == "calc":
             t.type = "CALC"
+        return t
+
+    def t_list_ID(self, t):
+        r"[a-zA-Z_][a-zA-Z0-9_]*"
+        t.type = self.keyword_map.get(t.value.lower(), "ID")
         return t
 
     @TOKEN(identifier)

@@ -378,8 +378,8 @@ def test_function_objects(cparse):
     text = """
 functions {
     readFields {
-        functionObjectLibs ( "libfieldFunctionObjects.so" );
-        type            readFields; fields          ( p U );
+        functionObjectLibs (fieldFunctionObjects);
+        type            readFields; fields          (p U);
     }
     streamLines {
         type            streamLine;
@@ -423,10 +423,32 @@ functions {
         pitchAxis       ( 0 1 0 );
         magUInf         20; lRef            1.42; Aref            0.75;
     }
+    // Create additional volume fields (for sampling)
+    derivedFields
+    {
+        // Mandatory entries
+        type            derivedFields;
+        libs            (fieldFunctionObjects);
+        derived         (rhoU pTotal);
+
+        // Optional entries
+        rhoRef          1.25;
+
+        // Optional (inherited) entries
+        region          region0;
+        enabled         true;
+        log             true;
+        timeStart       0;
+        timeEnd         10000;
+        executeControl  timeStep;
+        executeInterval 1;
+        writeControl    none;
+        writeInterval  -1;
+    }
 }
     """
     out = cparse.parse(text)
-    assert(len(out.functions) == 4)
+    assert(len(out.functions) == 5)
     assert(len(out.functions.cuttingPlane.surfaces) == 1)
 
 def test_failure_dict(cparse):
