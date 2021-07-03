@@ -48,6 +48,10 @@ def caelus_directory():
     os.makedirs(os.path.join(
         root_dir, "Caelus", "caelus-6.10",
         "platforms", "%s64g++DPOpt"%ostype))
+    for ver in ["10.11", "7.04", "6.10"]:
+        fname = os.path.join(
+            root_dir, "Caelus", "caelus-%s"%ver, "SConstruct")
+        open(fname, 'w').write("#/usr/bin/env python\n")
     yield os.path.join(root_dir, "Caelus")
     shutil.rmtree(root_dir)
 
