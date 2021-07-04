@@ -288,6 +288,23 @@ list6 List<something> 4 ( abc 10 value );
     assert(isinstance(out.list4, dtypes.ListTemplate))
     assert(out.list4.value.shape == (3,))
 
+def test_multi_list_entries(cparse):
+    text = """
+        accept (greater 0.5) and (less 0.1);
+
+        bounds (1 1 1) (2 2 2);
+
+        scale           table
+        (
+            (0.00   1.0)
+            (0.20   1.0)
+            (0.30   0.0)
+        );
+    """
+    out = cparse.parse(text)
+    assert(all(isinstance(v, dtypes.MultipleValues)
+               for v in out.values()))
+
 def test_blockmesh_dict(cparse):
     text = """
     edges (arc 1 5 (1.1 0.0 0.5));

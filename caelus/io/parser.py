@@ -187,6 +187,13 @@ class CaelusParser(object):
         """
         p[0] = (p[1], dtypes.Field("nonuniform", p[3]))
 
+    def p_multi_list1(self, p):
+        """ dict_entry : identifier identifier simple_list SEMI
+                       | identifier simple_list simple_list SEMI
+                       | identifier simple_list identifier simple_list SEMI
+        """
+        p[0] = (p[1], dtypes.MultipleValues(p[2:-1]))
+
     def p_simple_list(self, p):
         """ simple_list : LPAREN empty RPAREN
                         | LPAREN list_items RPAREN
@@ -247,6 +254,7 @@ class CaelusParser(object):
         """ list_item : value
                       | simple_list
                       | identifier simple_dict
+                      | directive
         """
         if len(p) == 3:
             p[0] = self._dict_type([(p[1], p[2])])

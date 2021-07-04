@@ -31,6 +31,18 @@ class FoamType(object):
     def __repr__(self):
         return "<%s>"%self.__class__.__name__
 
+    def format_ndarray(self, value):
+        arr_size = value.size
+        arr_str = None
+        threshold = np.get_printoptions()['threshold']
+        try:
+            np.set_printoptions(threshold=arr_size+10)
+            arr_str = np.array_str(value, max_line_width=80)
+        finally:
+            np.set_printoptions(threshold=threshold)
+        arr_str = re.sub(r']', ')', re.sub(r'\[', '(', arr_str))
+        return arr_str
+
 class Dimension(FoamType):
     """Caelus dimensional units
 
@@ -269,7 +281,17 @@ class MultipleValues(FoamType):
         self.value = value
 
     def write_value(self, fh=sys.stdout, indent_str=''):
-        fh.write(" ".join(str(val) for val in self.value))
+        outs = []
+        for val in self.value:
+            if isinstance(val, np.ndarray):
+                sval = self.format_ndarray(val)
+                outs.append(sval)
+            elif isinstance(val, list):
+                sval = "(" + " ".join(str(v) for v in val) + ")"
+                outs.append(sval)
+            else:
+                outs.append(str(val))
+        fh.write(" ".join(outs))
         fh.write(";\n")
 
     def __repr__(self):
