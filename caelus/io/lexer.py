@@ -62,6 +62,7 @@ class CaelusLexer(object):
     states = (
         ('list', 'inclusive'),
         ('eval', 'exclusive'),
+        ('dimension', 'exclusive'),
     )
 
     # Keywords encountered within input files
@@ -226,8 +227,20 @@ class CaelusLexer(object):
             t.lexer.begin('INITIAL')
         return t
 
-    t_LBRACKET = r'\['
+    # t_LBRACKET = r'\['
+
+    def t_LBRACKET(self, t):
+        r'\['
+        t.lexer.begin('dimension')
+        return t
+
     t_RBRACKET = r'\]'
+
+    def t_dimension_RBRACKET(self, t):
+        r'\]'
+        t.lexer.begin('INITIAL')
+        return t
+
     t_LBRACE   = r'\{'
     t_RBRACE   = r'\}'
     t_SEMI     = r';'
@@ -251,6 +264,11 @@ class CaelusLexer(object):
 
     @TOKEN(decimal_constant)
     def t_INT_CONST(self, t):
+        t.value = int(t.value)
+        return t
+
+    @TOKEN(decimal_constant)
+    def t_dimension_INT_CONST(self, t):
         t.value = int(t.value)
         return t
 
@@ -313,6 +331,13 @@ class CaelusLexer(object):
             t.value = t.value[:-diff]
             t.lexer.lexpos -= diff
         t.type = self.keyword_map.get(t.value.lower(), "ID")
+        return t
+
+    def t_dimension_ID(self, t):
+        r'[a-zA-Z].*?\]'
+        val = t.value
+        t.value = val[:-1]
+        t.lexer.lexpos -= 1
         return t
 
     @TOKEN(identifier)

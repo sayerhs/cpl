@@ -353,6 +353,10 @@ class CaelusParser(object):
         """
         p[0] = dtypes.Dimension(p[2:-1])
 
+    def p_dimension_str(self, p):
+        """ dimension : LBRACKET identifier RBRACKET """
+        p[0] = dtypes.DimStr(p[2])
+
     def p_vector(self, p):
         """ vector : LPAREN number number number RPAREN"""
         p[0] = np.array(p[2:5])

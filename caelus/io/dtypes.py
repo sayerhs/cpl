@@ -82,10 +82,25 @@ class Dimension(FoamType):
         """
         fh.write("[" + ' '.join("%d"%uval for uval in self.units) + "];\n")
 
+    def __str__(self):
+        return "[" + ' '.join("%d"%uval for uval in self.units) + "]"
+
     def __repr__(self):
         return "<%s: [%s]>"%(
             self.__class__.__name__,
             ' '.join('%d'%uval for uval in self.units))
+
+class DimStr(FoamType):
+    """String dimensions"""
+
+    def __init__(self, units):
+        self.units = units
+
+    def write_value(self, fh=sys.stdout, indent_str=''):
+        fh.write(f"[{self.units}];\n")
+
+    def __str__(self):
+        return f"[{self.units}]"
 
 class DimValue(FoamType):
     """A dimensioned value
@@ -103,7 +118,8 @@ class DimValue(FoamType):
     def write_value(self, fh=sys.stdout, indent_str=''):
         """Write out the dimensional value"""
         fh.write("%s "%self.name)
-        fh.write("[" + ' '.join("%d"%uval for uval in self.dims.units) + "] ")
+        # fh.write("[" + ' '.join("%d"%uval for uval in self.dims.units) + "] ")
+        fh.write(f" {str(self.dims)} ")
         fh.write(str(self.value))
         fh.write(";\n")
 

@@ -244,6 +244,16 @@ momentOfInertia #codeStream
     assert(isinstance(out.momentOfInertia, dtypes.CodeStream))
     assert(out.momentOfInertia.directive == "#codeStream")
 
+def test_dimension_str(cparse):
+    text = """
+        rho             rho   [1 -3 0 0 0] 1.2;
+        Cp              Cp    [J/kg/K]  1e3;
+        kappa           kappa [W/m/K]   0.0257;
+        rhoInf          rho   [kg/m^3]  1.2;
+    """
+    out = cparse.parse(text)
+    assert(isinstance(out.kappa.dims, dtypes.DimStr))
+
 def test_arrays(cparse):
     text = """
 vertices
