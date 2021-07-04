@@ -204,6 +204,22 @@ def test_calc_directive(cparse):
     assert(isinstance(out.minY, dtypes.CalcDirective))
     assert(out.minY.value == '"-1.0*$y"')
 
+def test_eval_directive(cparse):
+    text = """
+    // Allow 10% of time for initialisation before sampling
+    timeStart       #eval #{ 0.1 * ${/endTime} #};
+    r0CosT          #eval{ $r0*cos(degToRad($t   )) };
+    c               #eval "sin(pi()*$a/$b)";
+
+    d  #eval{
+        // ignore: sin(pi()*$a/$b)
+        sin(degToRad(45))
+    };
+    """
+    out = cparse.parse(text)
+    assert(out.r0CosT.value == "{ $r0*cos(degToRad($t   )) }")
+    assert(out.d.value.count('\n') == 3)
+
 def test_codestream(cparse):
     text = """
 momentOfInertia #codeStream
@@ -450,6 +466,32 @@ functions {
     out = cparse.parse(text)
     assert(len(out.functions) == 5)
     assert(len(out.functions.cuttingPlane.surfaces) == 1)
+
+def test_surface_interpolate(cparse):
+    text = """
+surfaceInterpolate1
+{
+    // Mandatory entries
+    type            surfaceInterpolate;
+    libs            (fieldFunctionObjects);
+    fields          ((U surfaceU) (p surfaceP) (k surfaceK) (divU surfaceDivU));
+
+    // Optional (inherited) entries
+    region          region0;
+    enabled         true;
+    log             true;
+    timeStart       0;
+    timeEnd         1000;
+    executeControl  writeTime;
+    executeInterval -1;
+    writeControl    writeTime;
+    writeInterval   -1;
+}
+    """
+    out = cparse.parse(text)
+    assert(len(out) == 1)
+    fields = out.surfaceInterpolate1.fields
+    assert(len(fields) == 4)
 
 def test_failure_dict(cparse):
     text = """ {

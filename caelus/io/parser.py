@@ -137,6 +137,7 @@ class CaelusParser(object):
     def p_simple_dict(self, p):
         """ simple_dict : LBRACE empty RBRACE
                         | LBRACE dict_items RBRACE
+                        | LBRACE dict_items RBRACE SEMI
         """
         p[0] = self._dict_type(p[2]) if p[2] else self._dict_type([])
 
@@ -159,10 +160,17 @@ class CaelusParser(object):
         p[0] = (key, p[1])
 
     def p_dict_entry2(self, p):
-        """ dict_entry : MACRO_VAR SEMI"""
+        """ dict_entry : MACRO_VAR SEMI
+                       | MACRO_VAR
+        """
         key = "macro_%03d"%self.macro_counter
         self.macro_counter += 1
-        p[0] = (key, dtypes.MacroSubstitution(p[1]))
+        p[0] = (key, dtypes.MacroSubstitution(
+            p[1], len(p) > 2))
+
+    def p_dict_entry3(self, p):
+        """ dict_entry : code_stmt """
+        p[0] = p[1]
 
     def p_uniform_field(self, p):
         """ dict_entry    : identifier UNIFORM number SEMI
@@ -188,8 +196,11 @@ class CaelusParser(object):
             try:
                 if all(isinstance(ii, int) for ii in p[2]):
                     p[0] = np.asarray(p[2], dtype=np.int_)
-                elif all(isinstance(ii, (np.ndarray, list)) for ii in p[2]):
+                elif all(isinstance(ii, np.ndarray) for ii in p[2]):
                     p[0] = np.asarray(p[2])
+                # elif all(isinstance(ii, list) for ii in p[2]):
+                #     print(p[2])
+                #     p[0] = np.asarray(p[2])
                 else:
                     p[0] = np.asarray(p[2], dtype=np.float_)
             except (ValueError, TypeError):
@@ -285,6 +296,7 @@ class CaelusParser(object):
                   | dim_value
                   | codestream
                   | calc
+                  | eval
                   | MACRO_VAR
                   | CHAR_CONST
         """
@@ -305,12 +317,18 @@ class CaelusParser(object):
         p[0] = (p[1], p[2])
 
     def p_directive(self, p):
-        """ directive : DIRECTIVES STRING_LITERAL"""
+        """ directive : DIRECTIVES identifier """
         p[0] = dtypes.Directive(p[1], p[2])
 
     def p_calc(self, p):
         """ calc : CALC STRING_LITERAL"""
         p[0] = dtypes.CalcDirective(p[1], p[2])
+
+    def p_eval(self, p):
+        """ eval : EVAL CODE_BLOCK
+                 | EVAL STRING_LITERAL
+        """
+        p[0] = dtypes.EvalDirective(p[1], p[2])
 
     def p_dim_value(self, p):
         """ dim_value : identifier dimension number

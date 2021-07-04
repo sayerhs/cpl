@@ -136,6 +136,24 @@ class CalcDirective(FoamType):
         """Write out the dimensional value"""
         fh.write("%s %s;\n"%(self.directive, self.value))
 
+class EvalDirective(FoamType):
+    """A ``#eval`` directive entry
+
+    Examples:
+        timeStart       #eval #{ 0.1 * ${/endTime} #};
+        r0CosT          #eval{ $r0*cos(degToRad($t   )) };
+    """
+
+    def __init__(self, directive, value):
+        self.directive = directive
+        self.value = value
+
+    def write_value(self, fh=sys.stdout, indent_str=''):
+        if self.value[0] == '{':
+            fh.write("%s%s;\n"%(self.directive, self.value))
+        else:
+            fh.write("%s %s;\n"%(self.directive, self.value))
+
 class CodeStream(FoamType):
     """A codestream entry
 
@@ -165,12 +183,16 @@ class CodeStream(FoamType):
 class MacroSubstitution(FoamType):
     """Macro substition without keyword"""
 
-    def __init__(self, value):
+    def __init__(self, value, semi=True):
         self.value = value
+        self.semi = semi
 
     def write_value(self, fh=sys.stdout, indent_str=''):
         """Write standalone macro substitution"""
-        fh.write(indent_str + "%s;\n"%self.value)
+        if self.semi:
+            fh.write(indent_str + "%s;\n"%self.value)
+        else:
+            fh.write(indent_str + "%s\n"%self.value)
 
 class Field(FoamType):
     """A field declaration

@@ -61,6 +61,7 @@ class CaelusLexer(object):
 
     states = (
         ('list', 'inclusive'),
+        ('eval', 'exclusive'),
     )
 
     # Keywords encountered within input files
@@ -72,6 +73,7 @@ class CaelusLexer(object):
 
     tokens = keywords + (
         'ID', 'MACRO_VAR', 'DIRECTIVES', 'CODE_BLOCK', 'CODESTREAM', 'CALC',
+        'EVAL',
 
         # Constants and literals
         'INT_CONST', 'FLOAT_CONST', 'CHAR_CONST', 'STRING_LITERAL',
@@ -87,11 +89,11 @@ class CaelusLexer(object):
     )
 
     # Accepted variable names in Caelus/OpenFOAM
-    identifier = r'[a-zA-Z_]([^ ";/\{\}\t\n])*'
+    identifier = r'[a-zA-Z@_]([^ ";/\{\}\t\n])*'
     # Macro variable
     mvar1 = r'\$' + identifier
-    mvar2 = r'\${[^ ";\n\t/]+}'
-    mvar3 = r'\$[.:][^ ";\n\t]+'
+    mvar2 = r'\${[^ ";\n\t]+}'
+    mvar3 = r'\$[.:/][^ ";\n\t]+'
     macro_var = r'(' + mvar1 + r'|' + mvar2 + r'|' + mvar3 + r')'
     #macro_var = r'[$][a-zA-Z0-9_]+'
     # Function entry
@@ -125,7 +127,7 @@ class CaelusLexer(object):
     bad_string_literal = '"'+string_char+'*?'+bad_escape+string_char+'*"'
 
     # Ignore spaces and tabs
-    t_ignore = ' \t'
+    t_ANY_ignore = ' \t'
 
     def t_NEWLINE(self, t):
         r'\n+'
@@ -157,6 +159,30 @@ class CaelusLexer(object):
         comment_str = tlex.lexdata[t.lexpos:com_end]
         num_lines = comment_str.count('\n')
         tlex.lineno += num_lines
+
+    def t_eval_CODE_BLOCK(self, t):
+        r'\#?\{'
+        is_multi = len(t.value) == 2
+        code_end = -1
+        tlex = t.lexer
+        if is_multi:
+            code_end = tlex.lexdata.find("#}", tlex.lexpos)
+        else:
+            code_end = tlex.lexdata.find("}", tlex.lexpos)
+
+        if code_end < 0:
+            tlex.lexpos = len(tlex.lexdata)
+            code_end = len(tlex.lexdata)
+            self._error("Unmatched code block", t)
+        else:
+            code_end += 2 if is_multi else 1
+            tlex.lexpos = code_end
+
+        t.value = tlex.lexdata[t.lexpos:code_end]
+        num_lines = t.value.count('\n')
+        tlex.lineno += num_lines
+        tlex.begin('INITIAL')
+        return t
 
     def t_CODE_BLOCK(self, t):
         r'\#\{'
@@ -213,6 +239,11 @@ class CaelusLexer(object):
 
     t_STRING_LITERAL = string_literal
 
+    @TOKEN(string_literal)
+    def t_eval_STRING_LITERAL(self, t):
+        t.lexer.begin('INITIAL')
+        return t
+
     @TOKEN(floating_constant)
     def t_FLOAT_CONST(self, t):
         t.value = float(t.value)
@@ -247,6 +278,17 @@ class CaelusLexer(object):
         return t
 
     @TOKEN(macro_var)
+    def t_list_MACRO_VAR(self, t):
+        val = t.value
+        num_lparen = val.count('(')
+        num_rparen = val.count(')')
+        if (num_rparen > num_lparen):
+            diff = num_rparen - num_lparen
+            t.value = t.value[:-diff]
+            t.lexer.lexpos -= diff
+        return t
+
+    @TOKEN(macro_var)
     def t_MACRO_VAR(self, t):
         return t
 
@@ -256,10 +298,20 @@ class CaelusLexer(object):
             t.type = "CODESTREAM"
         elif t.value[1:] == "calc":
             t.type = "CALC"
+        elif t.value[1:] == "eval":
+            t.type = "EVAL"
+            t.lexer.begin('eval')
         return t
 
     def t_list_ID(self, t):
-        r"[a-zA-Z_][a-zA-Z0-9_]*"
+        r'[a-zA-Z@_]([^ ";/\{\}\t\n])*'
+        val = t.value
+        num_lparen = val.count('(')
+        num_rparen = val.count(')')
+        if (num_rparen > num_lparen):
+            diff = num_rparen - num_lparen
+            t.value = t.value[:-diff]
+            t.lexer.lexpos -= diff
         t.type = self.keyword_map.get(t.value.lower(), "ID")
         return t
 
@@ -268,7 +320,7 @@ class CaelusLexer(object):
         t.type = self.keyword_map.get(t.value.lower(), "ID")
         return t
 
-    def t_error(self, tok):
+    def t_ANY_error(self, tok):
         """Create an error message"""
         msg = "Illegal character %s"%(repr(tok.value))
         self._error(msg, tok)

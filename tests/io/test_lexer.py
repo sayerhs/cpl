@@ -76,6 +76,51 @@ def test_multiline_comment(clex):
     assert(tokens[0].lineno == 2)
     assert(tokens[0].value == "startTime")
 
+def test_eval_block1(clex):
+    text = """
+    // Allow 10% of time for initialisation before sampling
+    timeStart       #eval #{ 0.1 * ${/endTime} #};
+    """
+    etypes = "ID EVAL CODE_BLOCK SEMI".split()
+    assert_token_types(clex, text, etypes)
+
+def test_eval_block2(clex):
+    text = """
+    r0CosT  #eval{ $r0*cos(degToRad($t   )) };
+    r0CosTO #eval{ $r0*cos(degToRad($t+$o)) };
+    r0CosU  #eval{ $r0*cos(degToRad($u   )) };
+    r0CosUO #eval{ $r0*cos(degToRad($u+$o)) };
+    r0SinT  #eval{ $r0*sin(degToRad($t   )) };
+    r0SinTO #eval{ $r0*sin(degToRad($t+$o)) };
+    r0SinU  #eval{ $r0*sin(degToRad($u   )) };
+    r0SinUO #eval{ $r0*sin(degToRad($u+$o)) };
+    """
+    etypes = "ID EVAL CODE_BLOCK SEMI".split() * 8
+    assert_token_types(clex, text, etypes)
+
+def test_eval_block3(clex):
+    text = """
+    c #eval "sin(pi()*$a/$b)";
+    """
+    etypes = "ID EVAL STRING_LITERAL SEMI".split()
+    assert_token_types(clex, text, etypes)
+
+def test_list_tokens(clex):
+    text1 = """ (U p epsilon) """
+    etypes1 = "LPAREN ID ID ID RPAREN".split()
+    assert_token_types(clex, text1, etypes1)
+
+    text2 = """(U $r1CosTO $r1SinTO)"""
+    etypes2 = "LPAREN ID MACRO_VAR MACRO_VAR RPAREN".split()
+    assert_token_types(clex, text2, etypes2)
+
+def test_eval_error(clex):
+    text = """
+    c #eval identifier;
+    """
+    with pytest.raises(SyntaxError):
+        list(clex.token_stream(text))
+
 def test_unmatched_comment(clex):
     text = """
     startTime   0;
