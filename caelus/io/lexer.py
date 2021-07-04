@@ -110,10 +110,10 @@ class CaelusLexer(object):
                          exponent_part + '?)|([0-9]+' +
                          exponent_part + '))[FfLl]?)')
 
-    simple_escape = r"""([a-zA-Z._~!=&\^\-\\?'"])"""
+    simple_escape = r"""([a-zA-Z._~!=&\^\-\\?'"()])"""
     decimal_escape = r"""(\d+)"""
     hex_escape = r"""(x[0-9a-fA-F]+)"""
-    bad_escape = r"""([\\][^a-zA-Z._~^!=&\^\-\\?'"x0-7])"""
+    bad_escape = r"""([\\][^a-zA-Z._~^!=&\^\-\\?'"x0-7\(\)])"""
 
     escape_sequence = r"""(\\("""+simple_escape+'|'+decimal_escape+'|'+hex_escape+'))'
     cconst_char = r"""([^'\\\n]|"""+escape_sequence+')'
@@ -123,7 +123,7 @@ class CaelusLexer(object):
 
     # string literals (K&R2: A.2.6)
     string_char = r"""([^"\\\n]|"""+escape_sequence+')'
-    string_literal = '"'+string_char+'*"'
+    string_literal = '"'+'[^"\\\n]*"'
     bad_string_literal = '"'+string_char+'*?'+bad_escape+string_char+'*"'
 
     # Ignore spaces and tabs

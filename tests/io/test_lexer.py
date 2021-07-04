@@ -37,6 +37,13 @@ def test_identifiers(clex):
     text = 'startTime endTime div(phi,U) grad(p) fvSolution'
     assert_token_types(clex, text, ['ID']*5)
 
+def test_regex_identifiers(clex):
+    text = r"""
+    "div\\(phi,.*\\.gas.*\\)"
+    "div\\(phi,alpha.*\\)"
+    """
+    assert_token_types(clex, text, ['STRING_LITERAL'] * 2)
+
 def test_macrovars(clex):
     text = '$initialPressure'
     assert_token_types(clex, text, ['MACRO_VAR'])

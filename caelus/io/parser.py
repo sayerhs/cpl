@@ -294,6 +294,7 @@ class CaelusParser(object):
 
     def p_rhs_value_opt(self, p):
         """ rhs_value_opt : rhs_value_opt value
+                          | rhs_value_opt simple_dict
                           | empty
         """
         p[0] = [] if (len(p) == 2) else p[1] + [p[2]]
