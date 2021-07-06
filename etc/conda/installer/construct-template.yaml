@@ -21,6 +21,8 @@ specs:
   - pyyaml
   - pytz
   - jinja2
+  - vtk
+  - pyvista
   - caelus
 
 exclude:

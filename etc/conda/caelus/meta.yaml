@@ -23,6 +23,8 @@ requirements:
     - ply
     - pytz
     - jinja2
+    - vtk
+    - pyvista
 
 about:
   home: https://bitbucket.org/appliedccm/cpl

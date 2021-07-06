@@ -5,13 +5,13 @@
 # For use with Python v3.x
 #
 # Usage:
-#    conda env create -f etc/caelus3.yml
+#    conda env create -f etc/caelus.yml
 #
 
-name: caelus3
+name: caelus
 
 dependencies:
-  - python=3
+  - python>=3.6
   - pip
   - six
   - numpy
@@ -22,3 +22,5 @@ dependencies:
   - ply
   - pytz
   - jinja2
+  - vtk
+  - pyvista

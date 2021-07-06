@@ -17,7 +17,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: Microsoft :: Windows",
-    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Scientific/Engineering :: Physics",
@@ -39,13 +38,14 @@ setup(
     classifiers=classifiers,
     packages=[
         'caelus',
+        'caelus.build',
         'caelus.config',
-        'caelus.utils',
+        'caelus.fvmesh',
+        'caelus.io',
         'caelus.post',
         'caelus.run',
-        'caelus.io',
         'caelus.scripts',
-        'caelus.build',
+        'caelus.utils',
     ],
     entry_points="""
         [console_scripts]
@@ -53,4 +53,5 @@ setup(
         caelus_tutorials=caelus.scripts.caelus_tutorials:main
         caelus_sim=caelus.scripts.caelus_sim:main
     """,
+    python_requires='>=3.6',
 )
