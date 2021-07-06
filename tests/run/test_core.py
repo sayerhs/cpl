@@ -29,7 +29,7 @@ def test_clean_polymesh(test_casedir):
     rcore.clean_polymesh(root,
                          preserve_patterns=["preserve_*.dat"])
     # Ensure that blockMeshDict is protected by default
-    assert os.path.exists(os.path.join(meshdir, "blockMeshDict"))
+    assert os.path.exists(os.path.join(root, "system", "blockMeshDict"))
     # Ensure that common mesh files are deleted
     for mfile in fnames:
         assert not os.path.exists(
@@ -101,7 +101,7 @@ def test_clone_casedir(tmpdir, test_casedir):
     root = str(casedir)
     rcore.clone_case(root, tmpldir)
     # Files that must exist
-    flist = ["0", "Allrun.py", "constant/polyMesh/blockMeshDict",
+    flist = ["0", "Allrun.py", "system/blockMeshDict",
              "system/controlDict", "submit.sh"]
     for froot in flist:
         assert os.path.exists(
