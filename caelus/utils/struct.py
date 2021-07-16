@@ -122,6 +122,10 @@ def gen_yaml_encoder(cls):
                                  numpy_scalar_representer)
             self.add_representer(np.int_,
                                  numpy_scalar_representer)
+            self.add_representer(np.bool_,
+                                 numpy_scalar_representer)
+            self.add_representer(np.float32,
+                                 numpy_scalar_representer)
 
     return StructYAMLDumper
 
