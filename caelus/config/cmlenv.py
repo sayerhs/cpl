@@ -24,7 +24,7 @@ import logging
 import json
 from distutils.version import LooseVersion
 from . import config
-from ..utils import osutils
+from ..utils import osutils, Struct
 
 _lgr = logging.getLogger(__name__)
 
@@ -254,6 +254,21 @@ class CMLEnv(object):
                     os.path.join(self._user_build_dir, "bin"))
         else:
             return os.path.join(self._user_build_dir, "bin")
+
+    @property
+    def etc_dirs(self):
+        """Return list of etc directories"""
+        return [
+            os.path.join(self.project_dir, "etc"),
+        ]
+
+    def etc_file(self, fname):
+        """Return the first configuration file from etc directories"""
+        for edir in self.etc_dirs:
+            efile = os.path.join(edir, fname)
+            if os.path.exists(efile):
+                return efile
+        return None
 
     def _generate_environment(self):
         """Return an environment suitable for executing programs"""
@@ -500,6 +515,45 @@ class FOAMEnv:
     def foam_bashrc(self):
         """Return the path to the bashrc file"""
         return self._bashrc_file
+
+    @property
+    def site_dir(self):
+        """Return site directory"""
+        return self._env.get(
+            "WM_PROJECT_SITE",
+            os.path.join(self.project_dir, "site"))
+
+    @property
+    def foam_api_info(self):
+        """Get API information"""
+        if not hasattr(self, "_foam_api_info"):
+            fname = os.path.join(
+                self.project_dir, "META-INFO", "api-info")
+            contents = open(fname, 'r').readlines()
+            self._foam_api_info = Struct([
+                ll.strip().split('=') for ll in contents])
+        return self._foam_api_info
+
+    @property
+    def etc_dirs(self):
+        """Return list of etc directories"""
+        homedir = osutils.user_home_dir()
+        api = self.foam_api_info.api
+        return [
+            os.path.join(homedir, ".OpenFOAM", api),
+            os.path.join(homedir, ".OpenFOAM"),
+            os.path.join(self.site_dir, api, "etc"),
+            os.path.join(self.site_dir, "etc"),
+            os.path.join(self.project_dir, "etc"),
+        ]
+
+    def etc_file(self, fname):
+        """Return the first configuration file from etc directories"""
+        for edir in self.etc_dirs:
+            efile = os.path.join(edir, fname)
+            if os.path.exists(efile):
+                return efile
+        return None
 
     def _process_foam_env(self, project_dir):
         """Process the bashrc file and get all necessary variables"""
