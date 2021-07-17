@@ -3,19 +3,21 @@
 Installing Caelus Python Library (CPL)
 ======================================
 
-CPL is a python package for use with OpenFOAM or `Caelus CML <http://www.caelus-cml.com>`_
-simulation suite. Therefore, it is assumed that users have a properly
-functioning OpenFOAM or CML installation on their system. In addition to OpenFoAM/Caelus CML and
-python, it also requires several scientific python libraries:
+CPL is a python package for use with `OpenFOAM <https://openfoam.com>`_ or
+`Caelus CML <http://www.caelus-cml.com>`_ simulation suite. Therefore, it is
+assumed that users have a properly functioning OpenFOAM or CML installation on
+their system. In addition to OpenFoAM/Caelus CML and python, it also requires
+several scientific python libraries:
 
    - `NumPy <http://www.numpy.org>`_ -- Arrays, linear algebra
    - `Pandas <http://pandas.pydata.org>`_ -- Data Analysis library
    - `Matplotlib <https://matplotlib.org>`_ -- Plotting package
 
-The quickey way to install CPL is to install through `Anaconda Python Distribution
-<http://docs.continuum.io/anaconda/index>`_. This distribution provides a
-comprehensive set of python packages necessary to get up and running with CPL.
-Once installed, please proceed to :ref:`check_install` to learn how to use CPL.
+The quickey way to install CPL is to install through `Anaconda Python
+Distribution <http://docs.continuum.io/anaconda/index>`_. This distribution
+provides a comprehensive set of python packages necessary to get up and running
+with CPL. Once installed, please proceed to :ref:`check_install` to learn how to
+use CPL.
 
 For users wishing to install CPL from the git repository, this user
 guide recommends the use of Anaconda. An alternate approach using Python 
@@ -78,7 +80,7 @@ Install CPL from source
    .. code-block:: console
 
       # Ensure working directory is CPL
-      conda env create -f etc/caelus2.yml
+      conda env create -f etc/caelus3.yml
 
    .. note::
 
@@ -87,20 +89,16 @@ Install CPL from source
          installs additional packages like ``sphinx`` for document generation,
          and ``pytest`` for running the test suite.
 
-      #. By default, the environment created is named ``caelus2`` when using
-         :file:`etc/caelus2.yml` and ``caelus-dev`` when using
-         :file:`etc/caelus2-dev.yml`. The user can change the name of the
+      #. By default, the environment created is named ``caelus`` when using
+         :file:`etc/caelus3.yml` and ``caelus-dev`` when using
+         :file:`etc/caelus3-dev.yml`. The user can change the name of the
          environment by using `-n <env_name>` option in the previous command.
-
-      #. Users wishing to use Python 3.x should replace :file:`etc/caelus2.yml`
-         with :file:`etc/caelus3.yml`. Both ``caelus2`` and ``caelus3``
-         environment can be used side by side for testing and development.
 
 #. Activate the custom environment and install CPL within this environment
 
    .. code-block:: console
 
-      source activate caelus2
+      source activate caelus
       pip install .
 
    For *editable* development versions of CPL use ``pip install -e .``
@@ -116,48 +114,8 @@ Alternate Installation -- Virtualenv
 This method is suitable for users who prefer to use the existing python
 installations in their system (e.g., from ``apt-get`` for Linux systems). A
 brief outline of the installation process is described here. Users are referred
-to the following documentation for more assistance:
-
-#. `Virtualenv <https://virtualenv.pypa.io/en/stable/>`_
-#. `VirtualEnvWrapper <https://virtualenvwrapper.readthedocs.io/en/latest/>`_
-
-Prepare system for virtual environment
---------------------------------------
-
-#. Install necessary packages
-
-  .. code-block:: console
-
-    # Install necessary packages
-    pip install virtualenv virtualenvwrapper
-
-  Windows users must use ``virtualenvwrapper-win`` instead of the
-  ``virtualenvwrapper`` mentioned above. Alternately, you might want to install
-  these packages via ``apt-get`` or ``yum``.
-
-#. Update your `~/.bashrc` or `~/.profile` with the following lines:
-
-   .. code-block:: console
-
-      export WORKON_HOME=~/ENVS/
-      source /usr/local/bin/virtualenvwrapper.sh
-
-   Adjust the location of ``virtualenvwrapper.sh`` file according to your system
-   installation location.
-
-Useful virtualenvwrapper commands
-`````````````````````````````````
-
-* ``mkvirtualenv`` - Create a new virtual environment
-
-* ``workon`` - Activate a previously created virtualenv, or switch between
-  environments.
-
-* ``deactivate`` - Deactive the current virtual environment
-
-* ``rmvirtualenv`` - Delete an existing virtual environment
-
-* ``lsvirtualenv`` - List existing virtual environments
+to the `virtual environments docs
+<https://docs.python.org/3/library/venv.html>`_ for more information.
 
 Install CPL
 -----------
@@ -174,41 +132,35 @@ Install CPL
 
    .. code-block:: console
 
-      # Create a caelus Python 2.7 environment
-      mkvirtualenv -a $(pwd) -r requirements.txt caelus2
+      # Create virtual environment
+      python3 -m venv --system-site-packages .venv
+
+      # Activate virtual environment
+      source .venv/bin/activate
+
+      # Install dependencies
+      python3 -m pip install -r requirements.txt
 
 #. Activate virtual environment and install CPL into it
 
    .. code-block:: console
 
       # Ensure that we are in the right environment
-      workon caelus2
+      source .venv/bin/activate
       pip install . # Install CPL within this environment
-
-.. note::
-
-   #. Use ``--system-site-packages`` with the ``mkvirtualenv`` command to reuse
-      python modules installed in the system (e.g., via ``apt-get``) instead of
-      reinstalling packages locally within the environment.
-
-   #. Use ``mkvirtualenv --python=PYTHON_EXE`` to customize the python
-      interpreter used by the virutal environment instead of the default python
-      found in your path.
 
 .. _check_install:
 
 Check installation
 ~~~~~~~~~~~~~~~~~~
 
-After installing CPL, please open a command line terminal and execute
-:program:`caelus -h` to check if the installation process was completed
-succesfully. Note that users who didn't use the installer provided by Applied
-CCM might need to activate their *environment* before the ``caelus`` command is
-available on their path. If everything was installed and configured
-successfully, users should see a detailed help message summarizing the usage of
-:program:`caelus`. At this stage, you can either learn about building
-documentation and executing unit tests (provided with CPL) in the next sections
-or skip to :ref:`configuration` to learn how to configure and use CPL.
+After installing CPL, please open a command line terminal, activate the right
+python environment, and execute :program:`caelus -h` to check if the
+installation process was completed succesfully. If everything was installed and
+configured successfully, users should see a detailed help message summarizing
+the usage of :program:`caelus`. At this stage, you can either learn about
+building documentation and executing unit tests (provided with CPL) in the next
+sections or skip to :ref:`configuration` to learn how to configure and use CPL.
 
 Building documentation
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -238,5 +190,4 @@ The unit tests are written using `py.test
 <https://docs.pytest.org/en/latest/>`_. To run the tests executing
 :command:`py.test tests` from the top-level CPL directory. Note that this will
 require the user to have initialized the environment using
-:file:`etc/caelus2-dev.yml` (or :file:`etc/caelus3-dev.yml` for the Python v3.x
-version).
+:file:`etc/caelus3-dev.yml`.

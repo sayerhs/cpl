@@ -4,18 +4,18 @@ Mainpulating input files with CPL
 =====================================
 
 CPL provides a pythonic interface to read, create, modify, and write out input
-files necessary for running simulations using OpenFOAM or CML executables within 
-a case directory. Users can interact with input files as python objects and use 
-python data structures and functions to manipulate them. The modified objects can 
-then be written out to files and CPL will pretty-print the files in the apporpriate
-locations in the case directory. Most OpenFOAM/CML objects have a one-to-one
-correspondence with python data structures within CPL. For example, OpenFOAM
-dictionaries are accessed as Python dictionaries, specifically an instance of
-:class:`~caelus.io.caelusdict.CaelusDict` which provides both attribute and
-dictionary-style access to entries. FOAM ``List<Scalar>`` data types are
-accessible as NumPy arrays, whereas generic lists containing mixed datatype
-entries (e.g., the `blocks` entry in :file:`blockMeshDict`) are represented as
-lists.
+files necessary for running simulations using OpenFOAM or CML executables within
+a case directory. Users can interact with input files as python objects and use
+python data structures and functions to manipulate them. The modified objects
+can then be written out to files and CPL will pretty-print the files in the
+apporpriate locations in the case directory. Most OpenFOAM/CML objects have a
+one-to-one correspondence with python data structures within CPL. For example,
+OpenFOAM dictionaries are accessed as Python dictionaries, specifically an
+instance of :class:`~caelus.io.caelusdict.CaelusDict` which provides both
+attribute and dictionary-style access to entries. FOAM ``List<Scalar>`` data
+types are accessible as NumPy arrays, whereas generic lists containing mixed
+datatype entries (e.g., the `blocks` entry in :file:`blockMeshDict`) are
+represented as lists.
 
 .. currentmodule:: caelus.io.dictfile
 

@@ -5,8 +5,9 @@ Configuring Caelus Python Library
 
 CPL provides a YAML-based configuration utility that can be used to customize
 the library depending on the operating system and user's specific needs. A good
-example is to provide non-standard install locations for the OpenFOAM or Caelus CML
-executables, as well as using different versions of CML with CPL simultaneously.
+example is to provide non-standard install locations for the OpenFOAM or Caelus
+CML executables, as well as using different versions of OpenFOAM/CML with CPL
+simultaneously.
 
 The use of configuration file is optional, CPL provides defaults that should
 work on most systems and will attempt to auto-detect CML installations on
@@ -34,11 +35,11 @@ preceeding files.
 
 #. The file ``caelus.yaml`` in the current working directory, if it exists.
 
-While CPL provides a way to auto-discovered installed OpenFOAM and CML versions,
-often it will be necessary to provide at least a system-wide or per-user 
-configuration file to allow CPL to use the right CML executables present in 
-your system. A sample CPL configuration is shown below :download:
-`download caelus.yaml<../data/caelus_config.yaml>`:
+While CPL provides a way to auto-discover installed OpenFOAM and CML versions,
+often it will be necessary to provide at least a system-wide or per-user
+configuration file to allow CPL to use the right CML executables present in your
+system. A sample CPL configuration is shown below :download:`download
+caelus.yaml<../data/caelus_config.yaml>`:
 
 .. literalinclude:: ../data/caelus_config.yaml
    :language: yaml
@@ -158,7 +159,7 @@ Python environment options
 
 .. confval:: caelus.cpl.python_env_name
 
-   The name of the Python environment for use with CPL, e.g., ``caelus2`` or
+   The name of the Python environment for use with CPL, e.g., ``caelus`` or
    ``caelus-dev``.
 
 .. confval:: caelus.cpl.conda_settings
@@ -251,10 +252,10 @@ CML version configuration
 
 .. confval:: caelus.caelus_cml
 
-   The primary purpose of CPL is to interact with OpenFOAM and CML executables 
-   and utilities. This section informs CPL of the various CML installations 
-   available on a system and the desired *version* used by CPL when invoking 
-   OpenFOAM or CML executables.
+   The primary purpose of CPL is to interact with OpenFOAM and CML executables
+   and utilities. This section informs CPL of the various OpenFOAM/CML
+   installations available on a system and the desired *version* used by CPL
+   when invoking OpenFOAM or CML executables.
 
 .. confval:: caelus.caelus_cml.default
 
@@ -305,16 +306,17 @@ CML version configuration
 
 .. confval:: caelus.caelus_cml.versions.path
 
-   The path to the Caelus install. This is equivalent to the directory pointed
-   by the :envvar:`WM_PROJECT_DIR` or :envvar:`CAELUS_PROJECT_DIR` environment 
-   variable, e.g., :file:`/home/caelus_user/projects/caelus/caelus-10.04`.
+   The path to the C++ code/executables install. This is equivalent to the
+   directory pointed by the :envvar:`WM_PROJECT_DIR` or
+   :envvar:`CAELUS_PROJECT_DIR` environment variable, e.g.,
+   :file:`/home/caelus_user/projects/caelus/caelus-10.04`.
 
 .. confval:: caelus.caelus_cml.versions.build_option
 
-   A string parameter identifying the OpenFOAM or Caelus build, if multiple 
-   builds are present within a CML install, to be used with CPL. This is an 
-   **expert** only option used by developers who are testing multiple compilers 
-   and build options. It is recommended that the normal users let CPL autodetect 
+   A string parameter identifying the OpenFOAM or Caelus build, if multiple
+   builds are present within a CML install, to be used with CPL. This is an
+   **expert** only option used by developers who are testing multiple compilers
+   and build options. It is recommended that the normal users let CPL autodetect
    the build option.
 
 .. confval:: caelus.caelus_cml.versions.mpi_root

@@ -39,8 +39,14 @@ customize the workflow. A sample interaction is shown below
 For a comprehensive list of task file examples, please consult the
 :file:`run_tutorial.yaml` files in the :file:`tutorials` directory of Caelus CML
 distribution. In particular, the
-:file:`tutorials/incompressible/pimpleSolver/les/motorBike` case provides an
+`motorBike <https://bitbucket.org/appliedccm/caelus-cml/src/master/tutorials/incompressible/pimpleSolver/les/motorBike/>`_ case provides an
 example of a tasks workflow involving two different case directories.
+
+.. note::
+
+   When using CPL with `OpenFOAM <https://openfoam.com>`_, please replace
+   `pisoSolver` with `pisoFoam` etc. Other than the name of the solvers, the
+   rest of the commands do not change when switching between CML and OpenFOAM.
 
 Tasks reference
 ---------------

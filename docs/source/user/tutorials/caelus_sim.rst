@@ -156,6 +156,11 @@ the inputs from :file:`cmlControls` is used to customize the case.
    :program:`changeDictionary` executable in the pre-processing phase to modify
    binary files.
 
+.. note::
+
+   With newer versions of OpenFOAM, the RANS inputs must be part of the
+   :file:`constant/turbulenceProperties` file.
+
 Inputs for setting up parametric run
 ------------------------------------
 
