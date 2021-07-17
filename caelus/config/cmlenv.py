@@ -9,7 +9,7 @@ Caelus CML Environment Manager
 files, providing ways to discover installed versions as well as interact with
 the installed Caelus CML versions. By default, :mod:`cmlenv` attempts to locate
 installed Caelus versions in standard locations:
-:file:`~/Caelus/caelus-VERSION` on Unix-like systems, and in :file:`C:\Caelus`
+:file:`~/Caelus/caelus-VERSION` on Unix-like systems, and in :file:`C:\\Caelus`
 in Windows systems. Users can override the default behavior and point to
 non-standard locations by customizing their Caelus Python configuration file.
 
@@ -654,10 +654,20 @@ def _cml_env_mgr():
             CMLEnv: The environment object
         """
         if not cml_versions and did_init[0]:
-            raise RuntimeError("No valid Caelus CML versions found")
+            raise RuntimeError("No valid OpenFOAM/CML versions found")
         else:
             _init_cml_versions()
-        vkeys = [LooseVersion(x) for x in cml_versions]
+
+        # Maintain backwards compatibility and search CML versions first
+        vkeys = [LooseVersion(x) for x in cml_versions
+                 if isinstance(cml_versions[x], CMLEnv)]
+        if vkeys:
+            vlist = sorted(vkeys, reverse=True)
+            return cml_versions[vlist[0].vstring]
+
+        # If only OpenFOAM versions are found return latest
+        vkeys = [LooseVersion(x) for x in cml_versions
+                 if isinstance(cml_versions[x], FOAMEnv)]
         vlist = sorted(vkeys, reverse=True)
         return cml_versions[vlist[0].vstring]
 
@@ -674,7 +684,7 @@ def _cml_env_mgr():
             CMLEnv: The environment object
         """
         if not cml_versions and did_init[0]:
-            raise RuntimeError("No valid Caelus CML versions found")
+            raise RuntimeError("No valid OpenFOAM/CML versions found")
         else:
             _init_cml_versions()
         cfg = config.get_config()
@@ -683,7 +693,7 @@ def _cml_env_mgr():
         if vkey == "latest":
             return _get_latest_version()
         if not vkey in cml_versions:
-            raise KeyError("Invalid CML version requested")
+            raise KeyError("Invalid OpenFOAM/CML version requested")
         else:
             return cml_versions[vkey]
 
