@@ -169,7 +169,9 @@ class DictFile(object):
         name = filename or cls._default_filename
         with osutils.set_work_dir(cdir):
             if os.path.exists(name):
-                return cls.load(filename, debug)
+                obj = cls.load(filename, debug)
+                obj.casedir = cdir
+                return obj
             obj = cls.__new__(cls)
             obj.filename = name
             obj.header = obj.create_header()
@@ -222,7 +224,16 @@ class DictFile(object):
     @property
     def contents(self):
         """Access entries within the Caelus CML dictionary"""
-        return self.data
+        # return self.data
+        if not hasattr(self, "_expanded_data_dict"):
+            cdir = getattr(self, "casedir", os.getcwd())
+            fdir = os.path.dirname(self.filename)
+            wdir = os.path.join(cdir, fdir)
+            with osutils.set_work_dir(wdir):
+                out = self.data._foam_expand_includes()
+                out._foam_expand_macros()
+                self._expanded_data_dict = out
+        return self._expanded_data_dict
 
     def keys(self):
         """Return list of variable names in the dictionary"""
@@ -286,8 +297,10 @@ class ControlDict(DictFile):
     @property
     def functions(self):
         """function object definitions in controlDict"""
-        return (self.data.functions
-                if "functions" in self.data else None)
+        cdict = self.contents
+        return (cdict.functions
+                if "functions" in cdict
+                else None)
 
     @functions.setter
     def functions(self, value):

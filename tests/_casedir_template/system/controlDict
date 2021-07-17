@@ -42,5 +42,12 @@ timePrecision   6;
 
 runTimeModifiable true;
 
+functions
+{
+    #include "sampleDict"
+    #include "sampleIso"
+    #include "samplePlanes"
+}
+
 
 // ************************************************************************* //
