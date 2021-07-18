@@ -10,3 +10,6 @@ Provides log analysis and plotting utilities
    ~logs.SolverLog
    ~plots.CaelusPlot
 """
+
+from .logs import SolverLog
+from .funcobj import PostProcessing

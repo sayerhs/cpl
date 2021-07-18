@@ -43,6 +43,7 @@ setup(
         'caelus.fvmesh',
         'caelus.io',
         'caelus.post',
+        'caelus.post.funcobj',
         'caelus.run',
         'caelus.scripts',
         'caelus.utils',
