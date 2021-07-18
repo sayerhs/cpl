@@ -7,6 +7,7 @@ Provides log analysis and plotting utilities
 .. autosummary::
    :nosignatures:
 
+   ~funcobj.functions.PostProcessing
    ~logs.SolverLog
    ~plots.CaelusPlot
 """

@@ -2,7 +2,12 @@
 
 """\
 Core function object utilities
-------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Implements the base classes upon with the concrete function object interfaces
+are built on. :class:`FunctionObject` implements common methods used by all the
+subclasses.
+
 """
 
 import os
@@ -101,7 +106,7 @@ class FunctionObject(metaclass=FuncObjMeta):
 
     @classmethod
     def funcobj_type(cls):
-        """Return the function object type"""
+        """Return the string representing this functionObject type."""
         return getattr(cls, "_funcobj_type")
 
     @classmethod
@@ -117,7 +122,13 @@ class FunctionObject(metaclass=FuncObjMeta):
         return obj
 
     def __init__(self, name, obj_dict, *, casedir=None):
-        """Create instance from function object dict"""
+        """Initialize object from input dictionary.
+
+        Args:
+            name (str): User-defined name for this object (in functions)
+            obj_dict (CaelusDict): Input dictionary for this functionObject
+            casedir (path): Path to the case directory (default: cwd)
+        """
         self.casedir = Path(casedir or os.getcwd())
         self.name = name
         self.data = obj_dict

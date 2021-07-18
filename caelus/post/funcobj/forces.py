@@ -2,7 +2,11 @@
 
 """\
 Force and Force coefficients interface
-----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Provides pythonic interface to OpenFOAM's `Forces <https://www.openfoam.com/documentation/guides/latest/doc/guide-function-objects-forces.html>`_
+function objects.
+
 """
 
 import re
@@ -15,7 +19,17 @@ from .funcobj import FunctionObject
 
 
 class ForceCoeffs(FunctionObject):
-    """Force coefficients"""
+    """
+    The class retrieves data from ``coefficient.dat`` file generated during a
+    run.
+
+    Example:
+      >>> post = PostProcessing()         # Get the post processing instance
+      >>> fcoeffs = post['forceCoeffs1']  # Retrieve force coefficients object
+      >>> df = fcoeffs()                  # Dataframe for latest time instance
+      >>> print(df.columns)               # Examine columns
+
+    """
 
     _funcobj_type = "forceCoeffs"
     _funcobj_libs = ["forces"]
@@ -31,7 +45,21 @@ class ForceCoeffs(FunctionObject):
     ]
 
     def __call__(self, time=None):
-        """Load the data and return a dataframe"""
+        """Load the force coefficients file and return as dataframe.
+
+        If ``time`` is provided, the force coefficients are retrieved from the
+        corresponding time directory. Otherwise, the data from the latest
+        timestep is retrieved.
+
+        Args:
+            time (str): Name of the time directory.
+
+        Returns:
+            pd.DataFrame: DataFrame corresponding to ``coefficient.dat``
+
+        Raises:
+            FileNotFoundError
+        """
         dtime = str(time) if time else self.latest_time
         dpath = Path(self.root) / dtime
         fname = dpath / "coefficient.dat"
@@ -53,7 +81,40 @@ class ForceCoeffs(FunctionObject):
 
 
 class Forces(FunctionObject):
-    """Forces interface"""
+    """
+    The class retrives data from ``force.dat`` and ``moment.dat`` files
+    generated during a run and returns a single Pandas DataFrame containing the
+    following columns.
+
+    =======  =====================================
+    Column   Value
+    =======  =====================================
+    Fx       Total force (x-direction)
+    Fy       Total force (y-direction)
+    Fz       Total force (z-direction)
+    Fpx      Pressure force (x-direction)
+    Fpy      Pressure force (y-direction)
+    Fpz      Pressure force (z-direction)
+    Fvx      Viscous force (x-direction)
+    Fvy      Viscous force (y-direction)
+    Fvz      Viscous force (z-direction)
+    Mx       Total moment (x-direction)
+    My       Total moment (y-direction)
+    Mz       Total moment (z-direction)
+    Mpx      Pressure moment (x-direction)
+    Mpy      Pressure moment (y-direction)
+    Mpz      Pressure moment (z-direction)
+    Mvx      Viscous moment (x-direction)
+    Mvy      Viscous moment (y-direction)
+    Mvz      Viscous moment (z-direction)
+    =======  =====================================
+
+    Example:
+      >>> post = PostProcessing()   # Get the post processing instance
+      >>> forces = post['forces1']  # Retrieve force coefficients object
+      >>> df = forces()             # Dataframe for latest time instance
+      >>> print(df.columns)         # Examine columns
+    """
 
     _funcobj_type = "forces"
     _funcobj_libs = ["forces"]
@@ -80,7 +141,22 @@ class Forces(FunctionObject):
         return ['Time'] + [prefix + tx for tx in types]
 
     def __call__(self, time=None):
-        """Load the forces/moments file and return a dataframe"""
+        """Load the forces/moments file and return a dataframe.
+
+        If ``time`` is provided, the force coefficients are retrieved from the
+        corresponding time directory. Otherwise, the data from the latest
+        timestep is retrieved.
+
+        Args:
+            time (str): Name of the time directory.
+
+        Returns:
+            pd.DataFrame: DataFrame corresponding to ``force.dat``
+            and ``moment.dat``
+
+        Raises:
+            FileNotFoundError
+        """
         dtime = str(time) if time else self.latest_time
         dpath = Path(self.root) / dtime
 
