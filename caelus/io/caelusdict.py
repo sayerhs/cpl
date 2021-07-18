@@ -27,12 +27,12 @@ class CaelusDict(struct.Struct):
         pprint(self)
         return strbuf.getvalue()
 
-    def _foam_load_include(self, fname):
+    def _foam_load_include(self, fname, env=None):
         """Load an include file with given name"""
         # Prevent circular imports
         from .dictfile import DictFile
         out = DictFile.load(filename=fname.strip('"')).data
-        tmp = out._foam_expand_includes()
+        tmp = out._foam_expand_includes(env)
         return tmp
 
     def _foam_load_etc_include(self, fname, env=None):
@@ -72,7 +72,7 @@ class CaelusDict(struct.Struct):
                 out.update(self._foam_load_etc_include(val.value, cenv))
             elif (isinstance(val, dtypes.Directive) and
                   val.directive == "#include"):
-                out.update(self._foam_load_include(val.value))
+                out.update(self._foam_load_include(val.value, cenv))
             else:
                 out[k] = val
         return out
