@@ -82,9 +82,11 @@ class PostProcessing:
         for k, v in self.data.items():
             if not (self.root / k).exists():
                 _lgr.warning("Missing postProcessing entry for %s", k)
+                continue
             ftype = v['type']
             if ftype not in _func_obj_map:
                 _lgr.info("Skipping function object: %s (%s)", k, ftype)
+                continue
 
             fcls = _func_obj_map[ftype]
             fobj[k] = fcls(k, v, casedir=self.casedir)

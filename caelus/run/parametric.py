@@ -8,7 +8,10 @@ CML Parametric Run Manager
 import os
 import logging
 import itertools
-from collections import Mapping
+try:
+    from collections.abc import Mapping
+except ImportError:  # pragma: no cover
+    from collections import Mapping
 
 import numpy as np
 

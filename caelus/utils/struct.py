@@ -11,7 +11,7 @@ Implements :class:`~caelus.utils.struct.Struct`.
 from collections import OrderedDict
 try:
     from collections.abc import Mapping, MutableMapping
-except ImportError:
+except ImportError:   # pragma: no cover
     from collections import Mapping, MutableMapping
 from abc import ABCMeta
 import yaml

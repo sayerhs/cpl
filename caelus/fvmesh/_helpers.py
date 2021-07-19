@@ -240,4 +240,4 @@ def wrap(obj):
                 else pv.wrap(obj))
 
     # Default is to let pyvista decide
-    return pv.wrap(obj)
+    return pv.wrap(obj) # pragma: no cover

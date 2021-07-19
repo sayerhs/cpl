@@ -12,10 +12,10 @@ methods/properties.
 try:
     from ._helpers import wrap
     _has_pyvista = True
-except ImportError:
+except ImportError: # pragma: no cover
     _has_pyvista = False
 
-if not _has_pyvista:
+if not _has_pyvista: # pragma: no cover
     def wrap(*args, **kwargs):  # noqa: F811
         """Helper function"""
         raise NotImplementedError("Please install VTK/pyvista")

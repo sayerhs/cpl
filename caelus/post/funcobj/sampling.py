@@ -236,10 +236,10 @@ class SampledSet(SampledData):
             vtk=self._load_vtk_file,
         )
 
-        if time in self._cache:
-            return self._cache[time]
-
         dtime = str(time) if time else self.parent.latest_time
+        if dtime in self._cache:
+            return self._cache[dtime]
+
         dpath = Path(self.parent.root) / dtime
         if not dpath.exists():
             raise FileNotFoundError(
@@ -292,10 +292,10 @@ class SampledSurface(SampledData):
 
     def __call__(self, time=None):
         """Return the dataframe associated with a given time."""
-        if time in self._cache:
-            return self._cache[time]
-
         dtime = str(time) if time else self.parent.latest_time
+        if dtime in self._cache:
+            return self._cache[dtime]
+
         dpath = Path(self.parent.root) / dtime
         fname = dpath / (self.name + ".vtp")
         if not fname.exists():

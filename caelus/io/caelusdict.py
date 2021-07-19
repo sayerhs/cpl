@@ -9,7 +9,7 @@ import re
 try:
     from collections import deque
     from collections.abc import Mapping
-except ImportError:
+except ImportError:  # pragma: no cover
     from collections import Mapping
 
 import six

@@ -9,7 +9,7 @@ import os
 import logging
 try:
     from collections.abc import Mapping
-except ImportError:
+except ImportError:   # pragma: no cover
     from collections import Mapping
 
 import six
@@ -417,7 +417,7 @@ class LESProperties(TurbModelProps):
         class, this also triggers the default entries for delta.
         """
         super(LESProperties, self).create_default_entries()
-        self.model = "Smagorinksy"
+        self.model = "Smagorinsky"
         self.delta = "cubeRootVol"
 
     @property
