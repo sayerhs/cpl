@@ -252,6 +252,7 @@ def test_foamenv_object(openfoam_directory):
     assert (len(cenv.etc_dirs) == 5)
     assert ("openmpi" in cenv.mpi_libdir)
     assert ("openmpi" in cenv.mpi_bindir)
-    assert ("PATH" in cenv.environ)
-    bashrc = cenv.etc_file("bashrc")
-    assert (bashrc is not None)
+    if ostype != "windows":
+        assert ("PATH" in cenv.environ)
+        bashrc = cenv.etc_file("bashrc")
+        assert (bashrc is not None)

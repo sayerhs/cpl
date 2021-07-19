@@ -7,6 +7,10 @@ Test parametric run setups
 from caelus.io.caelusdict import CaelusDict
 from caelus.run.parametric import CMLParametricRun
 
+pytestmark = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="Issues with yaml parser")
+
 params_yaml = """
 simulation:
   sim_name: airfoil_demo
