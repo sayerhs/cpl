@@ -18,7 +18,7 @@ import os
 import logging
 try:
     from collections.abc import Mapping
-except ImportError:
+except ImportError:  # pragma: no cover
     from collections import Mapping
 import json
 import fnmatch

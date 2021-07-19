@@ -3,6 +3,8 @@
 
 import os
 import shutil
+import pytest
+
 from caelus.utils.struct import Struct
 from caelus.utils import osutils
 from caelus.run import core
@@ -80,3 +82,14 @@ def test_tasks(test_casedir, monkeypatch):
     task_file.write(task_yaml)
     tasks = Tasks.load(task_file=str(task_file))
     tasks(case_dir=casedir)
+
+def test_run_python(tmpdir):
+    with osutils.set_work_dir(str(tmpdir)):
+        open("test.py", 'w').write("import sys")
+        tasks = Tasks()
+        opts = Struct(script="test.py")
+        tasks.cmd_run_python(opts)
+
+        with pytest.raises(FileNotFoundError):
+            opts = Struct(script="test_noexist.py")
+            tasks.cmd_run_python(opts)

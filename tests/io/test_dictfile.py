@@ -3,8 +3,11 @@
 
 import pytest
 
+from caelus.utils import osutils
 from caelus.config import get_config, cmlenv
-from caelus.io.dictfile import ControlDict
+from caelus.io.dictfile import ControlDict, TurbulenceProperties
+from caelus.io import dtypes
+from caelus.io.caelusdict import CaelusDict
 
 class MockCMLEnv(object):
     """Mock CMLEnv object"""
@@ -67,6 +70,32 @@ def test_dictfile_load(test_casedir):
     cdict = ControlDict.read_if_present(casedir=str(test_casedir))
     assert cdict.application == "pisoSolver"
     assert cdict.writeFormat == "ascii"
+    assert "application" in cdict.keys()
+    assert cdict['application'] == "pisoSolver"
+    assert "controlDict" in repr(cdict)
+    assert "application" in str(cdict)
+
+def test_dictfile_create(test_casedir):
+    with osutils.set_work_dir(str(test_casedir)):
+        cdict = ControlDict()
+        assert hasattr(cdict, "header")
+        cdict.functions = CaelusDict(a=1)
+        with pytest.raises(TypeError):
+            cdict.functions = 10
+
+        with pytest.raises(ValueError):
+            cdict.writeControl = "onEnd"
+
+def test_turbulence_props(test_casedir):
+    with osutils.set_work_dir(str(test_casedir)):
+        turb = TurbulenceProperties.read_if_present()
+        rans = turb.get_turb_file()
+        assert rans.model == "realizableKE"
+
+        turb.simulationType = "LESModel"
+        les = turb.get_turb_file()
+        assert les.model == "Smagorinsky"
+        assert les.delta == "cubeRootVol"
 
 def test_dictfile_expand(test_casedir):
     cdict = ControlDict.read_if_present(casedir=str(test_casedir))
@@ -90,3 +119,17 @@ def test_dictfile_expand(test_casedir):
 
     offsets = planes.surfaces.planes.offsets
     assert len(offsets) == 9
+
+def test_caelus_dict_expands():
+    """Test Caelus dictionary expands"""
+    cdict = CaelusDict()
+    cdict["entry1"] = CaelusDict(a=1, b=2)
+    cdict['entry2'] = CaelusDict(
+        macro_0001=dtypes.MacroSubstitution("${entry1}"))
+    cdict['macro_003'] = dtypes.Directive("#remove", '"entry1"')
+    out = cdict._foam_expand_includes()
+    out._foam_expand_macros()
+    assert out.entry2.a == 1
+    assert "entry1" not in out
+    out_str = str(out)
+    assert "entry2" in out_str

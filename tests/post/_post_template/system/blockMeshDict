@@ -1,0 +1,93 @@
+/*---------------------------------------------------------------------------*
+Caelus 7.04
+Web:   www.caelus-cml.com
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+scale 0.1;
+
+vertices
+(
+    (0 0 0)
+    (1 0 0)
+    (1 1 0)
+    (0 1 0)
+    (0 0 1)
+    (1 0 1)
+    (1 1 1)
+    (0 1 1)
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (2 2 2) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    west
+    {
+        type patch;
+        faces
+        (
+            (0 4 7 3)
+        );
+    }
+    east
+    {
+        type patch;
+        faces
+        (
+            (2 6 5 1)
+        );
+    }
+    terrain
+    {
+        type wall;
+        faces
+        (
+            (0 3 2 1)
+        );
+    }
+    top
+    {
+        type patch;
+        faces
+        (
+            (4 5 6 7)
+        );
+    }
+    south
+    {
+        type patch;
+        faces
+        (
+            (1 5 4 0)
+        );
+    }
+    north
+    {
+        type patch;
+        faces
+        (
+            (3 7 6 2)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

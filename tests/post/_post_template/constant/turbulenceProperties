@@ -6,31 +6,13 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    object      nuTilda;
+    class       dictionary;
+    location    "constant";
+    object      turbulenceProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 2 -1 0 0 0 0];
+simulationType  RASModel;
 
-internalField   uniform 0;
-
-boundaryField
-{
-    movingWall
-    {
-        type            zeroGradient;
-    }
-
-    fixedWalls
-    {
-        type            zeroGradient;
-    }
-
-    frontAndBack
-    {
-        type            empty;
-    }
-}
 
 // ************************************************************************* //
