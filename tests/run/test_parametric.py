@@ -4,6 +4,9 @@
 Test parametric run setups
 """
 
+import sys
+import pytest
+
 from caelus.io.caelusdict import CaelusDict
 from caelus.run.parametric import CMLParametricRun
 
