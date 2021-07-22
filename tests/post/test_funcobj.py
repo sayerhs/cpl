@@ -48,17 +48,21 @@ def test_post_processing():
         list(post.filter('fieldFunctionObjects'))
 
     fcoeffs = post['forceCoeffs1']()
+    assert(fcoeffs.shape == (5, 13))
     for cname in "Cl Cs Cd".split():
         assert(cname in fcoeffs.columns)
 
     forces = post['forces1']()
+    print(forces)
     assert(len(forces.columns) == 19)
+    assert(forces.shape == (7, 19))
 
     samples = post['samples']
     assert(samples.latest_time == "2000")
     line = samples['x_0mCell']
     cols = line().columns
     assert(line.num_coord_cols == 1)
+    assert(line().shape == (57, 7))
     assert("U_5" in line._process_field_names(["U"], 6))
     assert("epsilon" in line.fields)
     assert("epsilon" in cols)

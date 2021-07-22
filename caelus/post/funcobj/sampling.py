@@ -196,7 +196,8 @@ class SampledSet(SampledData):
         """
         coords = self.coord_cols
         fields = self._extract_field_names(fname)
-        df = pd.read_table(fname, delimiter=" ", index_col=False)
+        df = pd.read_table(
+            fname, delimiter=" ", index_col=False, header=None)
 
         ncols = (len(df.columns) - len(coords)) / len(fields)
         fnames = (fields

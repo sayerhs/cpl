@@ -166,5 +166,5 @@ class Forces(FunctionObject):
         moments = self._parse_file(
             dpath / "moment.dat",
             self._col_names('M'))
-        moments.drop(columns=['Time'])
-        return pd.concat([forces, moments])
+        moments.drop(columns=['Time'], inplace=True)
+        return pd.concat([forces, moments], axis=1)
