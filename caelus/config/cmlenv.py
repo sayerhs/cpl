@@ -24,7 +24,7 @@ import logging
 import json
 from distutils.version import LooseVersion
 from . import config
-from ..utils import osutils, Struct
+from ..utils import osutils, Struct, env_module
 
 _lgr = logging.getLogger(__name__)
 
@@ -104,6 +104,7 @@ def _determine_mpi_dir(root_path, mpi_type="openmpi"):
         _lgr.warning("Multiple MPI installations found: %s", mpidirs)
     return mpidirs[0] if mpidirs else ""
 
+
 class CMLEnv(object):
     """CML Environment Interface.
 
@@ -113,6 +114,12 @@ class CMLEnv(object):
     _root_dir = ""     # Root directory
     _project_dir = ""  # Project directory
     _version = ""      # Version
+
+    @classmethod
+    def from_modules(cls, cfg):
+        """Instantiate an environment from modules"""
+        raise NotImplementedError(
+            "Module initialization only supported for OpenFOAM")
 
     def __init__(self, cfg):
         """
@@ -262,6 +269,11 @@ class CMLEnv(object):
             os.path.join(self.project_dir, "etc"),
         ]
 
+    @property
+    def module_list(self):
+        """Return list of modules"""
+        return []
+
     def etc_file(self, fname):
         """Return the first configuration file from etc directories"""
         for edir in self.etc_dirs:
@@ -341,7 +353,8 @@ class CMLEnv(object):
                     env['CAELUS_USER_APPBIN'])
                 _lgr.debug(
                     "CML build environment loaded from SCons: %s (%s)",
-                           env_file, self._build_option)
+                    env_file, self._build_option)
+
 
 class FOAMEnv:
     """OpenFOAM environment interface"""
@@ -349,6 +362,21 @@ class FOAMEnv:
     _root_dir = ""
     _project_dir = ""
     _version = ""
+
+    @classmethod
+    def from_modules(cls, cfg):
+        """Instantiate an environment from modules"""
+        mod_list = cfg.modules
+        if hasattr(mod_list, 'join'):
+            mod_list = [mod_list]
+        cfg.modules = mod_list
+        with env_module.module.with_modules(*mod_list):
+            if 'WM_PROJECT_DIR' not in os.environ:
+                raise RuntimeError(
+                    "Cannot determine OpenFOAM path from modules")
+            cfg.path = os.environ['WM_PROJECT_DIR']
+            obj = cls(cfg)
+            return obj
 
     def __init__(self, cfg):
         """
@@ -359,7 +387,9 @@ class FOAMEnv:
         self._version = cfg.version
         self._project_dir = osutils.abspath(cfg.path)
         self._root_dir = os.path.dirname(self._project_dir)
-        self._env = self._process_foam_env(self._project_dir)
+        self._has_modules = 'modules' in cfg
+        self._env = self._process_foam_env(
+            self._project_dir, self._has_modules)
         self._build_option = self._env.get("WM_OPTIONS", "")
 
     def __repr__(self):
@@ -547,6 +577,11 @@ class FOAMEnv:
             os.path.join(self.project_dir, "etc"),
         ]
 
+    @property
+    def module_list(self):
+        """Return modules to be activated"""
+        return self._cfg.get('modules', [])
+
     def etc_file(self, fname):
         """Return the first configuration file from etc directories"""
         for edir in self.etc_dirs:
@@ -555,7 +590,7 @@ class FOAMEnv:
                 return efile
         return None
 
-    def _process_foam_env(self, project_dir):
+    def _process_foam_env(self, project_dir, use_full_env=False):
         """Process the bashrc file and get all necessary variables"""
         extra_vars = "PATH LD_LIBRARY_PATH MPI_ARCH_PATH".split()
         bashrc_path = os.path.join(project_dir, "etc", "bashrc")
@@ -566,7 +601,8 @@ class FOAMEnv:
                     bashrc_path)
         cmd_env = {k : os.environ.get(k, "")
                    for k in "HOME USER".split()}
-        pp = subprocess.Popen(bash_cmd, env=cmd_env,
+        pp = subprocess.Popen(bash_cmd,
+                              env=cmd_env if not use_full_env else None,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
                               shell=True)
@@ -609,6 +645,9 @@ def get_cmlenv_instance(cml):
     Args:
         cml (dict): A configuration dictionary
     """
+    if 'modules' in cml:
+        return FoamEnv.from_modules(cml)
+
     version = cml.version
     project_dir = cml.get(
         "path",

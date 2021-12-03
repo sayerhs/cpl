@@ -227,6 +227,9 @@ class HPCQueue():
     def process_foam_run_env(self):
         """Populate the run variables for OpenFOAM execution"""
         env_cfg = """
+        # Modules
+        %s
+
         # OpenFOAM configuration
         source %s
         export LD_LIBRARY_PATH=%s:${LD_LIBRARY_PATH}
@@ -238,8 +241,12 @@ class HPCQueue():
         libvar = os.pathsep.join(getattr(renv, vv)
                                  for vv in libs
                                  if getattr(renv, vv))
-        self.env_config = textwrap.dedent(env_cfg)%(
-            bashrc_path, libvar)
+        modules = "# no modules loaded"
+        if renv.module_list:
+            modules = ("module load %s" % mm
+                       for mm in renv.cml_env.module_list)
+        self.env_config = textwrap.dedent(env_cfg) % (
+            modules, bashrc_path, libvar)
 
     def process_run_env(self):
         """Process runtime environment for scripts"""
