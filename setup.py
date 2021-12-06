@@ -6,7 +6,7 @@ This python package provides a scriptable interface to Caelus Computational
 Mechanics Library (CML).
 """
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 VERSION = "2.0.0"
 
@@ -24,8 +24,18 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
+
+def parse_reqs_file(fname: str):
+    """Parse requirements file and return dependencies"""
+    with open(fname, 'r') as fh:
+        return [line.strip() for line in fh]
+
+
+install_requires = parse_reqs_file('requirements.txt')
+
+
 setup(
-    name="py-caelus",
+    name="caelus",
     version=VERSION,
     url="http://www.caelus-cml.com",
     license="Apache License, Version 2.0",
@@ -55,4 +65,5 @@ setup(
         caelus_sim=caelus.scripts.caelus_sim:main
     """,
     python_requires='>=3.6',
+    install_requires=install_requires,
 )
