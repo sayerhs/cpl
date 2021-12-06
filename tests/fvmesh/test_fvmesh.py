@@ -44,8 +44,6 @@ def test_fvmesh(test_casedir):
     assert("CELL" in repr(mesh().fields))
 
     U = mesh().fields('U')
-    U1 = mesh().fields[0]
-    assert_allclose(U, U1)
     assert(U.ndim == 2)
     assert(U.shape == (8, 3))
     assert_allclose(U.field_min, [1.0, 0.0, 0.0])

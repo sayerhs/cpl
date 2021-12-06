@@ -77,7 +77,7 @@ def test_post_processing():
     assert(id(lvtk) == id(lvtk1))
 
     surf = post['samplePlanes']['planes']()
-    assert(len(surf.cell_arrays) == 4)
+    assert(len(surf.cell_data) == 4)
     surf1 = post['samplePlanes']['planes']()
     assert(id(surf) == id(surf1))
 

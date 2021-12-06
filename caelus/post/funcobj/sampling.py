@@ -219,8 +219,8 @@ class SampledSet(SampledData):
         """
         mesh = pyvista().read(fname)
         df = pd.DataFrame(mesh.points, columns="x y z".split())
-        for k in mesh.point_arrays.keys():
-            val = mesh.point_arrays[k]
+        for k in mesh.point_data.keys():
+            val = mesh.point_data[k]
             if val.ndim > 1:
                 fnames = self._process_field_names(k, val.shape[-1])
                 df.loc[:, fnames] = val

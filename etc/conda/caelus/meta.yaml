@@ -5,7 +5,7 @@ package:
   version: "v2.0.0"
 
 source:
-  git_rev: master
+  git_rev: main
   git_url: "../../../"
 
 requirements:

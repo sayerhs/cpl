@@ -127,18 +127,18 @@ class FoamMixin:
         Returns the cell-centered fields if available, otherwise returns the
         point fields. Useful when wrapping ``vtk.vtkPolyData`` objects.
         """
-        return FieldList(self.cell_arrays or
-                         self.point_arrays)
+        return FieldList(self.cell_data or
+                         self.point_data)
 
     @property
     def point_fields(self):
         """List of fields defined on nodes."""
-        return FieldList(self.point_arrays)
+        return FieldList(self.point_data)
 
     @property
     def cell_fields(self):
         """List of fields defined on cell centers."""
-        return FieldList(self.cell_arrays)
+        return FieldList(self.cell_data)
 
     @property
     def domain(self):
