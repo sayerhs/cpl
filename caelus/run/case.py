@@ -68,8 +68,148 @@ class CMLSimMeta(type):
             return obj
         setattr(cls, key, property(getter, doc=doc))
 
+
 @six.add_metaclass(CMLSimMeta)
-class CMLSimulation(JSONSerializer):
+class CMLSimBase(JSONSerializer):
+    """Base class representing a simulation"""
+
+    #: Attribute style access to OpenFOAM input dictionaries
+    _dictfile_attrs = cmlio.cml_std_files
+
+    #: List of attributes to persist
+    _json_public_ = ['name', 'run_config']
+
+    def __init__(self,
+                 case_name,
+                 cml_env=None,
+                 basedir=None,
+                 parent=None):
+        """
+        Args:
+            case_name (str): Unique identifier for the case
+            env (CMLEnv): CML environment used to setup/run the case
+            basedir (path): Location where the case is located/created
+            parent (CMLSimCollection): Instance of the group manager
+        """
+        #: CML environment used to run this case
+        self.env = cml_env or cmlenv.cml_get_version()
+        #: Unique name for this case
+        self.name = case_name
+        #: Root directory containing the case
+        self.basedir = osutils.abspath(basedir) if basedir else os.getcwd()
+        #: Absolute path to the case directory
+        self.casedir = os.path.join(self.basedir, self.name)
+        #: Instance of CMLSimCollection if part of a larger set
+        self.parent = parent
+
+        #: Keep track of files accessed
+        self._dicts_accessed = []
+
+        #: Dictionary containing run configuration (internal use only)
+        self.run_config = CaelusDict()
+
+        #: User-defined customization class
+        self.udf = SimUDFBase()
+
+        #: Dictionary tracking status (internal use only)
+        self.run_flags = CaelusDict()
+
+    @classmethod
+    def load(cls, env=None, casedir=None, parent=None, json_file=None):
+        """Loads a previously setup case from persistence file"""
+        cdir = osutils.abspath(casedir) if casedir else  os.getcwd()
+        jfile = json_file or cls.json_file()
+        jfile = osutils.abspath(os.path.join(cdir, jfile))
+        data = json.load(open(jfile), object_pairs_hook=CaelusDict)
+
+        self = cls.__new__(cls)
+        self.env = env or cmlenv.cml_get_version()
+        self.casedir = cdir
+        self.basedir = os.path.dirname(self.casedir)
+        self.parent = parent
+        self.udf = SimUDFBase()
+        self._dicts_accessed = []
+        for k in self._json_public_:
+            setattr(self, k, data.get(k, None))
+        return self
+
+    def clone(self,
+              template_dir,
+              copy_polymesh=True,
+              copy_zero=True,
+              copy_scripts=True,
+              extra_patterns=None,
+              clean_if_present=False):
+        """Create the case directory from a given template
+
+        Args:
+            template_dir (path): Case directory to be cloned
+            copy_polymesh (bool): Copy contents of constant/polyMesh to new case
+            copy_zero (bool): Copy time=0 directory to new case
+            copy_scripts (bool): Copy python and YAML files
+            extra_patterns (list): List of shell wildcard patterns for copying
+            clean_if_present (bool): Overwrite existing case
+
+        Raises:
+            IOError: If ``casedir`` exists and ``clean_if_present`` is False
+        """
+        if osutils.path_exists(self.casedir) and not clean_if_present:
+            raise IOError("Refusing to overwrite existing case: %s" %
+                          self.casedir)
+        rcore.clone_case(self.casedir, template_dir,
+                         copy_polymesh, copy_zero, copy_scripts,
+                         extra_patterns)
+
+    def clean(self,
+              preserve_extra=None,
+              preserve_polymesh=True,
+              preserve_zero=True,
+              preserve_times=False,
+              preserve_processors=False):
+        """Clean an existing case directory.
+
+        Args:
+            preserve_extra (list): List of shell wildcard patterns to preserve
+            preserve_polymesh (bool): If False, purges polyMesh directory
+            preserve_zero (bool): If False, removes the 0 directory
+            preserve_times (bool): If False, removes the time directories
+            preserve_processors (bool): If False, removes processor directories
+        """
+        rcore.clean_casedir(
+            self.casedir,
+            preserve_extra=preserve_extra,
+            preserve_zero=preserve_zero,
+            preserve_times=preserve_times,
+            preserve_processors=preserve_processors,
+            purge_mesh=(not preserve_polymesh))
+
+    def get_input_dict(self, dictname):
+        """Return a CPL instance of the input file
+
+        For standard input files, prefer to use the accessors directly instead
+        of this method. For example, case.controlDict,
+        case.turbulenceProperties, etc.
+
+        Args:
+            dictname (str): File name relative to case directory
+        """
+        with osutils.set_work_dir(self.casedir):
+            cdict = cmlio.DictFile.load(dictname)
+            self._dicts_accessed.append(cdict)
+            return cdict
+
+    def save_state(self, **kwargs):
+        """Dump persistence file in JSON format"""
+        with osutils.set_work_dir(self.casedir):
+            with open(self.json_file(), 'w') as fh:
+                json.dump(self.to_json(), fh,
+                          cls=self._json_dumper_, **kwargs)
+
+    def __repr__(self):
+        return "<%s: %s>" % (self.__class__.__name__, self.name)
+
+
+class CMLSimulation(CMLSimBase):
     """Pythonic interface to CML/OpenFOAM simulation
 
     This class defines the notion of an analysis. It provides methods to
@@ -112,25 +252,7 @@ class CMLSimulation(JSONSerializer):
             basedir (path): Location where the case is located/created
             parent (CMLSimCollection): Instance of the group manager
         """
-        #: CML environment used to run this case
-        self.env = cml_env or cmlenv.cml_get_version()
-        #: Unique name for this case
-        self.name = case_name
-        #: Root directory containing the case
-        self.basedir = osutils.abspath(basedir) if basedir else os.getcwd()
-        #: Absolute path to the case directory
-        self.casedir = os.path.join(self.basedir, self.name)
-        #: Instance of CMLSimCollection if part of a larger set
-        self.parent = parent
-
-        #: Keep track of files accessed
-        self._dicts_accessed = []
-
-        #: Dictionary containing run configuration (internal use only)
-        self.run_config = CaelusDict()
-
-        #: User-defined customization class
-        self.udf = SimUDFBase()
+        super().__init__(case_name, cml_env, basedir, parent)
 
         #: Dictionary tracking status (internal use only)
         self.run_flags = CaelusDict(
@@ -143,75 +265,6 @@ class CMLSimulation(JSONSerializer):
         )
         #: Job IDs for SLURM/PBS jobs (internal use only)
         self.job_ids = []
-
-    @classmethod
-    def load(cls, env=None, casedir=None, parent=None, json_file=None):
-        """Loads a previously setup case from persistence file"""
-        cdir = osutils.abspath(casedir) if casedir else  os.getcwd()
-        jfile = json_file or cls.json_file()
-        jfile = osutils.abspath(os.path.join(cdir, jfile))
-        data = json.load(open(jfile), object_pairs_hook=CaelusDict)
-
-        self = cls.__new__(cls)
-        self.env = env or cmlenv.cml_get_version()
-        self.casedir = cdir
-        self.basedir = os.path.dirname(self.casedir)
-        self.parent = parent
-        self.udf = SimUDFBase()
-        self._dicts_accessed = []
-        for k in self._json_public_:
-            setattr(self, k, data.get(k, None))
-        return self
-
-    def clone(self,
-              template_dir,
-              copy_polymesh=True,
-              copy_zero=True,
-              copy_scripts=True,
-              extra_patterns=None,
-              clean_if_present=False):
-        """Create the case directory from a given template
-
-        Args:
-            template_dir (path): Case directory to be cloned
-            copy_polymesh (bool): Copy contents of constant/polyMesh to new case
-            copy_zero (bool): Copy time=0 directory to new case
-            copy_scripts (bool): Copy python and YAML files
-            extra_patterns (list): List of shell wildcard patterns for copying
-            clean_if_present (bool): Overwrite existing case
-
-        Raises:
-            IOError: If ``casedir`` exists and ``clean_if_present`` is False
-        """
-        if osutils.path_exists(self.casedir) and not clean_if_present:
-            raise IOError("Refusing to overwrite existing case: %s",
-                          self.casedir)
-        rcore.clone_case(self.casedir, template_dir,
-                         copy_polymesh, copy_zero, copy_scripts,
-                         extra_patterns)
-
-    def clean(self,
-              preserve_extra=None,
-              preserve_polymesh=True,
-              preserve_zero=True,
-              preserve_times=False,
-              preserve_processors=False):
-        """Clean an existing case directory.
-
-        Args:
-            preserve_extra (list): List of shell wildcard patterns to preserve
-            preserve_polymesh (bool): If False, purges polyMesh directory
-            preserve_zero (bool): If False, removes the 0 directory
-            preserve_times (bool): If False, removes the time directories
-            preserve_processors (bool): If False, removes processor directories
-        """
-        rcore.clean_casedir(
-            self.casedir,
-            preserve_extra=preserve_extra,
-            preserve_zero=preserve_zero,
-            preserve_times=preserve_times,
-            preserve_processors=preserve_processors,
-            purge_mesh=(not preserve_polymesh))
 
     def update(self, input_mods=None):
         """Update the input files within a case directory
@@ -553,31 +606,6 @@ class CMLSimulation(JSONSerializer):
         with osutils.set_work_dir(self.casedir):
             ctasks = tasks.Tasks.load(tfile)
             ctasks(env=self.env)
-
-    def get_input_dict(self, dictname):
-        """Return a CPL instance of the input file
-
-        For standard input files, prefer to use the accessors directly instead
-        of this method. For example, case.controlDict,
-        case.turbulenceProperties, etc.
-
-        Args:
-            dictname (str): File name relative to case directory
-        """
-        with osutils.set_work_dir(self.casedir):
-            cdict = cmlio.DictFile.load(dictname)
-            self._dicts_accessed.append(cdict)
-            return cdict
-
-    def save_state(self, **kwargs):
-        """Dump persistence file in JSON format"""
-        with osutils.set_work_dir(self.casedir):
-            with open(self.json_file(), 'w') as fh:
-                json.dump(self.to_json(), fh,
-                          cls=self._json_dumper_, **kwargs)
-
-    def __repr__(self):
-        return "<%s: %s>"%(self.__class__.__name__, self.name)
 
 
 @six.add_metaclass(abc.ABCMeta)
