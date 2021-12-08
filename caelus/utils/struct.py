@@ -235,3 +235,66 @@ class Struct(OrderedDict, MutableMapping):
                          Dumper=self.__class__.yaml_encoder,
                          default_flow_style=default_flow_style,
                          **kwargs)
+
+    def pget(self, path, sep="."):
+        """Get value from a nested dictionary entry.
+
+        A convenience method that serves various purposes:
+
+          - Access values from a deeply nested dictionary if any of the keys
+            are not valid python variable names.
+
+          - Return None if any of the intermediate keys are missing. Does not
+            raise AttributeError.
+
+        By default, the method uses the ``.`` character to split keys similar
+        to attribute access. However, this can be overridden by providing and
+        extra ``sep`` argument.
+
+        Args:
+            path (str): The keys in individual dictionarys separated by sep
+            sep (str): Separator for splitting keys (default: ".")
+
+        Returns:
+            Value corresponding to the key, or None if any of the keys
+              don't exist.
+        """
+        key_clean = path.strip().strip(sep)
+        key_list = key_clean.split(sep)
+
+        rhs = self
+        for k in key_list:
+            rhs = rhs.get(k, None)
+            if rhs is None:
+                return None
+        return rhs
+
+    def pset(self, path, value, sep="."):
+        """Set value for a nested dictionary entry.
+
+        A convenience method to set values in a nested mapping hierarchy
+        without individually creating the intermediate dictionaries. Missing
+        intermediate dictionaries will automatically be created with the same
+        mapping class as the class of ``self``.
+
+        Args:
+            path (str): The keys in individual dictionarys separated by sep
+            value (object): Object assigned to innermost key
+            sep (str): Separator for splitting keys (default: ".")
+
+        Raises:
+            AttributeError: If the object assigned to is a non-mapping type
+              and not the final key.
+        """
+        key_clean = path.strip().strip(sep)
+        key_list = key_clean.split(sep)
+        cls = self.__class__
+        lhs = self
+
+        for k in key_list[:-1]:
+            lhs = lhs.setdefault(k, cls())
+        lval = lhs.get(key_list[-1], None)
+        if isinstance(lval, Mapping) and isinstance(value, Mapping):
+            _merge(lval, value)
+        else:
+            lhs[key_list[-1]] = value
