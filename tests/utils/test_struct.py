@@ -81,3 +81,12 @@ def test_merge():
     obj1 = Struct.from_yaml(test_yaml)
     obj2 = Struct.from_yaml(test_yaml)
     merge(obj1, obj2)
+
+
+def test_get_set():
+    obj = Struct.from_yaml(test_yaml)
+    assert(obj.pget("caelus.caelus_cml.default") == 'latest')
+    obj.pset("caelus.caelus_cml.default", 'v6.10')
+    obj.pset("caelus.p1.p2.p3", 10)
+    assert(
+        obj.pget("caelus.p1.p2.p3") == 10)
