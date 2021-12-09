@@ -423,8 +423,8 @@ class SlurmQueue(HPCQueue):
         depends_arg = ""
         if job_dependencies:
             depends_arg = (
-                "--depend afterok:" +
-                ":".join("%s"%i for i in job_dependencies))
+                "--depend %s:" % dep_type +
+                ":".join("%s" % i for i in job_dependencies))
 
         slurm_args = ""
         if isinstance(extra_args, Mapping):
