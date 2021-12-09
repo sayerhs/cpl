@@ -243,8 +243,9 @@ class HPCQueue():
                                  if getattr(renv, vv))
         modules = "# no modules loaded"
         if renv.module_list:
-            modules = ("module load %s" % mm
-                       for mm in renv.cml_env.module_list)
+            modules = '\n'.join(
+                "module load %s" % mm
+                for mm in renv.module_list)
         self.env_config = textwrap.dedent(env_cfg) % (
             modules, bashrc_path, libvar)
 
