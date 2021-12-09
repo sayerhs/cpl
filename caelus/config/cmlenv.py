@@ -69,10 +69,15 @@ def _filter_invalid_versions(cml_cfg):
             continue
         # Ensure that the version is not interpreted as a number by YAML
         ver.version = str(vid)
-        pdir = ver.get("path",
-                       os.path.join(root_default, "caelus-%s"%vid))
-        if osutils.path_exists(pdir):
+        if 'modules' in ver:
+            # If the user has specified modules, always yield this version
             yield ver
+        else:
+            pdir = ver.get("path",
+                           os.path.join(root_default,
+                                        "caelus-%s"%vid))
+            if osutils.path_exists(pdir):
+                yield ver
 
 
 def _determine_platform_dir(root_path):
@@ -393,7 +398,7 @@ class FOAMEnv:
         self._build_option = self._env.get("WM_OPTIONS", "")
 
     def __repr__(self):
-        return "<FoamEnv %s>"%(self.version)
+        return "<FOAMEnv %s>"%(self.version)
 
     def __str__(self):
         return "OpenFOAM version %s"%(self.version)
@@ -493,7 +498,8 @@ class FOAMEnv:
             else:
                 self._mpi_dir = self._env.get('MPI_ARCH_PATH', '')
 
-            if not os.path.exists(self._mpi_dir):
+            check_mpi = self._cfg.get("check_mpi_path", True)
+            if (check_mpi and not os.path.exists(self._mpi_dir)):
                 raise ValueError(
                     "Cannot determine OpenFOAM MPI installation. "
                     "Please specify 'mpi_root' in Caelus configuration.")
@@ -646,7 +652,7 @@ def get_cmlenv_instance(cml):
         cml (dict): A configuration dictionary
     """
     if 'modules' in cml:
-        return FoamEnv.from_modules(cml)
+        return FOAMEnv.from_modules(cml)
 
     version = cml.version
     project_dir = cml.get(
