@@ -324,7 +324,7 @@ class Sampling(FunctionObject):
         #: Mapping of sampling instances to their names.
         self.samples = {}
 
-    def keys():
+    def keys(self):
         """Return the names of the sampling entries"""
         return self.samples.keys()
 
