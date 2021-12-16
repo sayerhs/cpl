@@ -73,6 +73,10 @@ class CaelusDict(struct.Struct):
             elif (isinstance(val, dtypes.Directive) and
                   val.directive == "#include"):
                 out.update(self._foam_load_include(val.value, cenv))
+            elif (isinstance(val, dtypes.Directive) and
+                  val.directive == "#includeIfPresent" and
+                  osutils.path_exists(val.value.strip('"'))):
+                out.update(self._foam_load_include(val.value, cenv))
             else:
                 out[k] = val
         return out
