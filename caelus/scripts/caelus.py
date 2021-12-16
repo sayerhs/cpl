@@ -406,13 +406,17 @@ class CaelusCmd(CaelusSubCmdScript):
                 fields.difference_update(set(exclude_fields))
             if include_fields:
                 fields.intersection_update(set(include_fields))
+
+            fields_filtered = [fld
+                               for fld in clog.fields
+                               if fld in fields]
             plot = CaelusPlot(clog.casedir)
             plot.plot_continuity_errors = cerrors
             dname, fname = os.path.split(args.plot_file)
             plot.plotdir = dname or os.getcwd()
             plot.solver_log = clog
             plot.plot_residuals_hist(plotfile=fname,
-                                     fields=fields)
+                                     fields=fields_filtered)
             _lgr.info("Residual time history saved to %s",
                       args.plot_file)
 
