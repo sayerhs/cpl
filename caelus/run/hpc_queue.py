@@ -126,7 +126,8 @@ class HPCQueue():
     _cpl_config_vars = ['name', 'queue', 'account', 'num_nodes',
                         'num_ranks', 'stdout', 'stderr', 'join_outputs',
                         'mail_opts', 'email_address', 'qos',
-                        'time_limit', 'shell']
+                        'time_limit', 'shell', 'exclusive',
+                        'mem_per_node', 'mem_per_rank']
 
     #: Identifier used for queue
     queue_name = "_ERROR_"
@@ -379,7 +380,10 @@ class SlurmQueue(HPCQueue):
         time_limit="time",
         dependencies="depend",
         licenses="licenses",
-        features="constraint"
+        features="constraint",
+        mem_per_node="mem",
+        mem_per_rank="mem-per-cpu",
+        exclusive="exclusive",
     )
 
     _queue_default_values = dict(
@@ -476,10 +480,17 @@ class SlurmQueue(HPCQueue):
 
     def get_queue_settings(self):
         """Return all SBATCH options suitable for embedding in script"""
-        qopts = "\n".join(
-            "#SBATCH --%s %s"%(val, getattr(self, key))
-            for key, val in self._queue_var_map.items()
-            if hasattr(self, key))
+        def _opts_helper():
+            """Helper function to convert options"""
+            for key, skey in self._queue_var_map.items():
+                if not hasattr(self, key):
+                    continue
+                val = getattr(self, key)
+                if isinstance(val, bool):
+                    val = " "
+                yield "#SBATCH --%s %s" % (skey, val)
+
+        qopts = "\n".join(_opts_helper())
         header = "\n# SLURM options\n"
         return header + qopts + "\n"
 
