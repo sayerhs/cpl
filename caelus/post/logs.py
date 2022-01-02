@@ -445,3 +445,9 @@ class SolverLog(object):
         fname = os.path.join(self.logs_dir, "continuity_errors.dat")
         data = np.loadtxt(fname, skiprows=1)
         return data
+
+    def clock_time(self):
+        """Return the clock time table"""
+        fname = os.path.join(self.logs_dir, "clock_time.dat")
+        data = np.loadtxt(fname, skiprows=1)
+        return data
