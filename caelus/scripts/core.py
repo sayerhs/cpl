@@ -142,4 +142,8 @@ class CaelusSubCmdScript(CaelusScriptBase):
     def __call__(self):
         """Execute sub-command"""
         super(CaelusSubCmdScript, self).__call__()
+        if 'func' not in self.args:
+            _lgr.error("No subcommand specified. Use '-h' for detailed help.")
+            self.parser.print_usage()
+            self.parser.exit(1)
         self.args.func()
