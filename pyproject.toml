@@ -4,3 +4,15 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 80
+skip-string-normalization = 1
+extend-exclude = """(lexer.py|parser.py|All.*py)"""
+
+[tool.isort]
+profile = "black"
+known_first_party = "caelus"
+known_sci = "numpy, scipy, pandas, pydantic, xarray, yaml"
+sections = "FUTURE, STDLIB, SCI, THIRDPARTY, FIRSTPARTY, LOCALFOLDER"
+extend_skip = ["lexer.py", "parser.py"]
