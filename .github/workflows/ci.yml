@@ -13,8 +13,6 @@ jobs:
     name: Build, test, docs
     runs-on: ubuntu-latest
     steps:
-      - name: Cancel stale workflows
-        uses: styfle/cancel-workflow-action@0.6.0
       - uses: actions/checkout@v2
       - name: Setup Python 3.0
         uses: actions/setup-python@v2
