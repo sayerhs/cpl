@@ -10,7 +10,6 @@ from caelus.io.dictfile import ControlDict, TurbulenceProperties
 from caelus.utils import osutils
 
 
-
 class MockCMLEnv(object):
     """Mock CMLEnv object"""
 
