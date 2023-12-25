@@ -66,7 +66,7 @@ the options that can be used to customize execution of those tasks.
 
 
 run_command -- Run OpenFOAM or CML executables
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This *task type* is used to execute an OpenFOAM or Caelus CML executable (e.g.,
 :program:`blockMesh` or :program:`pimpleSolver`). CPL will ensure that the

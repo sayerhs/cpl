@@ -76,7 +76,7 @@ release = u'v2.0.0'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -381,12 +381,12 @@ autodoc_member_order = 'groupwise'
 autoclass_content = 'both'
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+# intersphinx_mapping = {'https://docs.python.org/': None}
 
 extlinks = {
-    'pythonlib': ('http://docs.python.org/library/%s', ''),
-    'matplotlib': ('http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.%s', ''),
-    'numpy': ('http://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html', ''),
+    'pythonlib': ('http://docs.python.org/library/%s', "%s"),
+    'matplotlib': ('http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.%s', "%s"),
+    'numpy': ('http://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html', "%s"),
 }
 
 def setup(app):

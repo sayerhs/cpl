@@ -56,7 +56,7 @@ Install Anaconda
 .. _install_dev_git:
 
 Install CPL from conda-forge (recommended)
------------
+------------------------------------------
 
 #. Install CPL using the Anaconda package manager.
 
@@ -65,7 +65,7 @@ Install CPL from conda-forge (recommended)
       conda install -c conda-forge caelus
 
 Install CPL from source
------------
+-----------------------
 
 #. Obtain the CPL source from the public Git repository.
 

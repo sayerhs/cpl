@@ -422,7 +422,7 @@ additional files and directories.
 
 
 caelus build -- Compile OpenFOAM or CML sources
------------------------------------
+-----------------------------------------------
 
 ``caelus build`` is a wrapper that can be used to build executables for 
 OpenFOAM or CML project and user directories. The command can be executed 
