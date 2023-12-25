@@ -9,14 +9,19 @@ Implements :class:`~caelus.utils.struct.Struct`.
 """
 
 from collections import OrderedDict
+
 try:
     from collections.abc import Mapping, MutableMapping
-except ImportError:   # pragma: no cover
+except ImportError:  # pragma: no cover
     from collections import Mapping, MutableMapping
+
 from abc import ABCMeta
-import yaml
-import six
+
 import numpy as np
+import yaml
+
+import six
+
 
 def _merge(this, that):
     """Recursive merge from *that* mapping to *this* mapping
@@ -32,20 +37,23 @@ def _merge(this, that):
     that_keys = frozenset(that)
 
     # Items only in 'that' dict
-    for k in (that_keys - this_keys):
+    for k in that_keys - this_keys:
         this[k] = that[k]
 
-    for k in (this_keys & that_keys):
+    for k in this_keys & that_keys:
         vorig = this[k]
         vother = that[k]
 
         # pylint: disable=bad-continuation
-        if (isinstance(vorig, Mapping) and
-            isinstance(vother, Mapping) and
-            (id(vorig) != id(vother))):
+        if (
+            isinstance(vorig, Mapping)
+            and isinstance(vother, Mapping)
+            and (id(vorig) != id(vother))
+        ):
             _merge(vorig, vother)
         else:
             this[k] = vother
+
 
 def merge(a, b, *args):
     """Recursively merge mappings and return consolidated dict.
@@ -67,12 +75,14 @@ def merge(a, b, *args):
 
     return out
 
+
 def gen_yaml_decoder(cls):
     """Generate a custom YAML decoder with non-default mapping class
 
     Args:
         cls: Class used for mapping
     """
+
     def struct_constructor(loader, node):
         """Custom constructor for Struct"""
         return cls(loader.construct_pairs(node))
@@ -85,9 +95,11 @@ def gen_yaml_decoder(cls):
             yaml.Loader.__init__(self, *args, **kwargs)
             self.add_constructor(
                 yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-                struct_constructor)
+                struct_constructor,
+            )
 
     return StructYAMLLoader
+
 
 def gen_yaml_encoder(cls):
     """Generate a custom YAML encoder with non-default mapping class
@@ -95,6 +107,7 @@ def gen_yaml_encoder(cls):
     Args:
         cls: Class used for mapping
     """
+
     def struct_representer(dumper, data):
         """Convert Struct to dictionary for YAML"""
         return dumper.represent_dict(list(data.items()))
@@ -116,18 +129,14 @@ def gen_yaml_encoder(cls):
         def __init__(self, *args, **kwargs):
             yaml.Dumper.__init__(self, *args, **kwargs)
             self.add_representer(cls, struct_representer)
-            self.add_representer(np.ndarray,
-                                 numpy_representer)
-            self.add_representer(np.float_,
-                                 numpy_scalar_representer)
-            self.add_representer(np.int_,
-                                 numpy_scalar_representer)
-            self.add_representer(np.bool_,
-                                 numpy_scalar_representer)
-            self.add_representer(np.float32,
-                                 numpy_scalar_representer)
+            self.add_representer(np.ndarray, numpy_representer)
+            self.add_representer(np.float_, numpy_scalar_representer)
+            self.add_representer(np.int_, numpy_scalar_representer)
+            self.add_representer(np.bool_, numpy_scalar_representer)
+            self.add_representer(np.float32, numpy_scalar_representer)
 
     return StructYAMLDumper
+
 
 class StructMeta(ABCMeta):
     """YAML interface registration
@@ -143,6 +152,7 @@ class StructMeta(ABCMeta):
         cls.yaml_decoder = yaml_decoder or gen_yaml_decoder(cls)
         cls.yaml_encoder = yaml_encoder or gen_yaml_encoder(cls)
         return cls
+
 
 # pylint: disable=too-many-ancestors
 @six.add_metaclass(StructMeta)
@@ -191,8 +201,7 @@ class Struct(OrderedDict, MutableMapping):
     # pylint: disable=signature-differs
     def __setitem__(self, key, value):
         # pylint: disable=bad-continuation
-        if (isinstance(value, Mapping) and
-            not isinstance(value, Struct)):
+        if isinstance(value, Mapping) and not isinstance(value, Struct):
             out = self.__class__()
             _merge(out, value)
             super(Struct, self).__setitem__(key, out)
@@ -208,7 +217,7 @@ class Struct(OrderedDict, MutableMapping):
 
     def __getattr__(self, key):
         if key not in self:
-            raise AttributeError("No attribute named "+key)
+            raise AttributeError("No attribute named " + key)
         else:
             return self[key]
 
@@ -231,10 +240,13 @@ class Struct(OrderedDict, MutableMapping):
                 - False - pretty printing
                 - True  - No pretty printing
         """
-        return yaml.dump(self, stream=stream,
-                         Dumper=self.__class__.yaml_encoder,
-                         default_flow_style=default_flow_style,
-                         **kwargs)
+        return yaml.dump(
+            self,
+            stream=stream,
+            Dumper=self.__class__.yaml_encoder,
+            default_flow_style=default_flow_style,
+            **kwargs
+        )
 
     def pget(self, path, sep="."):
         """Get value from a nested dictionary entry.

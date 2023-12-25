@@ -6,18 +6,18 @@ Caelus Simulation command
 -------------------------
 """
 
-import os
-import math
 import logging
+import math
+import os
 
-from ..utils import osutils
-from ..utils import pyutils
-from .core import CaelusSubCmdScript
+from ..config import cmlenv
 from ..io.caelusdict import CaelusDict
 from ..run.parametric import CMLParametricRun
-from ..config import cmlenv
+from ..utils import osutils, pyutils
+from .core import CaelusSubCmdScript
 
 _lgr = logging.getLogger(__name__)
+
 
 def determine_sim_json(path=None):
     """Utility to determine the base directory of the Simulation"""
@@ -25,14 +25,13 @@ def determine_sim_json(path=None):
     if path is not None:
         jfile = os.path.join(path, fname)
         if not osutils.path_exists(jfile):
-            raise FileNotFoundError("Not a valid sim directory: %s"%
-                                    path)
+            raise FileNotFoundError("Not a valid sim directory: %s" % path)
         return jfile
     else:
         wdir = os.getcwd()
         parent = os.path.dirname(wdir)
         json_file = None
-        while (parent != wdir):
+        while parent != wdir:
             jfile = os.path.join(wdir, fname)
             if os.path.exists(jfile):
                 json_file = jfile
@@ -42,6 +41,7 @@ def determine_sim_json(path=None):
         if json_file is None:
             raise FileNotFoundError("Cannot determine sim directory")
         return json_file
+
 
 class CaelusSimCmd(CaelusSubCmdScript):
     """CLI interface to parametric runs
@@ -69,100 +69,140 @@ class CaelusSimCmd(CaelusSubCmdScript):
         setup = subparsers.add_parser(
             "setup",
             description="setup a parametric run",
-            help="Setup parametric run")
+            help="Setup parametric run",
+        )
         prep = subparsers.add_parser(
             "prep",
             description="run pre-processing steps",
-            help="Run pre-processing steps")
+            help="Run pre-processing steps",
+        )
         solve = subparsers.add_parser(
-            "solve",
-            description="run the solvers",
-            help="Run all solvers")
+            "solve", description="run the solvers", help="Run all solvers"
+        )
         post = subparsers.add_parser(
             "post",
             description="run post-processing steps",
-            help="Run post-processing steps")
+            help="Run post-processing steps",
+        )
         status = subparsers.add_parser(
             "status",
             description="show status of cases in this analysis",
-            help="Print out status for the analysis")
+            help="Print out status for the analysis",
+        )
         runpy = subparsers.add_parser(
             "runpy",
             description="run a Python script",
-            help="Run a python script to process the parametric run")
+            help="Run a python script to process the parametric run",
+        )
         shell = subparsers.add_parser(
             "shell",
             description="run an interactive python shell",
-            help="Run an interactive shell to process parametric run object")
-
+            help="Run an interactive shell to process parametric run object",
+        )
 
         # Configuration options
         setup.add_argument(
-            '-n', '--sim-name', default=None,
-            help="name of this simulation group")
+            '-n',
+            '--sim-name',
+            default=None,
+            help="name of this simulation group",
+        )
         setup.add_argument(
-            '-d', '--base-dir', default=None,
-            help="base directory where the simulation structure is created")
+            '-d',
+            '--base-dir',
+            default=None,
+            help="base directory where the simulation structure is created",
+        )
         setup.add_argument(
-            '-s', '--submit', action='store_true',
-            help="submit solve jobs on successful setup")
+            '-s',
+            '--submit',
+            action='store_true',
+            help="submit solve jobs on successful setup",
+        )
         setup.add_argument(
-            '-p', '--prep', action='store_true',
-            help="run pre-processing steps after successful setup")
+            '-p',
+            '--prep',
+            action='store_true',
+            help="run pre-processing steps after successful setup",
+        )
         setup.add_argument(
-            '-f', '--sim-config', default="caelus_sim.yaml",
-            help="YAML-formatted simulation configuration (caelus_sim.yaml)")
+            '-f',
+            '--sim-config',
+            default="caelus_sim.yaml",
+            help="YAML-formatted simulation configuration (caelus_sim.yaml)",
+        )
         setup.set_defaults(func=self.setup)
 
         prep.add_argument(
-            '-d', '--case-dir', default=None,
-            help="path to the analysis directory")
+            '-d',
+            '--case-dir',
+            default=None,
+            help="path to the analysis directory",
+        )
         prep.add_argument(
-            '-f', '--force', action='store_true',
-            help="force re-execution of prep steps")
-        prep.add_argument(
-            'patterns', nargs='*',
-            help="cases to act on")
+            '-f',
+            '--force',
+            action='store_true',
+            help="force re-execution of prep steps",
+        )
+        prep.add_argument('patterns', nargs='*', help="cases to act on")
         prep.set_defaults(func=self.prep)
 
         solve.add_argument(
-            '-d', '--case-dir', default=None,
-            help="path to the analysis directory")
+            '-d',
+            '--case-dir',
+            default=None,
+            help="path to the analysis directory",
+        )
         solve.add_argument(
-            '-f', '--force', action='store_true',
-            help="force re-execution of solve steps")
-        solve.add_argument(
-            'patterns', nargs='*',
-            help="cases to act on")
+            '-f',
+            '--force',
+            action='store_true',
+            help="force re-execution of solve steps",
+        )
+        solve.add_argument('patterns', nargs='*', help="cases to act on")
         solve.set_defaults(func=self.solve)
 
         post.add_argument(
-            '-d', '--case-dir', default=None,
-            help="path to the analysis directory")
+            '-d',
+            '--case-dir',
+            default=None,
+            help="path to the analysis directory",
+        )
         post.add_argument(
-            '-f', '--force', action='store_true',
-            help="force re-execution of post steps")
-        post.add_argument(
-            'patterns', nargs='*',
-            help="cases to act on")
+            '-f',
+            '--force',
+            action='store_true',
+            help="force re-execution of post steps",
+        )
+        post.add_argument('patterns', nargs='*', help="cases to act on")
         post.set_defaults(func=self.post)
 
         status.add_argument(
-            '-d', '--case-dir', default=None,
-            help="path to the analysis directory")
+            '-d',
+            '--case-dir',
+            default=None,
+            help="path to the analysis directory",
+        )
         status.set_defaults(func=self.status)
 
         runpy.add_argument(
-            '-d', '--case-dir', default=None,
-            help="path to the analysis directory")
+            '-d',
+            '--case-dir',
+            default=None,
+            help="path to the analysis directory",
+        )
         runpy.add_argument(
-            "python_script",
-            help="Path to the python script to run")
+            "python_script", help="Path to the python script to run"
+        )
         runpy.set_defaults(func=self.runpy)
 
         shell.add_argument(
-            '-d', '--case-dir', default=None,
-            help="path to the analysis directory")
+            '-d',
+            '--case-dir',
+            default=None,
+            help="path to the analysis directory",
+        )
         shell.set_defaults(func=self.shell)
 
     def setup(self):
@@ -193,12 +233,15 @@ class CaelusSimCmd(CaelusSubCmdScript):
             try:
                 _lgr.info("Initializing simulation: %s", name)
                 cfdsim = CMLParametricRun(
-                    name=name, sim_dict=simdict,
-                    env=env, basedir=basedir)
+                    name=name, sim_dict=simdict, env=env, basedir=basedir
+                )
                 _lgr.info("Setting up simulation cases: %s", name)
                 cfdsim.setup()
-                _lgr.info("Successfully setup simulation: %s (%d)",
-                          name, len(cfdsim.cases))
+                _lgr.info(
+                    "Successfully setup simulation: %s (%d)",
+                    name,
+                    len(cfdsim.cases),
+                )
             except Exception:
                 _lgr.exception("Error setting up simulation")
                 self.parser.exit(1)
@@ -266,10 +309,12 @@ class CaelusSimCmd(CaelusSubCmdScript):
         cfdsim = self.reload_case()
         try:
             import IPython
+
             IPython.embed(
                 header="caelus_sim iteractive shell. "
-                "Use 'cfdsim' to interact with %s"%cfdsim.name,
-                colors="neutral")
+                "Use 'cfdsim' to interact with %s" % cfdsim.name,
+                colors="neutral",
+            )
         except ImportError:
             print("Interactive shell requires IPython installed")
             self.parser.exit(1)
@@ -302,24 +347,27 @@ class CaelusSimCmd(CaelusSubCmdScript):
         num_width = math.ceil(math.log10(len(cfdsim.case_names)))
         case_width = max(len(c) for c in cfdsim.case_names)
         tbl_width = num_width + case_width + 25
-        line = "="*int(tbl_width)
-        fmt = "%%%dd. %%-%ds    %%s"%(num_width, case_width)
-        fmt1 = "%%-%ds. %%-%ds    STATUS\n"%(num_width, case_width)
+        line = "=" * int(tbl_width)
+        fmt = "%%%dd. %%-%ds    %%s" % (num_width, case_width)
+        fmt1 = "%%-%ds. %%-%ds    STATUS\n" % (num_width, case_width)
         total = len(cfdsim.case_names)
         failed = 0
         success = 0
-        print("\nRun status for: %s"%cfdsim.name)
-        print("Directory: %s"%cfdsim.casedir)
-        print(line + "\n" + fmt1%("#", "NAME") + line)
+        print("\nRun status for: %s" % cfdsim.name)
+        print("Directory: %s" % cfdsim.casedir)
+        print(line + "\n" + fmt1 % ("#", "NAME") + line)
         for i, (name, status) in enumerate(cfdsim.status()):
-            print(fmt%(i+1, name, status))
+            print(fmt % (i + 1, name, status))
             if status == "DONE":
                 success += 1
             if status == "FAILED":
                 failed += 1
         print(line)
-        print("TOTAL = %d; SUCCESS = %d; FAILED = %d"%(total, success, failed))
+        print(
+            "TOTAL = %d; SUCCESS = %d; FAILED = %d" % (total, success, failed)
+        )
         print(line + "\n")
+
 
 def main():
     """Run caelus command"""

@@ -6,9 +6,11 @@ Coroutines
 Some code snippets inspired by http://www.dabeaz.com/coroutines/
 """
 
-import re
 import functools
+import re
+
 import six
+
 
 def coroutine(func):
     """Prime a coroutine for send commands
@@ -16,12 +18,15 @@ def coroutine(func):
     Args:
         func (coroutine): A consumer that is to be automatically initialized
     """
+
     @functools.wraps(func)
     def corut(*args, **kwargs):
         fn = func(*args, **kwargs)
         six.next(fn)
         return fn
+
     return corut
+
 
 @coroutine
 def grep(pattern, targets, send_close=True, flags=0):
@@ -42,7 +47,7 @@ def grep(pattern, targets, send_close=True, flags=0):
     pat = re.compile(pattern, flags=flags)
     try:
         while True:
-            line = (yield)
+            line = yield
             mat = pat.match(line)
             if mat:
                 for tgt in targets:

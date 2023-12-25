@@ -5,13 +5,15 @@ Testing function objects
 """
 
 import os
+
 import pytest
 
+from caelus.config import cmlenv, get_config
 from caelus.post.funcobj.functions import PostProcessing
-from caelus.post.funcobj.sampling import Sampling, SampledSets
-from caelus.config import get_config, cmlenv
+from caelus.post.funcobj.sampling import SampledSets, Sampling
 
 script_dir = os.path.dirname(__file__)
+
 
 class MockCMLEnv(object):
     """Mock CMLEnv object"""
@@ -27,59 +29,62 @@ class MockCMLEnv(object):
     def etc_file(self, fname):
         return "~/Caelus/caelus-7.04/etc/" + fname
 
+
 def mock_cml_get_latest_version():
     return MockCMLEnv()
 
+
 @pytest.fixture(autouse=True)
 def patch_cml_execution(monkeypatch):
-    monkeypatch.setattr(cmlenv, "cml_get_latest_version",
-                        mock_cml_get_latest_version)
-    monkeypatch.setattr(cmlenv, "cml_get_version",
-                        mock_cml_get_latest_version)
+    monkeypatch.setattr(
+        cmlenv, "cml_get_latest_version", mock_cml_get_latest_version
+    )
+    monkeypatch.setattr(cmlenv, "cml_get_version", mock_cml_get_latest_version)
+
 
 @pytest.mark.filterwarnings("ignore: `np.bool`")
 def test_post_processing():
     """Test postprocessing"""
-    post = PostProcessing(casedir=os.path.join(
-        script_dir, "_post_template"))
-    assert(len(post.keys()) == 4)
-    assert(len(list(post.filter('forceCoeffs'))) == 1)
+    post = PostProcessing(casedir=os.path.join(script_dir, "_post_template"))
+    assert len(post.keys()) == 4
+    assert len(list(post.filter('forceCoeffs'))) == 1
     with pytest.raises(ValueError):
         list(post.filter('fieldFunctionObjects'))
 
     fcoeffs = post['forceCoeffs1']()
-    assert(fcoeffs.shape == (5, 13))
+    assert fcoeffs.shape == (5, 13)
     for cname in "Cl Cs Cd".split():
-        assert(cname in fcoeffs.columns)
+        assert cname in fcoeffs.columns
 
     forces = post['forces1']()
     print(forces)
-    assert(len(forces.columns) == 19)
-    assert(forces.shape == (7, 19))
+    assert len(forces.columns) == 19
+    assert forces.shape == (7, 19)
 
     samples = post['samples']
-    assert(samples.latest_time == "2000")
+    assert samples.latest_time == "2000"
     line = samples['x_0mCell']
     cols = line().columns
-    assert(line.num_coord_cols == 1)
-    assert(line().shape == (57, 7))
-    assert("U_5" in line._process_field_names(["U"], 6))
-    assert("epsilon" in line.fields)
-    assert("epsilon" in cols)
-    assert("U_z" in cols)
-    assert("z" in cols)
-    assert("x" not in cols)
+    assert line.num_coord_cols == 1
+    assert line().shape == (57, 7)
+    assert "U_5" in line._process_field_names(["U"], 6)
+    assert "epsilon" in line.fields
+    assert "epsilon" in cols
+    assert "U_z" in cols
+    assert "z" in cols
+    assert "x" not in cols
 
     # Check vtk load
     samples.setFormat = "vtk"
     lvtk = line('1000')
     lvtk1 = line('1000')
-    assert(id(lvtk) == id(lvtk1))
+    assert id(lvtk) == id(lvtk1)
 
     surf = post['samplePlanes']['planes']()
-    assert(len(surf.cell_data) == 4)
+    assert len(surf.cell_data) == 4
     surf1 = post['samplePlanes']['planes']()
-    assert(id(surf) == id(surf1))
+    assert id(surf) == id(surf1)
+
 
 def test_funcobj():
     """Test funcob types"""

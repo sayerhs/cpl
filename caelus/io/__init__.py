@@ -10,18 +10,15 @@ and conversion to and from YAML files to Caelus formats.
 """
 
 from .dictfile import (
-    DictFile,
-
+    BlockMeshDict,
     ControlDict,
     DecomposeParDict,
+    DictFile,
     FvSchemes,
     FvSolution,
-
+    LESProperties,
+    PolyMeshBoundary,
+    RASProperties,
     TransportProperties,
     TurbulenceProperties,
-    RASProperties,
-    LESProperties,
-
-    BlockMeshDict,
-    PolyMeshBoundary,
 )

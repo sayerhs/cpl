@@ -14,32 +14,36 @@ provides basic infrastructure to manage and manipulate a collection of
 simulations as a group.
 """
 
-import os
 import logging
+import os
+
 try:
     from collections.abc import Mapping
 except ImportError:  # pragma: no cover
     from collections import Mapping
-import json
-import fnmatch
+
 import abc
-import six
+import fnmatch
+import json
 
 import numpy as np
 
+import six
+
 from ..config import cmlenv
-from ..utils import osutils
-from ..utils.tojson import JSONSerializer
-from ..utils.pyutils import import_script
-from ..post.logs import SolverLog
-from ..io.caelusdict import CaelusDict
 from ..io import dictfile as cmlio
+from ..io.caelusdict import CaelusDict
+from ..post.logs import SolverLog
+from ..utils import osutils
+from ..utils.pyutils import import_script
+from ..utils.tojson import JSONSerializer
 from . import core as rcore
 from . import tasks
 from .cmd import CaelusCmd
 from .udf import SimUDFBase
 
 _lgr = logging.getLogger(__name__)
+
 
 class CMLSimMeta(type):
     """Decorator to add dictfile accessors to CMLSimulation"""
@@ -56,8 +60,9 @@ class CMLSimMeta(type):
 
     def process_attr(cls, key, value):
         """Create the attribute"""
-        doc = "Return %s instance for this case"%key
-        varname = "_"+key
+        doc = "Return %s instance for this case" % key
+        varname = "_" + key
+
         def getter(self):
             if hasattr(self, varname):
                 return getattr(self, varname)
@@ -66,6 +71,7 @@ class CMLSimMeta(type):
             self._dicts_accessed.append(obj)
             setattr(self, varname, obj)
             return obj
+
         setattr(cls, key, property(getter, doc=doc))
 
 
@@ -79,11 +85,7 @@ class CMLSimBase(JSONSerializer):
     #: List of attributes to persist
     _json_public_ = ['name', 'run_config']
 
-    def __init__(self,
-                 case_name,
-                 cml_env=None,
-                 basedir=None,
-                 parent=None):
+    def __init__(self, case_name, cml_env=None, basedir=None, parent=None):
         """
         Args:
             case_name (str): Unique identifier for the case
@@ -117,7 +119,7 @@ class CMLSimBase(JSONSerializer):
     @classmethod
     def load(cls, env=None, casedir=None, parent=None, json_file=None):
         """Loads a previously setup case from persistence file"""
-        cdir = osutils.abspath(casedir) if casedir else  os.getcwd()
+        cdir = osutils.abspath(casedir) if casedir else os.getcwd()
         jfile = json_file or cls.json_file()
         jfile = osutils.abspath(os.path.join(cdir, jfile))
         data = json.load(open(jfile), object_pairs_hook=CaelusDict)
@@ -133,13 +135,15 @@ class CMLSimBase(JSONSerializer):
             setattr(self, k, data.get(k, None))
         return self
 
-    def clone(self,
-              template_dir,
-              copy_polymesh=True,
-              copy_zero=True,
-              copy_scripts=True,
-              extra_patterns=None,
-              clean_if_present=False):
+    def clone(
+        self,
+        template_dir,
+        copy_polymesh=True,
+        copy_zero=True,
+        copy_scripts=True,
+        extra_patterns=None,
+        clean_if_present=False,
+    ):
         """Create the case directory from a given template
 
         Args:
@@ -154,18 +158,26 @@ class CMLSimBase(JSONSerializer):
             IOError: If ``casedir`` exists and ``clean_if_present`` is False
         """
         if osutils.path_exists(self.casedir) and not clean_if_present:
-            raise IOError("Refusing to overwrite existing case: %s" %
-                          self.casedir)
-        rcore.clone_case(self.casedir, template_dir,
-                         copy_polymesh, copy_zero, copy_scripts,
-                         extra_patterns)
+            raise IOError(
+                "Refusing to overwrite existing case: %s" % self.casedir
+            )
+        rcore.clone_case(
+            self.casedir,
+            template_dir,
+            copy_polymesh,
+            copy_zero,
+            copy_scripts,
+            extra_patterns,
+        )
 
-    def clean(self,
-              preserve_extra=None,
-              preserve_polymesh=True,
-              preserve_zero=True,
-              preserve_times=False,
-              preserve_processors=False):
+    def clean(
+        self,
+        preserve_extra=None,
+        preserve_polymesh=True,
+        preserve_zero=True,
+        preserve_times=False,
+        preserve_processors=False,
+    ):
         """Clean an existing case directory.
 
         Args:
@@ -181,7 +193,8 @@ class CMLSimBase(JSONSerializer):
             preserve_zero=preserve_zero,
             preserve_times=preserve_times,
             preserve_processors=preserve_processors,
-            purge_mesh=(not preserve_polymesh))
+            purge_mesh=(not preserve_polymesh),
+        )
 
     def get_input_dict(self, dictname):
         """Return a CPL instance of the input file
@@ -202,8 +215,7 @@ class CMLSimBase(JSONSerializer):
         """Dump persistence file in JSON format"""
         with osutils.set_work_dir(self.casedir):
             with open(self.json_file(), 'w') as fh:
-                json.dump(self.to_json(), fh,
-                          cls=self._json_dumper_, **kwargs)
+                json.dump(self.to_json(), fh, cls=self._json_dumper_, **kwargs)
 
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self.name)
@@ -231,20 +243,17 @@ class CMLSimulation(CMLSimBase):
       FAILED      Some action failed
       =========== =================================================
     """
+
     _dictfile_attrs = cmlio.cml_std_files
 
-    _json_public_ = ("name run_config run_flags "
-                     "_solver _logfile "
-                     "job_ids ".split())
+    _json_public_ = (
+        "name run_config run_flags " "_solver _logfile " "job_ids ".split()
+    )
 
     #: Name of the task file for this case
     task_file = "caelus_tasks.yaml"
 
-    def __init__(self,
-                 case_name,
-                 cml_env=None,
-                 basedir=None,
-                 parent=None):
+    def __init__(self, case_name, cml_env=None, basedir=None, parent=None):
         """
         Args:
             case_name (str): Unique identifier for the case
@@ -261,7 +270,7 @@ class CMLSimulation(CMLSimBase):
             solve_submitted=False,
             solve_completed=False,
             post_done=False,
-            failed=False
+            failed=False,
         )
         #: Job IDs for SLURM/PBS jobs (internal use only)
         self.job_ids = []
@@ -312,13 +321,11 @@ class CMLSimulation(CMLSimBase):
 
         """
         if self.run_flags.prepped and not force:
-            _lgr.warning("%s: Detected previous prep, skipping",
-                         self.name)
+            _lgr.warning("%s: Detected previous prep, skipping", self.name)
             return
         if not self.run_flags.updated:
             self.update()
-        _lgr.info("Executing pre-processing tasks for case: %s",
-                  self.name)
+        _lgr.info("Executing pre-processing tasks for case: %s", self.name)
         tasklist = prep_tasks or self.run_config.get("prep", None)
         try:
             if tasklist:
@@ -329,10 +336,8 @@ class CMLSimulation(CMLSimBase):
             self.decompose_case(ctasks.dep_job_id, force)
             self.run_flags.prepped = True
         except:
-            _lgr.exception("Error encountered during prep for %s",
-                           self.name)
+            _lgr.exception("Error encountered during prep for %s", self.name)
             self.run_flags.failed = True
-
 
     def decompose_case(self, dep_job_id=None, force=False):
         """Decompose case if necessary
@@ -355,7 +360,8 @@ class CMLSimulation(CMLSimBase):
                     "decomposePar",
                     casedir=self.casedir,
                     cml_env=self.env,
-                    output_file="decomposePar.log")
+                    output_file="decomposePar.log",
+                )
                 cml_cmd.cml_exe_args = "-force"
                 _lgr.info("Decomposing case: %s", self.name)
                 job_dep = [dep_job_id] if dep_job_id else None
@@ -363,8 +369,10 @@ class CMLSimulation(CMLSimBase):
                 if cml_cmd.job_id:
                     self.job_ids.append(cml_cmd.job_id)
                 if status != 0:
-                    _lgr.fatal("Error encountered during decomposePar for: %s",
-                               self.name)
+                    _lgr.fatal(
+                        "Error encountered during decomposePar for: %s",
+                        self.name,
+                    )
                     self.run_flags.failed = True
 
     def solve(self, force=False):
@@ -375,16 +383,16 @@ class CMLSimulation(CMLSimBase):
         """
         rflags = self.run_flags
         if rflags.solve_submitted and not force:
-            _lgr.info("%s: Detected previous solve, skipping",
-                      self.name)
+            _lgr.info("%s: Detected previous solve, skipping", self.name)
             return
 
         if not rflags.prepped:
             self.prep_case()
         solve_opts = self.run_config.get("solve", None)
         if not solve_opts:
-            raise KeyError("Cannot find solve settings for case: %s"%
-                           self.name)
+            raise KeyError(
+                "Cannot find solve settings for case: %s" % self.name
+            )
         status = 0
         if isinstance(solve_opts, (list,)):
             for sopt in solve_opts:
@@ -393,9 +401,7 @@ class CMLSimulation(CMLSimBase):
         elif isinstance(solve_opts, Mapping):
             status = self._run_solver(solve_opts)
         else:
-            sopt = dict(
-                solver=solve_opts,
-                solver_args="")
+            sopt = dict(solver=solve_opts, solver_args="")
             status = self._run_solver(sopt)
         if status == 0:
             self.run_flags.solve_submitted = True
@@ -412,21 +418,21 @@ class CMLSimulation(CMLSimBase):
             self.solver,
             casedir=self.casedir,
             cml_env=self.env,
-            output_file=log_file)
+            output_file=log_file,
+        )
         cml_cmd.cml_exe_args = solver_args
         cml_cmd.num_mpi_ranks = self.run_config.get("num_ranks", 1)
-        cml_cmd.mpi_extra_args = self.run_config.get(
-            "mpi_extra_args", "")
+        cml_cmd.mpi_extra_args = self.run_config.get("mpi_extra_args", "")
         if "queue_settings" in self.run_config:
             cml_cmd.runner.update(self.run_config["queue_settings"])
-        _lgr.info("Submitting solver (%s) for case: %s",
-                  self.solver, self.name)
+        _lgr.info("Submitting solver (%s) for case: %s", self.solver, self.name)
         status = cml_cmd(job_dependencies=dep_job_id)
         if cml_cmd.job_id:
             self.job_ids.append(cml_cmd.job_id)
         if status != 0:
-            _lgr.error("Error encountered running %s for: %s",
-                       self.solver, self.name)
+            _lgr.error(
+                "Error encountered running %s for: %s", self.solver, self.name
+            )
             self.run_flags.failed = True
         return status
 
@@ -442,27 +448,28 @@ class CMLSimulation(CMLSimBase):
     def _post_case_default(self, post_tasks=None, force=False):
         """Execute post-processing tasks for this case"""
         if self.run_flags.post_done and not force:
-            _lgr.info("%s: Detected previous post-processing, skipping",
-                      self.name)
+            _lgr.info(
+                "%s: Detected previous post-processing, skipping", self.name
+            )
             return
 
         if not self.run_flags.solve_submitted:
-            _lgr.warning("%s: No previous solve detected, skipping post",
-                         self.name)
+            _lgr.warning(
+                "%s: No previous solve detected, skipping post", self.name
+            )
             return
 
         clog = self.case_log()
         if clog is None:
-            _lgr.warning("%s: Solve has not started, skipping post",
-                         self.name)
+            _lgr.warning("%s: Solve has not started, skipping post", self.name)
             return
         if not clog.solve_completed:
-            _lgr.warning("%s: Solve was not completed, skipping post",
-                         self.name)
+            _lgr.warning(
+                "%s: Solve was not completed, skipping post", self.name
+            )
             return
 
-        _lgr.info("Executing post-processing tasks for case: %s",
-                  self.name)
+        _lgr.info("Executing post-processing tasks for case: %s", self.name)
         self.run_flags.solve_completed = clog.solve_completed
         self.reconstruct_case()
         tasklist = post_tasks or self.run_config.get("post", None)
@@ -482,13 +489,13 @@ class CMLSimulation(CMLSimBase):
         num_ranks = rconf.get("num_ranks", 1)
         dorecon = rconf.get("reconstruct", False)
         if dorecon and (num_ranks > 1):
-            _lgr.info("Reconstructing parallel run in case: %s",
-                      self.name)
+            _lgr.info("Reconstructing parallel run in case: %s", self.name)
             cml_cmd = CaelusCmd(
                 "reconstructPar",
                 casedir=self.casedir,
                 cml_env=self.env,
-                output_file="reconstructPar.log")
+                output_file="reconstructPar.log",
+            )
             cml_cmd.cml_exe_args = "-latestTime"
             _lgr.info("Reconstructing case: %s", self.name)
             status = cml_cmd(job_dependencies=None)
@@ -503,8 +510,12 @@ class CMLSimulation(CMLSimBase):
             str: Status of the run as a string
         """
         run_flags = self.run_flags
-        status_list = """failed post completed running submitted prep setup""".split()
-        status_names = """FAILED DONE Solved Running Submitted Prepped Setup""".split()
+        status_list = (
+            """failed post completed running submitted prep setup""".split()
+        )
+        status_names = (
+            """FAILED DONE Solved Running Submitted Prepped Setup""".split()
+        )
         status_flags = {}
         for k in status_list:
             status_flags[k] = False
@@ -513,9 +524,11 @@ class CMLSimulation(CMLSimBase):
         status_flags["setup"] = run_flags["updated"]
         status_flags["submitted"] = run_flags["solve_submitted"]
         status_flags["failed"] = run_flags["failed"]
-        if (not status_flags["failed"]
+        if (
+            not status_flags["failed"]
             and status_flags["submitted"]
-            and not status_flags["completed"]):
+            and not status_flags["completed"]
+        ):
             try:
                 clog = self.case_log()
                 if clog is not None:
@@ -570,10 +583,11 @@ class CMLSimulation(CMLSimBase):
         if getattr(self, "_logfile", None):
             logname = getattr(self, "_logfile")
         elif self.solver is not None:
-            logname = "%s.log"%self.solver
+            logname = "%s.log" % self.solver
         else:
-            raise ValueError("Cannot determine log file for case: %s"%
-                             self.name)
+            raise ValueError(
+                "Cannot determine log file for case: %s" % self.name
+            )
         setattr(self, "_logfile", logname)
         return self._logfile
 
@@ -594,7 +608,8 @@ class CMLSimulation(CMLSimBase):
             clog = SolverLog(
                 case_dir=self.casedir,
                 force_reload=force_reload,
-                logfile=self.logfile)
+                logfile=self.logfile,
+            )
             setattr(self, "_logs", clog)
             return clog
 
@@ -602,7 +617,7 @@ class CMLSimulation(CMLSimBase):
         """Run tasks within case directory using the tasks file"""
         tfile = task_file or self.task_file
         if not osutils.path_exists(tfile):
-            raise IOError("Cannot file task file for case: %s"%self.name)
+            raise IOError("Cannot file task file for case: %s" % self.name)
         with osutils.set_work_dir(self.casedir):
             ctasks = tasks.Tasks.load(tfile)
             ctasks(env=self.env)
@@ -639,8 +654,8 @@ class CMLSimCollection(JSONSerializer):
         if osutils.path_exists(self.casedir):
             _lgr.error("Parametric run directory exists. Aborting")
             raise FileExistsError(
-                "Cannot overwrite existing directory: %s"%
-                self.casedir)
+                "Cannot overwrite existing directory: %s" % self.casedir
+            )
         self._nested_file_guard(self.basedir)
 
         #: CML execution environment
@@ -681,7 +696,7 @@ class CMLSimCollection(JSONSerializer):
             casedir (path): Path to the case directory
             json_file (filename): Persistence information
         """
-        cdir = osutils.abspath(casedir) if casedir else  os.getcwd()
+        cdir = osutils.abspath(casedir) if casedir else os.getcwd()
         jfile = json_file or cls.json_file()
         jfile = osutils.abspath(os.path.join(cdir, jfile))
         data = json.load(open(jfile), object_pairs_hook=CaelusDict)
@@ -697,8 +712,10 @@ class CMLSimCollection(JSONSerializer):
 
         self.cases = [
             self.simulation_class().load(
-                env=self.env, casedir=os.path.join(self.casedir, cname),
-                parent=self)
+                env=self.env,
+                casedir=os.path.join(self.casedir, cname),
+                parent=self,
+            )
             for cname in self.case_names
         ]
         for case in self.cases:
@@ -761,8 +778,7 @@ class CMLSimCollection(JSONSerializer):
         with osutils.set_work_dir(self.casedir):
             self.udf.sim_epilogue(self)
             with open(self.json_file(), 'w') as fh:
-                json.dump(self.to_json(), fh,
-                          cls=self._json_dumper_, **kwargs)
+                json.dump(self.to_json(), fh, cls=self._json_dumper_, **kwargs)
             for c in self.cases:
                 c.save_state(**kwargs)
 
@@ -789,7 +805,7 @@ class CMLSimCollection(JSONSerializer):
         wdir = basedir
         parent = os.path.dirname(wdir)
         json_file = None
-        while (parent != wdir):
+        while parent != wdir:
             jfile = os.path.join(wdir, fname)
             if os.path.exists(jfile):
                 json_file = jfile
@@ -798,7 +814,9 @@ class CMLSimCollection(JSONSerializer):
             parent = os.path.dirname(wdir)
         if json_file is not None:
             _lgr.error("Detected nested analysis directories. Aborting setup")
-            raise FileExistsError("Refusing to create nested analysis directories")
+            raise FileExistsError(
+                "Refusing to create nested analysis directories"
+            )
 
     @property
     def udf_script(self):
@@ -811,6 +829,8 @@ class CMLSimCollection(JSONSerializer):
         return None
 
     def __repr__(self):
-        return "<%s: %s (%d cases)>"%(
+        return "<%s: %s (%d cases)>" % (
             self.__class__.__name__,
-            self.name, len(self.cases))
+            self.name,
+            len(self.cases),
+        )

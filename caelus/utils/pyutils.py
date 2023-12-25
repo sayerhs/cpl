@@ -5,18 +5,19 @@ Python script import utilities
 ------------------------------
 """
 
-import sys
-import os
 import importlib
+import os
+import sys
 
 from . import osutils
+
 
 def import_script(fname):
     """Dynamically import a script and return the module"""
     fpath = osutils.abspath(fname)
 
     if not os.path.exists(fpath):
-        raise FileNotFoundError("Cannot find file: %s"%fname)
+        raise FileNotFoundError("Cannot find file: %s" % fname)
 
     (moddir, modname, _) = osutils.split_path(fpath)
     try:

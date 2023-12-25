@@ -61,8 +61,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from .funcobj import FunctionObject, DictMeta
 from ...utils.vtk_helpers import pyvista
+from .funcobj import DictMeta, FunctionObject
 
 
 class SampledData(metaclass=DictMeta):
@@ -107,10 +107,21 @@ class SampledSet(SampledData):
     """
 
     _dict_properties = [
-        ('type', None,
-         ('uniform', 'face', 'midPoint', 'midPointAndFace',
-          'cloud', 'patchCloud', 'patchSeed', 'polyLine',
-          'triSurfaceMeshPointSet')),
+        (
+            'type',
+            None,
+            (
+                'uniform',
+                'face',
+                'midPoint',
+                'midPointAndFace',
+                'cloud',
+                'patchCloud',
+                'patchSeed',
+                'polyLine',
+                'triSurfaceMeshPointSet',
+            ),
+        ),
         ('axis', None, "x y z xyz distance".split()),
         ('points', None),
     ]
@@ -177,11 +188,12 @@ class SampledSet(SampledData):
             list: A list of column names for a data file.
         """
         if ncols == 3:
-            return [f"{x}_{y}" for x, y in
-                    itertools.product(fields, "x y z".split())]
+            return [
+                f"{x}_{y}"
+                for x, y in itertools.product(fields, "x y z".split())
+            ]
 
-        return [f"{x}_{y}" for x, y in
-                itertools.product(fields, range(ncols))]
+        return [f"{x}_{y}" for x, y in itertools.product(fields, range(ncols))]
 
     def _load_raw_file(self, fname):
         """Load a raw format file.
@@ -196,13 +208,12 @@ class SampledSet(SampledData):
         """
         coords = self.coord_cols
         fields = self._extract_field_names(fname)
-        df = pd.read_table(
-            fname, delimiter=" ", index_col=False, header=None)
+        df = pd.read_table(fname, delimiter=" ", index_col=False, header=None)
 
         ncols = (len(df.columns) - len(coords)) / len(fields)
-        fnames = (fields
-                  if ncols == 1
-                  else self._process_field_names(fields, ncols))
+        fnames = (
+            fields if ncols == 1 else self._process_field_names(fields, ncols)
+        )
         df.columns = coords + fnames
         return df
 
@@ -229,9 +240,7 @@ class SampledSet(SampledData):
         return df
 
     def __call__(self, time=None):
-        """Load data for this set at a given time.
-
-        """
+        """Load data for this set at a given time."""
         reader_map = dict(
             raw=self._load_raw_file,
             vtk=self._load_vtk_file,
@@ -243,8 +252,7 @@ class SampledSet(SampledData):
 
         dpath = Path(self.parent.root) / dtime
         if not dpath.exists():
-            raise FileNotFoundError(
-                f"No data found: {dpath}")
+            raise FileNotFoundError(f"No data found: {dpath}")
 
         flist = dpath.glob(self._file_fmt())
         file_fmt = self.parent.setFormat
@@ -300,8 +308,7 @@ class SampledSurface(SampledData):
         dpath = Path(self.parent.root) / dtime
         fname = dpath / (self.name + ".vtp")
         if not fname.exists():
-            raise FileNotFoundError(
-                f"Surface output not found: {fname}")
+            raise FileNotFoundError(f"Surface output not found: {fname}")
 
         mesh = pyvista().read(fname)
         self._cache = dict([(dpath.stem, mesh)])
@@ -315,8 +322,11 @@ class Sampling(FunctionObject):
 
     _dict_properties = [
         ('fields', None),
-        ('interpolationScheme', 'cell',
-         "cell cellPoint cellPointFace pointMVC cellPatchConstrained".split())
+        (
+            'interpolationScheme',
+            'cell',
+            "cell cellPoint cellPointFace pointMVC cellPatchConstrained".split(),
+        ),
     ]
 
     def __init__(self, name, obj_dict, *, casedir=None):
@@ -344,8 +354,7 @@ class SampledSets(Sampling):
     _funcobj_type = "sets"
 
     _dict_properties = [
-        ('setFormat', 'raw',
-         "raw gnuplot xmgr jplot vtk ensight csv".split()),
+        ('setFormat', 'raw', "raw gnuplot xmgr jplot vtk ensight csv".split()),
     ]
 
     def __init__(self, name, obj_dict, *, casedir=None):

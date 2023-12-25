@@ -3,6 +3,7 @@
 
 import pytest
 
+
 def assert_token_types(clex, text, types):
     """Assert expected token types for a given input text"""
     lex_types = [i.type for i in clex.token_stream(text)]

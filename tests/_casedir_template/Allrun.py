@@ -4,12 +4,14 @@
 # Web:   www.caelus-cml.com
 # ---------------------------------------------------------------------------
 
+import glob
+import os
+import shutil
+
 # Importing the required modules for Python
 import subprocess
 import sys
-import os
-import glob
-import shutil
+
 import Caelus
 
 # Code name and version

@@ -5,11 +5,13 @@ Utilities for working with Jinja2 templates
 """
 
 import os
+
 from jinja2 import Environment, FileSystemLoader
 
-from . import config
-from ..version import version
 from ..utils import osutils
+from ..version import version
+from . import config
+
 
 def get_template_dirs():
     """Return a list of template dirs in normal configuration locations"""
@@ -29,6 +31,7 @@ def get_template_dirs():
     base_tmpl = [tmpl_path] if os.path.exists(tmpl_path) else []
 
     return tmpl_dirs + base_tmpl
+
 
 class CaelusTemplates(object):
     """Interface to interact with Caelus CPL templates"""

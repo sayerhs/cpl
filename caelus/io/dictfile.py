@@ -5,21 +5,21 @@ Caelus/OpenFOAM Input File Interface
 -------------------------------------
 """
 
-import os
 import logging
+import os
+
 try:
     from collections.abc import Mapping
-except ImportError:   # pragma: no cover
+except ImportError:  # pragma: no cover
     from collections import Mapping
 
 import six
 
 from ..utils import osutils
-from . import caelusdict
-from . import parser
-from . import printer
+from . import caelusdict, parser, printer
 
 _lgr = logging.getLogger(__name__)
+
 
 class DictMeta(type):
     """Create property methods and add validation for properties.
@@ -38,6 +38,7 @@ class DictMeta(type):
     ``valid_values`` are provided, any attempt to set/modify this value will be
     checked to ensure that only the allowed values are used.
     """
+
     # pylint: disable=no-value-for-parameter
 
     def __init__(cls, name, bases, cdict):
@@ -48,6 +49,7 @@ class DictMeta(type):
 
     def process_defaults(cls, proplist):
         """Process default entries"""
+
         def create_default_entries(self):
             """Create defaults from property list"""
             data = self.data
@@ -56,6 +58,7 @@ class DictMeta(type):
                 value = plist[1]
                 if value is not None:
                     data[name] = value
+
         setattr(cls, "create_default_entries", create_default_entries)
 
     def process_properties(cls, proplist):
@@ -67,24 +70,32 @@ class DictMeta(type):
         """Process a property"""
         name = plist[0]
         options = plist[2] if len(plist) == 3 else None
-        doc = "%s"%name
+        doc = "%s" % name
+
         def getter(self):
             """Getter"""
             return self.data.get(name, None)
+
         if options:
+
             def setter(self, value):
                 """Setter"""
                 if not value in options:
                     raise ValueError(
                         "%s: Invalid option for '%s'. "
-                        "Valid options are:\n\t%s"%(
-                            cls.__name__, name, options))
+                        "Valid options are:\n\t%s"
+                        % (cls.__name__, name, options)
+                    )
                 self.data[name] = value
+
         else:
+
             def setter(self, value):
                 "Setter"
                 self.data[name] = value
+
         setattr(cls, name, property(getter, setter, doc=doc))
+
 
 @six.add_metaclass(DictMeta)
 class DictFile(object):
@@ -104,7 +115,8 @@ class DictFile(object):
     _default_header = [
         ("version", "2.0"),
         ("format", "ascii"),
-        ("class", "dictionary"),]
+        ("class", "dictionary"),
+    ]
 
     def __init__(self, filename=None, populate_defaults=True):
         """
@@ -133,7 +145,7 @@ class DictFile(object):
         header = None
         need_default_header = True
         if not os.path.exists(name):
-            raise IOError("Cannot find file: %s"%name)
+            raise IOError("Cannot find file: %s" % name)
         if os.path.getsize(name) > cls._size_limit:
             _lgr.warning("%s size is > 5MB, will only parse header")
         else:
@@ -155,8 +167,9 @@ class DictFile(object):
         return obj
 
     @classmethod
-    def read_if_present(cls, casedir=None, filename=None, debug=False,
-                        populate_defaults=True):
+    def read_if_present(
+        cls, casedir=None, filename=None, debug=False, populate_defaults=True
+    ):
         """Read the file if present, else create object with default values
 
         Args:
@@ -188,17 +201,21 @@ class DictFile(object):
         """Create a default header"""
         obj = os.path.basename(self.filename)
         location = os.path.dirname(self.filename)
-        default_header = caelusdict.CaelusDict([
-            ("version", "2.0"),
-            ("format", "ascii"),
-            ("class", "dictionary"),])
+        default_header = caelusdict.CaelusDict(
+            [
+                ("version", "2.0"),
+                ("format", "ascii"),
+                ("class", "dictionary"),
+            ]
+        )
         if location:
-            default_header.location = '"%s"'%location
-        default_header['object'] = '"%s"'%obj
+            default_header.location = '"%s"' % location
+        default_header['object'] = '"%s"' % obj
         return default_header
 
-    def write(self, casedir=None, filename=None, update_object=True,
-              write_header=True):
+    def write(
+        self, casedir=None, filename=None, update_object=True, write_header=True
+    ):
         """Write a formatted Caelus input file
 
         Args:
@@ -242,7 +259,7 @@ class DictFile(object):
     def __getitem__(self, key):
         "Dictionary style access to file entries"
         if key not in self.data:
-            raise KeyError("No entry by name %s"%key)
+            raise KeyError("No entry by name %s" % key)
         return self.data[key]
 
     def __setitem__(self, key, value):
@@ -259,8 +276,7 @@ class DictFile(object):
         return strbuf.getvalue()
 
     def __repr__(self):
-        return "<%s: %s>"%(self.__class__.__name__,
-                           self.filename)
+        return "<%s: %s>" % (self.__class__.__name__, self.filename)
 
 
 class ControlDict(DictFile):
@@ -270,23 +286,32 @@ class ControlDict(DictFile):
 
     _dict_properties = [
         ("application", None),
-        ("startFrom", "latestTime",
-         ("firstTime", "startTime", "latestTime")),
+        ("startFrom", "latestTime", ("firstTime", "startTime", "latestTime")),
         ("startTime", 0),
-        ("stopAt", "endTime",
-         ("endTime", "writeNow", "noWriteNow", "nextWrite")),
+        (
+            "stopAt",
+            "endTime",
+            ("endTime", "writeNow", "noWriteNow", "nextWrite"),
+        ),
         ("endTime", None),
         ("deltaT", None),
-        ("writeControl", "timeStep",
-         ("timeStep", "runTime", "adjustableRunTime",
-          "cpuTime", "clockTime")),
+        (
+            "writeControl",
+            "timeStep",
+            (
+                "timeStep",
+                "runTime",
+                "adjustableRunTime",
+                "cpuTime",
+                "clockTime",
+            ),
+        ),
         ("writeInterval", None),
         ("purgeWrite", 0),
         ("writeFormat", "ascii", ("ascii", "binary")),
         ("writePrecision", 6),
         ("writeCompression", True),
-        ("timeFormat", "general",
-         ("fixed", "scientific", "general")),
+        ("timeFormat", "general", ("fixed", "scientific", "general")),
         ("timePrecision", 6),
         ("graphFormat", None),
         ("adjustTimeStep", None),
@@ -298,9 +323,7 @@ class ControlDict(DictFile):
     def functions(self):
         """function object definitions in controlDict"""
         cdict = self.contents
-        return (cdict.functions
-                if "functions" in cdict
-                else None)
+        return cdict.functions if "functions" in cdict else None
 
     @functions.setter
     def functions(self, value):
@@ -311,6 +334,7 @@ class ControlDict(DictFile):
                 self.data.functions = caelusdict.CaelusDict()
             self.data.functions.merge(value)
 
+
 class DecomposeParDict(DictFile):
     """system/decomposeParDict interface"""
 
@@ -318,9 +342,13 @@ class DecomposeParDict(DictFile):
 
     _dict_properties = [
         ("numberOfSubdomains", 4),
-        ("method", "scotch",
-         ("scotch", "metis", "simple", "hierarchical", "manual")),
+        (
+            "method",
+            "scotch",
+            ("scotch", "metis", "simple", "hierarchical", "manual"),
+        ),
     ]
+
 
 class TransportProperties(DictFile):
     """constant/transportProperties interface"""
@@ -331,14 +359,14 @@ class TransportProperties(DictFile):
         ("transportModel", "Newtonian"),
     ]
 
+
 class TurbulenceProperties(DictFile):
     """constant/turbulenceProperties interface"""
 
     _default_filename = "constant/turbulenceProperties"
 
     _dict_properties = [
-        ("simulationType", "laminar",
-         ("laminar", "RASModel", "LESModel")),
+        ("simulationType", "laminar", ("laminar", "RASModel", "LESModel")),
     ]
 
     def get_turb_file(self):
@@ -359,10 +387,8 @@ class TurbModelProps(DictFile):
     """Common interface for LES/RAS models"""
 
     _dict_properties = [
-        ("turbulence", "on",
-         ("on", "off", "yes", "no", True, False)),
-        ("printCoeffs", "on",
-         ("on", "off", "yes", "no", True, False)),
+        ("turbulence", "on", ("on", "off", "yes", "no", True, False)),
+        ("printCoeffs", "on", ("on", "off", "yes", "no", True, False)),
     ]
 
     _model_name = "NONE"
@@ -398,11 +424,13 @@ class TurbModelProps(DictFile):
             self.data[key] = caelusdict.CaelusDict()
         return self.data[key]
 
+
 class RASProperties(TurbModelProps):
     """constant/RASProperties interface"""
 
     _default_filename = "constant/RASProperties"
     _model_name = "RASModel"
+
 
 class LESProperties(TurbModelProps):
     """constant/LESProperties interface"""
@@ -436,6 +464,7 @@ class LESProperties(TurbModelProps):
                 coeffs.deltaCoeff = 1
             self.data[key] = coeffs
 
+
 class FvSchemes(DictFile):
     """system/fvSchemes interface"""
 
@@ -448,8 +477,9 @@ class FvSchemes(DictFile):
         ("laplacianSchemes", None),
         ("interpolationSchemes", None),
         ("snGradSchemes", None),
-        ("fluxRequired", None)
+        ("fluxRequired", None),
     ]
+
 
 class FvSolution(DictFile):
     """system/fvSolution interface"""
@@ -462,8 +492,9 @@ class FvSolution(DictFile):
         ("PIMPLE", None),
         ("PISO", None),
         ("potentialFlow", None),
-        ("relaxationFactors", None)
+        ("relaxationFactors", None),
     ]
+
 
 class BlockMeshDict(DictFile):
     """constant/polyMesh/blockMeshDict interface"""
@@ -476,22 +507,23 @@ class BlockMeshDict(DictFile):
         ("blocks", None),
         ("edges", None),
         ("boundary", None),
-        ("mergePatchPairs", None)
+        ("mergePatchPairs", None),
     ]
+
 
 class PolyMeshBoundary(DictFile):
     """constant/polyMesh/boundary interface"""
 
     _default_filename = "constant/polyMesh/boundary"
 
+
 class ChangeDictionaryDict(DictFile):
     """system/changeDictionaryDict interface"""
 
     _default_filename = "system/changeDictionaryDict"
 
-    _dict_properties = [
-        ("dictionaryReplacement", None)
-    ]
+    _dict_properties = [("dictionaryReplacement", None)]
+
 
 class CmlControls(DictFile):
     """cmlControls interface"""

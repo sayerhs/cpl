@@ -65,7 +65,8 @@ class ForceCoeffs(FunctionObject):
         fname = dpath / "coefficient.dat"
         if not fname.exists():
             raise FileNotFoundError(
-                f"Force coefficients output not found: {fname}")
+                f"Force coefficients output not found: {fname}"
+            )
 
         with open(fname, 'r') as fh:
             prev = ""
@@ -76,7 +77,8 @@ class ForceCoeffs(FunctionObject):
             cols = prev.strip("#").split()
 
         fcoeffs = pd.read_table(
-            fname, delimiter=r'\s+', comment="#", names=cols)
+            fname, delimiter=r'\s+', comment="#", names=cols
+        )
         return fcoeffs
 
 
@@ -131,8 +133,7 @@ class Forces(FunctionObject):
         buf.seek(0)
 
         # Load as a dataframe
-        df = pd.read_table(
-            buf, delimiter=r'\s+', comment="#", names=cols)
+        df = pd.read_table(buf, delimiter=r'\s+', comment="#", names=cols)
         return df
 
     def _col_names(self, prefix):
@@ -160,11 +161,7 @@ class Forces(FunctionObject):
         dtime = str(time) if time else self.latest_time
         dpath = Path(self.root) / dtime
 
-        forces = self._parse_file(
-            dpath / "force.dat",
-            self._col_names('F'))
-        moments = self._parse_file(
-            dpath / "moment.dat",
-            self._col_names('M'))
+        forces = self._parse_file(dpath / "force.dat", self._col_names('F'))
+        moments = self._parse_file(dpath / "moment.dat", self._col_names('M'))
         moments.drop(columns=['Time'], inplace=True)
         return pd.concat([forces, moments], axis=1)

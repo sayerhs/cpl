@@ -18,15 +18,17 @@ easier to perform some tasks.
    timestamp
 """
 
-import os
 import fnmatch
-import shutil
 import logging
-from datetime import datetime
+import os
+import shutil
 from contextlib import contextmanager
+from datetime import datetime
+
 import pytz
 
 _lgr = logging.getLogger(__name__)
+
 
 def ostype():
     """String indicating the operating system type
@@ -34,8 +36,8 @@ def ostype():
     Returns:
         str: One of ["linux", "darwin", "windows"]
     """
-    return ("windows" if os.name == 'nt' else
-            os.uname()[0].lower())
+    return "windows" if os.name == 'nt' else os.uname()[0].lower()
+
 
 def timestamp(time_format=None, time_zone=pytz.utc):
     """Return a formatted timestamp for embedding in files
@@ -49,6 +51,7 @@ def timestamp(time_format=None, time_zone=pytz.utc):
     """
     time_fmt = time_format or "%Y-%m-%d %H:%M:%S (%Z)"
     return datetime.now(time_zone).strftime(time_fmt)
+
 
 def backup_file(fname, time_format=None, time_zone=pytz.utc):
     """Given a filename return a timestamp based backup filename
@@ -67,10 +70,13 @@ def backup_file(fname, time_format=None, time_zone=pytz.utc):
     bak_name = name + "_" + tstamp + ext
     return os.path.join(os.path.dirname(fname), bak_name)
 
+
 def username():
     """Return the username of the current user"""
     import getpass
+
     return getpass.getuser()
+
 
 def user_home_dir():
     """Return the absolute path of the user's home directory"""
@@ -105,6 +111,7 @@ def abspath(pname):
     pth2 = os.path.expandvars(pth1)
     return os.path.normpath(os.path.abspath(pth2))
 
+
 def path_exists(pname):
     """Check path of the directory exists.
 
@@ -119,6 +126,7 @@ def path_exists(pname):
     """
     return os.path.exists(abspath(pname))
 
+
 def ensure_directory(dname):
     """Check if directory exists, if not, create it.
 
@@ -132,6 +140,7 @@ def ensure_directory(dname):
     if not os.path.exists(abs_dir):
         os.makedirs(abs_dir)
     return abs_dir
+
 
 @contextmanager
 def set_work_dir(dname, create=False):
@@ -160,8 +169,8 @@ def set_work_dir(dname, create=False):
     finally:
         os.chdir(orig_dir)
 
-def clean_directory(dirname,
-                    preserve_patterns=None):
+
+def clean_directory(dirname, preserve_patterns=None):
     """Utility function to remove files and directories from a given directory.
 
     User can specify a list of filename patterns to preserve with the
@@ -189,6 +198,7 @@ def clean_directory(dirname,
             elif os.path.isfile(fpath) or os.path.islink(fpath):
                 os.remove(fpath)
 
+
 def remove_files_dirs(paths, basedir=None):
     """Remove files and/or directories
 
@@ -205,6 +215,7 @@ def remove_files_dirs(paths, basedir=None):
                 elif os.path.isfile(fpath) or os.path.islink(fpath):
                     os.remove(fpath)
 
+
 def copy_tree(srcdir, destdir, symlinks=False, ignore_func=None):
     """Enchanced version of shutil.copytree
 
@@ -219,6 +230,7 @@ def copy_tree(srcdir, destdir, symlinks=False, ignore_func=None):
     if os.path.exists(destdir):
         shutil.rmtree(destdir)
     shutil.copytree(srcdir, destdir, symlinks, ignore_func)
+
 
 def split_path(fname):
     """Split a path into directory, basename, extension

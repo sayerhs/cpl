@@ -11,6 +11,7 @@ behavior of the CMLSimulation classes.
 
 from ..utils.tojson import JSONSerializer
 
+
 class SimUDFBase(JSONSerializer):
     """Base class for a user-defined function interface.
 
@@ -33,10 +34,7 @@ class SimUDFBase(JSONSerializer):
             simcoll (CMLSimCollection): The case collection instance
         """
 
-    def sim_case_name(self,
-                      case_format,
-                      case_params,
-                      **kwargs):
+    def sim_case_name(self, case_format, case_params, **kwargs):
         """Case name generator
 
         Override this method to customize the default case naming strategy for

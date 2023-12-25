@@ -5,6 +5,7 @@ Test running python utility
 """
 
 import pytest
+
 from caelus.utils import pyutils
 
 script_contents = """
@@ -19,6 +20,7 @@ def func2():
     return "func2"
 """
 
+
 def test_imports(tmpdir):
     """Test whether we can import a script."""
     pyfile = tmpdir / "caelus-script-import.py"
@@ -27,6 +29,7 @@ def test_imports(tmpdir):
     pymod = pyutils.import_script(pyfile)
     assert hasattr(pymod, "func1")
     assert hasattr(pymod, "func2")
+
 
 def test_noscript(tmpdir):
     """Test non-existence of file"""

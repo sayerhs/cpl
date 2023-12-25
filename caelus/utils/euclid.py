@@ -11,6 +11,7 @@ Vectors, transformations and reference frames
 
 import numpy as np
 
+
 class TrMat(np.ndarray):
     """Transformation and rotation matrices
 
@@ -58,7 +59,10 @@ class TrMat(np.ndarray):
     def __array_finalize__(self, obj):
         if obj is None:
             return
-        assert self.shape == (self._dim, self._dim), "Cannot coerce object to transformation matrix"
+        assert self.shape == (
+            self._dim,
+            self._dim,
+        ), "Cannot coerce object to transformation matrix"
 
     @classmethod
     def I(cls):
@@ -179,10 +183,13 @@ class TrMat(np.ndarray):
             zcross = np.cross(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))
             assert np.allclose(zcross, zunit), "Vectors are not orthogonal"
 
-        mat = np.vstack((
-            np.asarray(x, dtype=cls._dtype),
-            np.asarray(y, dtype=cls._dtype),
-            np.asarray(z, dtype=cls._dtype)))
+        mat = np.vstack(
+            (
+                np.asarray(x, dtype=cls._dtype),
+                np.asarray(y, dtype=cls._dtype),
+                np.asarray(z, dtype=cls._dtype),
+            )
+        )
         return mat.view(cls)
 
     @classmethod
@@ -215,7 +222,7 @@ class TrMat(np.ndarray):
         valid_types = "quaternion rot_x rot_y rot_z axes".split()
         rot_type = opts.get("rotation_type", "quaternion")
         if rot_type not in valid_types:
-            raise KeyError("Invalid rotation_type: %s"%rot_type)
+            raise KeyError("Invalid rotation_type: %s" % rot_type)
         tmat = None
         if rot_type == "quaternion":
             axis = np.asarray(opts["axis"])
@@ -248,12 +255,15 @@ class TrMat(np.ndarray):
         return super().__mul__(other)
 
     def __eq__(self, other):
-        return (isinstance(other, np.ndarray)
-                and self.shape == other.shape
-                and np.allclose(np.asarray(self), np.asarray(other)))
+        return (
+            isinstance(other, np.ndarray)
+            and self.shape == other.shape
+            and np.allclose(np.asarray(self), np.asarray(other))
+        )
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
 
 class Vec(np.ndarray):
     """Vector and array of vectors
@@ -295,6 +305,7 @@ class Vec(np.ndarray):
        v5 = vec * rot_mat                             # Rotation of the vector
        v6 = rot_mat * vec                             # Transformation to ref.frame
     """
+
     _vdim = 3
 
     def __new__(cls, inp_array):
@@ -307,9 +318,11 @@ class Vec(np.ndarray):
         assert self.shape[-1] == self._vdim, "Not a valid array for vector"
 
     def __eq__(self, other):
-        return (isinstance(other, np.ndarray)
-                and self.shape == other.shape
-                and np.allclose(np.asarray(self), np.asarray(other)))
+        return (
+            isinstance(other, np.ndarray)
+            and self.shape == other.shape
+            and np.allclose(np.asarray(self), np.asarray(other))
+        )
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -346,10 +359,7 @@ class Vec(np.ndarray):
     def cyl(cls, r, phi=0.0, z=0.0):
         """Create a vector from cylindrical coordinates"""
         ang = np.radians(phi)
-        return np.asarray([
-            r * np.cos(ang),
-            r * np.sin(ang),
-            z]).view(cls)
+        return np.asarray([r * np.cos(ang), r * np.sin(ang), z]).view(cls)
 
     def __mul__(self, other):
         if isinstance(other, TrMat):
@@ -397,7 +407,6 @@ class Vec(np.ndarray):
             return self[2]
         else:
             return self[..., 2].view(np.ndarray)
-
 
     @property
     def mag(self):

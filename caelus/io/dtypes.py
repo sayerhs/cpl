@@ -5,11 +5,14 @@
 Caelus/OpenFOAM Input File Datatypes
 """
 
-import sys
 import abc
 import re
-import six
+import sys
+
 import numpy as np
+
+import six
+
 
 @six.add_metaclass(abc.ABCMeta)
 class FoamType(object):
@@ -29,19 +32,20 @@ class FoamType(object):
         """
 
     def __repr__(self):
-        return "<%s>"%self.__class__.__name__
+        return "<%s>" % self.__class__.__name__
 
     def format_ndarray(self, value):
         arr_size = value.size
         arr_str = None
         threshold = np.get_printoptions()['threshold']
         try:
-            np.set_printoptions(threshold=arr_size+10)
+            np.set_printoptions(threshold=arr_size + 10)
             arr_str = np.array_str(value, max_line_width=80)
         finally:
             np.set_printoptions(threshold=threshold)
         arr_str = re.sub(r']', ')', re.sub(r'\[', '(', arr_str))
         return arr_str
+
 
 class Dimension(FoamType):
     """Caelus dimensional units
@@ -61,11 +65,13 @@ class Dimension(FoamType):
         """
         self.units = np.zeros((7,), dtype=int)
         if units is None and not kwargs:
-            raise RuntimeError("Either units or dimensional types must be provided")
+            raise RuntimeError(
+                "Either units or dimensional types must be provided"
+            )
         num_units = len(units)
         if units:
             if not ((num_units == 5) or (num_units == 7)):
-                raise ValueError("Incorrect units specified: %s"%units)
+                raise ValueError("Incorrect units specified: %s" % units)
             for i, uval in enumerate(units):
                 self.units[i] = uval
         else:
@@ -80,15 +86,17 @@ class Dimension(FoamType):
             fh (file): A valid file handle
             indent_str (str): Padding for indentation
         """
-        fh.write("[" + ' '.join("%d"%uval for uval in self.units) + "];\n")
+        fh.write("[" + ' '.join("%d" % uval for uval in self.units) + "];\n")
 
     def __str__(self):
-        return "[" + ' '.join("%d"%uval for uval in self.units) + "]"
+        return "[" + ' '.join("%d" % uval for uval in self.units) + "]"
 
     def __repr__(self):
-        return "<%s: [%s]>"%(
+        return "<%s: [%s]>" % (
             self.__class__.__name__,
-            ' '.join('%d'%uval for uval in self.units))
+            ' '.join('%d' % uval for uval in self.units),
+        )
+
 
 class DimStr(FoamType):
     """String dimensions"""
@@ -101,6 +109,7 @@ class DimStr(FoamType):
 
     def __str__(self):
         return f"[{self.units}]"
+
 
 class DimValue(FoamType):
     """A dimensioned value
@@ -117,14 +126,15 @@ class DimValue(FoamType):
 
     def write_value(self, fh=sys.stdout, indent_str=''):
         """Write out the dimensional value"""
-        fh.write("%s "%self.name)
+        fh.write("%s " % self.name)
         # fh.write("[" + ' '.join("%d"%uval for uval in self.dims.units) + "] ")
         fh.write(f" {str(self.dims)} ")
         fh.write(str(self.value))
         fh.write(";\n")
 
     def __repr__(self):
-        return "<%s: %s>"%(self.__class__.__name__, self.name)
+        return "<%s: %s>" % (self.__class__.__name__, self.name)
+
 
 class Directive(FoamType):
     """A Caelus directive type
@@ -143,11 +153,11 @@ class Directive(FoamType):
 
     def write_value(self, fh=sys.stdout, indent_str=''):
         """Write out the dimensional value"""
-        fh.write("\n%s %s\n"%(self.directive, self.value))
+        fh.write("\n%s %s\n" % (self.directive, self.value))
 
     def __repr__(self):
-        return "<%s: %s>"%(self.__class__.__name__,
-                           self.directive[1:])
+        return "<%s: %s>" % (self.__class__.__name__, self.directive[1:])
+
 
 class CalcDirective(FoamType):
     """A ``#calc`` directive entry
@@ -162,7 +172,8 @@ class CalcDirective(FoamType):
 
     def write_value(self, fh=sys.stdout, indent_str=''):
         """Write out the dimensional value"""
-        fh.write("%s %s;\n"%(self.directive, self.value))
+        fh.write("%s %s;\n" % (self.directive, self.value))
+
 
 class EvalDirective(FoamType):
     """A ``#eval`` directive entry
@@ -178,9 +189,10 @@ class EvalDirective(FoamType):
 
     def write_value(self, fh=sys.stdout, indent_str=''):
         if self.value[0] == '{':
-            fh.write("%s%s;\n"%(self.directive, self.value))
+            fh.write("%s%s;\n" % (self.directive, self.value))
         else:
-            fh.write("%s %s;\n"%(self.directive, self.value))
+            fh.write("%s %s;\n" % (self.directive, self.value))
+
 
 class CodeStream(FoamType):
     """A codestream entry
@@ -195,7 +207,7 @@ class CodeStream(FoamType):
 
     def write_value(self, fh=sys.stdout, indent_str=''):
         """Write out the dimensional value"""
-        fh.write("%s\n"%self.directive + indent_str + "{\n")
+        fh.write("%s\n" % self.directive + indent_str + "{\n")
         indent_str += '    '
         indent_str1 = indent_str
         for ctype, value in self.value:
@@ -208,6 +220,7 @@ class CodeStream(FoamType):
             fh.write(indent_str + lines[-1].lstrip() + ";\n\n")
         fh.write("};\n")
 
+
 class MacroSubstitution(FoamType):
     """Macro substition without keyword"""
 
@@ -218,9 +231,10 @@ class MacroSubstitution(FoamType):
     def write_value(self, fh=sys.stdout, indent_str=''):
         """Write standalone macro substitution"""
         if self.semi:
-            fh.write(indent_str + "%s;\n"%self.value)
+            fh.write(indent_str + "%s;\n" % self.value)
         else:
-            fh.write(indent_str + "%s\n"%self.value)
+            fh.write(indent_str + "%s\n" % self.value)
+
 
 class Field(FoamType):
     """A field declaration
@@ -240,8 +254,7 @@ class Field(FoamType):
         """Write a uniform field"""
         fh.write(self.ftype)
         if isinstance(self.value, np.ndarray):
-            fh.write(" (" + ' '.join(str(fval) for fval in self.value)
-                     + ");\n")
+            fh.write(" (" + ' '.join(str(fval) for fval in self.value) + ");\n")
         else:
             fh.write(" " + str(self.value) + ";\n")
 
@@ -255,12 +268,12 @@ class Field(FoamType):
             arr_str = None
             threshold = np.get_printoptions()['threshold']
             try:
-                np.set_printoptions(threshold=arr_size+10)
+                np.set_printoptions(threshold=arr_size + 10)
                 arr_str = np.array_str(self.value, max_line_width=80)
             finally:
                 np.set_printoptions(threshold=threshold)
             arr_str = re.sub(r']', ')', re.sub(r'\[', '(', arr_str))
-            fh.write("\n%d\n"%arr_len)
+            fh.write("\n%d\n" % arr_len)
             fh.write(arr_str + ";\n")
 
     def write_value(self, fh=sys.stdout, indent_str=''):
@@ -271,8 +284,8 @@ class Field(FoamType):
             self.write_nonuniform(fh)
 
     def __repr__(self):
-        return "<%s: %s>"%(self.__class__.__name__,
-                           self.ftype)
+        return "<%s: %s>" % (self.__class__.__name__, self.ftype)
+
 
 class BoundaryList(FoamType):
     """polyMesh/boundary file"""
@@ -281,7 +294,8 @@ class BoundaryList(FoamType):
         self.value = value
 
     def write_value(self, fh=sys.stdout, indent_str=''):
-        fh.write("\n" + indent_str + "%d"%len(self.value))
+        fh.write("\n" + indent_str + "%d" % len(self.value))
+
 
 class MultipleValues(FoamType):
     """Multiple values for single keyword
@@ -311,10 +325,11 @@ class MultipleValues(FoamType):
         fh.write(";\n")
 
     def __repr__(self):
-        return "<MultipleValues: %s>"%self.value
+        return "<MultipleValues: %s>" % self.value
 
     def __str__(self):
         return " ".join(str(val) for val in self.value)
+
 
 class ListTemplate(FoamType):
     """List<T> type entries"""
@@ -330,10 +345,10 @@ class ListTemplate(FoamType):
         arr_str = None
         threshold = np.get_printoptions()['threshold']
         try:
-            np.set_printoptions(threshold=arr_size+10)
+            np.set_printoptions(threshold=arr_size + 10)
             arr_str = np.array_str(self.value, max_line_width=80)
         finally:
             np.set_printoptions(threshold=threshold)
         arr_str = re.sub(r']', ')', re.sub(r'\[', '(', arr_str))
-        fh.write("\n%s %d\n"%(self.list_type, arr_len))
+        fh.write("\n%s %d\n" % (self.list_type, arr_len))
         fh.write(arr_str + ";\n")

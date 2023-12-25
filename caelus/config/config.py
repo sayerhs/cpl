@@ -15,14 +15,15 @@ also sets up logging (to both console as well as log files) during the
 initialization phase.
 """
 
-import sys
+import logging
 import os
 import os.path as pth
 import platform
-import logging
+import sys
 from logging.config import dictConfig
-from ..utils.struct import Struct
+
 from ..utils import osutils
+from ..utils.struct import Struct
 from ..version import version
 
 _rcfile_default = "caelus.yaml"
@@ -39,6 +40,7 @@ _config_banner = """\
 
 """
 
+
 def get_caelus_root():
     """Get Caelus root directory
 
@@ -49,9 +51,12 @@ def get_caelus_root():
         path: Path to Caelus root directory
     """
     sysname = platform.system().lower()
-    return (pth.abspath(r'C:\Caelus')
-            if "windows" in sysname else
-            pth.expanduser('~/Caelus/'))
+    return (
+        pth.abspath(r'C:\Caelus')
+        if "windows" in sysname
+        else pth.expanduser('~/Caelus/')
+    )
+
 
 def get_cpl_root():
     """Return the root path for CPL"""
@@ -70,7 +75,8 @@ def get_appdata_dir():
         return pth.join(os.environ["APPDATA"])
     return None
 
-class CaelusCfg(Struct): # pylint: disable=too-many-ancestors
+
+class CaelusCfg(Struct):  # pylint: disable=too-many-ancestors
     """Caelus Configuration Object
 
     A (key, value) dictionary containing all the configuration data parsed from
@@ -85,10 +91,13 @@ class CaelusCfg(Struct): # pylint: disable=too-many-ancestors
         Args:
             fh (handle): An open file handle
         """
-        fh.write(_config_banner%{
-            'timestamp': osutils.timestamp(),
-            'version': version,
-        })
+        fh.write(
+            _config_banner
+            % {
+                'timestamp': osutils.timestamp(),
+                'version': version,
+            }
+        )
         self.to_yaml(fh)
         fh.write("\n\n")
 
@@ -146,6 +155,7 @@ def search_cfg_files():
 
     return rcfiles
 
+
 def configure_logging(log_cfg=None):
     """Configure python logging.
 
@@ -157,6 +167,7 @@ def configure_logging(log_cfg=None):
     Args:
        log_cfg: Instance of :class:`~caelus.config.config.CaelusCfg`
     """
+
     def get_default_log_file():
         """Set up default logging file if none provided"""
         logs_dir = pth.join(get_cpl_root(), "cpl_logs")
@@ -178,6 +189,7 @@ def configure_logging(log_cfg=None):
         if log_to_file:
             logger.debug("Logging enabled to file: %s", log_filename)
 
+
 def get_default_config():
     """Return a fresh instance of the default configuration
 
@@ -191,6 +203,7 @@ def get_default_config():
     default_yaml = pth.join(cdir, "default_config.yaml")
     cfg = CaelusCfg.load_yaml(default_yaml)
     return cfg
+
 
 def _cfg_manager():
     """Configuration manager
@@ -227,9 +240,11 @@ def _cfg_manager():
             log_cfg = cfg.caelus.logging
             configure_logging(log_cfg)
             logger = logging.getLogger(__name__)
-            msg = ("Loaded configuration from files = %s"%rcfiles
-               if rcfiles else
-                   "No configuration found; using defaults.")
+            msg = (
+                "Loaded configuration from files = %s" % rcfiles
+                if rcfiles
+                else "No configuration found; using defaults."
+            )
             logger.debug(msg)
 
         config_files[0] = rcfiles
@@ -288,9 +303,12 @@ def _cfg_manager():
         """Return a list of the configuration files that were loaded"""
         return config_files[0]
 
-    return (_get_config, _reload_config,
-            _reset_default_config, _rcfiles_loaded)
+    return (_get_config, _reload_config, _reset_default_config, _rcfiles_loaded)
 
-(get_config, reload_config,
- reset_default_config,
- rcfiles_loaded) = _cfg_manager()
+
+(
+    get_config,
+    reload_config,
+    reset_default_config,
+    rcfiles_loaded,
+) = _cfg_manager()

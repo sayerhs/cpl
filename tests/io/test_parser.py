@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=missing-docstring,redefined-outer-name
 
-import pytest
 import numpy as np
 from numpy.testing import assert_allclose
-from caelus.io.parser import CaelusParseError
+
+import pytest
+
 from caelus.io import dtypes
+from caelus.io.parser import CaelusParseError
+
 
 def test_empty_file(cparse):
     text = """

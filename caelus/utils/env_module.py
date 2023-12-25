@@ -4,13 +4,12 @@
 Wrapper to LMod functionality
 """
 
-import os
 import logging
+import os
 from contextlib import contextmanager
 from pathlib import Path
 
 from .pyutils import import_script
-
 
 _lgr = logging.getLogger(__name__)
 

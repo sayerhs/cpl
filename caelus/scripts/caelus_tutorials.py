@@ -6,17 +6,18 @@ Caelus Tutorial Runner CLI
 --------------------------
 """
 
-import os
 import fnmatch
 import logging
+import os
 
-from ..utils import osutils
 from ..config.cmlenv import cml_get_version
 from ..run import core
 from ..run.tasks import Tasks
+from ..utils import osutils
 from .core import CaelusScriptBase
 
 _lgr = logging.getLogger(__name__)
+
 
 class TutorialRunner(CaelusScriptBase):
     """CLI for running tutorials"""
@@ -30,24 +31,41 @@ class TutorialRunner(CaelusScriptBase):
         super(TutorialRunner, self).cli_options()
         parser = self.parser
         parser.add_argument(
-            '-d', '--base-dir', default=os.getcwd(),
-            help="directory where tutorials are run")
+            '-d',
+            '--base-dir',
+            default=os.getcwd(),
+            help="directory where tutorials are run",
+        )
         parser.add_argument(
-            '-c', '--clone-dir', default=None,
-            help="copy tutorials from this directory")
+            '-c',
+            '--clone-dir',
+            default=None,
+            help="copy tutorials from this directory",
+        )
         parser.add_argument(
-            '--clean', action='store_true',
-            help="clean tutorials from this directory")
+            '--clean',
+            action='store_true',
+            help="clean tutorials from this directory",
+        )
         parser.add_argument(
-            '-f', '--task-file', default="run_tutorial.yaml",
-            help="task file containing tutorial actions (run_tutorial.yaml)")
+            '-f',
+            '--task-file',
+            default="run_tutorial.yaml",
+            help="task file containing tutorial actions (run_tutorial.yaml)",
+        )
         test_pat = parser.add_mutually_exclusive_group(required=False)
         test_pat.add_argument(
-            '-i', '--include-patterns', action='append',
-            help="run tutorial case if it matches the shell wildcard pattern")
+            '-i',
+            '--include-patterns',
+            action='append',
+            help="run tutorial case if it matches the shell wildcard pattern",
+        )
         test_pat.add_argument(
-            '-e', '--exclude-patterns', action='append',
-            help="exclude tutorials that match the shell wildcard pattern")
+            '-e',
+            '--exclude-patterns',
+            action='append',
+            help="exclude tutorials that match the shell wildcard pattern",
+        )
 
     def get_matching_tutorials(self, basedir):
         """Yield a list of matching tutorials based on patterns."""
@@ -55,8 +73,7 @@ class TutorialRunner(CaelusScriptBase):
         task_file = args.task_file
         patterns = args.include_patterns
         for cdir in core.find_recipe_dirs(basedir, task_file):
-            if any(fnmatch.fnmatch(cdir, pdir)
-                   for pdir in patterns):
+            if any(fnmatch.fnmatch(cdir, pdir) for pdir in patterns):
                 yield cdir
 
     def exclude_matching_tutorials(self, basedir):
@@ -65,8 +82,7 @@ class TutorialRunner(CaelusScriptBase):
         task_file = args.task_file
         patterns = args.exclude_patterns
         for cdir in core.find_recipe_dirs(basedir, task_file):
-            if not any(fnmatch.fnmatch(cdir, pdir)
-                       for pdir in patterns):
+            if not any(fnmatch.fnmatch(cdir, pdir) for pdir in patterns):
                 yield cdir
 
     def get_all_tutorials(self, basedir):
@@ -77,14 +93,15 @@ class TutorialRunner(CaelusScriptBase):
             yield cdir
 
     def run_tutorial(self, casedir, cenv):
-        """Run actions listed in tutorial task file"""""
+        """Run actions listed in tutorial task file""" ""
         args = self.args
         with osutils.set_work_dir(casedir):
             tasks = Tasks.load(args.task_file)
             tasks(env=cenv)
 
     def clean_tutorial(self, casedir, cenv):
-        """Run clean actions in tutorial task file"""""
+        """Run clean actions in tutorial task file""" ""
+
         def _exec_clean_case(tasks):
             for task in tasks.tasks:
                 for key in task:
@@ -121,8 +138,11 @@ class TutorialRunner(CaelusScriptBase):
                     _lgr.exception("Failed: %s", case)
                     failed_tests += 1
                 test_counter += 1
-        _lgr.info("Tutorial run complete; Attempted: %d, Failed: %d",
-                  test_counter, failed_tests)
+        _lgr.info(
+            "Tutorial run complete; Attempted: %d, Failed: %d",
+            test_counter,
+            failed_tests,
+        )
 
     def clean_all_tutorials(self, func):
         """Clean all tutorials given by walking the directory"""
@@ -140,8 +160,11 @@ class TutorialRunner(CaelusScriptBase):
                     _lgr.warning("Failed clean in: %s", case)
                     failed_tests += 1
                 test_counter += 1
-        _lgr.info("Tutorial clean complete; Attempted: %d, Failed: %d",
-                  test_counter, failed_tests)
+        _lgr.info(
+            "Tutorial clean complete; Attempted: %d, Failed: %d",
+            test_counter,
+            failed_tests,
+        )
 
     def check_file_argument(self):
         """Check file argument to ensure that there is no directory provided"""
@@ -149,8 +172,10 @@ class TutorialRunner(CaelusScriptBase):
         fname = args.task_file
         dname = os.path.dirname(fname)
         if dname:
-            _lgr.error("Task file pattern should not have directory component; "
-                       "use '-d' option to specify base directory")
+            _lgr.error(
+                "Task file pattern should not have directory component; "
+                "use '-d' option to specify base directory"
+            )
             self.parser.exit(1)
 
     def __call__(self):
@@ -170,6 +195,7 @@ class TutorialRunner(CaelusScriptBase):
             self.run_all_tutorials(func)
         else:
             self.clean_all_tutorials(func)
+
 
 def main():
     """CLI entry point"""

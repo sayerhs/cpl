@@ -5,8 +5,9 @@ Caelus Input File Pretty-printer
 --------------------------------
 """
 
-import sys
 import re
+import sys
+
 try:
     from collections.abc import Mapping
 except ImportError:
@@ -16,9 +17,9 @@ from contextlib import contextmanager
 
 import numpy as np
 
-from . import dtypes
 from ..utils import osutils
 from ..version import version
+from . import dtypes
 
 file_banner = r"""/*---------------------------------------------------------------------------*\
  * Caelus (http://www.caelus-cml.com)
@@ -39,6 +40,7 @@ eof_separator = """\
 // ************************************************************************* //
 """
 
+
 @contextmanager
 def foam_writer(filename, header=None):
     """Caelus/OpenFOAM file writer
@@ -52,10 +54,13 @@ def foam_writer(filename, header=None):
     fh = None
     try:
         fh = open(filename, 'w')
-        fh.write(file_banner%{
-            'timestamp': osutils.timestamp(),
-            'version': version,
-        })
+        fh.write(
+            file_banner
+            % {
+                'timestamp': osutils.timestamp(),
+                'version': version,
+            }
+        )
         printer = DictPrinter(buf=fh)
         if header:
             printer.write_dict_item("FoamFile", header, True)
@@ -65,6 +70,7 @@ def foam_writer(filename, header=None):
     finally:
         if fh:
             fh.close()
+
 
 class Indenter(object):
     """An indentation utility for use with DictPrinter"""
@@ -82,7 +88,7 @@ class Indenter(object):
     @property
     def indent_str(self):
         """Return an indentation string"""
-        return ' '*self.curr_indent
+        return ' ' * self.curr_indent
 
     def emit(self, fh):
         """Emit the leading identation"""
@@ -95,6 +101,7 @@ class Indenter(object):
     def dedent(self):
         """Dedent the tab"""
         self.curr_indent -= self.tab_width
+
 
 class DictPrinter(object):
     """Caelus Input File Pretty-printer
@@ -128,11 +135,14 @@ class DictPrinter(object):
         """
         if not entries:
             return
-        tab_width = max(len(key) for key, value in entries.items()
-                        if not isinstance(value, self.no_keywd_values))
+        tab_width = max(
+            len(key)
+            for key, value in entries.items()
+            if not isinstance(value, self.no_keywd_values)
+        )
         tab_width += self.indenter.tab_width
         curr_keywd_fmt = self.keyword_fmt
-        self.keyword_fmt = "%%-%ds"%tab_width
+        self.keyword_fmt = "%%-%ds" % tab_width
         for key, value in entries.items():
             self.write_dict_item(key, value)
         self.keyword_fmt = curr_keywd_fmt
@@ -150,13 +160,13 @@ class DictPrinter(object):
         if isinstance(value, self.no_keywd_values):
             value.write_value(buf, indenter.indent_str)
         elif isinstance(value, dtypes.BoundaryList):
-            buf.write("%d"%len(value.value))
+            buf.write("%d" % len(value.value))
             self.write_list(value.value)
         elif isinstance(value, dtypes.FoamType):
-            buf.write(indenter.indent_str + self.keyword_fmt%key + " ")
+            buf.write(indenter.indent_str + self.keyword_fmt % key + " ")
             value.write_value(buf, indenter.indent_str)
         else:
-            buf.write(indenter.indent_str + self.keyword_fmt%key + " ")
+            buf.write(indenter.indent_str + self.keyword_fmt % key + " ")
             self.write_value(value)
 
         if not nested:
@@ -202,9 +212,8 @@ class DictPrinter(object):
         curr_keywd_fmt = self.keyword_fmt
         tab_width = indenter.tab_width
         if value:
-            tab_width = tab_width + max(
-                len(key) for key in value.keys())
-        self.keyword_fmt = "%%-%ds"%tab_width
+            tab_width = tab_width + max(len(key) for key in value.keys())
+        self.keyword_fmt = "%%-%ds" % tab_width
         buf.write("\n" + indenter.indent_str + "{\n")
         indenter.indent()
         for key, val in value.items():
@@ -230,8 +239,8 @@ class DictPrinter(object):
         # Ensure that numpy doesn't truncate the list
         threshold = np.get_printoptions()['threshold']
         try:
-            np.set_printoptions(threshold=arr_size+10)
-            arr_str = np.array_str(value, max_line_width=80-indent)
+            np.set_printoptions(threshold=arr_size + 10)
+            arr_str = np.array_str(value, max_line_width=80 - indent)
         finally:
             np.set_printoptions(threshold=threshold)
 
@@ -241,11 +250,11 @@ class DictPrinter(object):
         num_lines = len(lines)
         if num_lines > 1:
             buf.write("\n" + indent_str + "(\n")
-            indent_str += " "*self.indenter.tab_width
+            indent_str += " " * self.indenter.tab_width
             buf.write(indent_str + lines[0][1:])
         elif ndim > 1:
             buf.write("\n" + indent_str + "(\n")
-            indent_str += " "*self.indenter.tab_width
+            indent_str += " " * self.indenter.tab_width
             buf.write(indent_str + lines[0][1:-1])
             buf.write("\n" + self.indenter.indent_str + ")")
         elif recursive:
@@ -284,10 +293,10 @@ class DictPrinter(object):
             return
 
         # Short lists of strings
-        if (len(value) <= 10 and all(isinstance(val, str) for val in value)):
+        if len(value) <= 10 and all(isinstance(val, str) for val in value):
             buf.write("( ")
             for val in value:
-                buf.write(str(val)+ " " if val is not None else ' ')
+                buf.write(str(val) + " " if val is not None else ' ')
             if recursive:
                 buf.write(")")
             else:

@@ -5,9 +5,10 @@ CML Parametric Run Manager
 --------------------------
 """
 
-import os
-import logging
 import itertools
+import logging
+import os
+
 try:
     from collections.abc import Mapping
 except ImportError:  # pragma: no cover
@@ -15,8 +16,8 @@ except ImportError:  # pragma: no cover
 
 import numpy as np
 
-from ..utils import osutils
 from ..io.caelusdict import CaelusDict
+from ..utils import osutils
 from .case import CMLSimCollection
 
 _lgr = logging.getLogger(__name__)
@@ -27,12 +28,13 @@ def normalize_variable_param(varspec):
     if isinstance(varspec, Mapping):
         start = float(varspec["start"])
         step = float(varspec.get("step", 1))
-        stop = float(varspec["stop"]) + 0.5*step
+        stop = float(varspec["stop"]) + 0.5 * step
         return np.arange(start, stop, step)
 
     if isinstance(varspec, (list, np.ndarray)):
         return varspec
     return [varspec]
+
 
 def iter_case_params(sim_options, case_name_func):
     """Normalize the keys and yield all possible run setups"""
@@ -43,13 +45,11 @@ def iter_case_params(sim_options, case_name_func):
     extract_vars = None
     if "apply_transforms" in sim_options:
         code = sim_options.apply_transforms.code
-        extract_vars = sim_options.apply_transforms.get(
-            "extract_vars", None)
+        extract_vars = sim_options.apply_transforms.get("extract_vars", None)
 
     idx = 1
     for i, group in enumerate(run_matrix):
-        ropts = {k: normalize_variable_param(v)
-                 for k, v in group.items()}
+        ropts = {k: normalize_variable_param(v) for k, v in group.items()}
         rkeys = ropts.keys()
         rvalues = ropts.values()
         for j, vals in enumerate(itertools.product(*rvalues)):
@@ -67,24 +67,19 @@ def iter_case_params(sim_options, case_name_func):
                     rdict.update(mylocs)
             case_params = CaelusDict(rdict)
             rdict['idx'] = idx  # Global index
-            rdict['gid'] = i    # Group index
-            rdict['cid'] = j    # Case index (within this group)
-            case_name = case_name_func(
-                case_format=casefmt,
-                case_params=rdict)
+            rdict['gid'] = i  # Group index
+            rdict['cid'] = j  # Case index (within this group)
+            case_name = case_name_func(case_format=casefmt, case_params=rdict)
             yield (case_name, case_params)
             idx += 1
+
 
 class CMLParametricRun(CMLSimCollection):
     """A class to handle parametric runs"""
 
-    _json_public_ = ("name sim_dict case_names _udf_script".split())
+    _json_public_ = "name sim_dict case_names _udf_script".split()
 
-    def __init__(self,
-                 name,
-                 sim_dict,
-                 env=None,
-                 basedir=None):
+    def __init__(self, name, sim_dict, env=None, basedir=None):
         """
         Args:
             name (str): Unique name for this parametric run
@@ -121,15 +116,18 @@ class CMLParametricRun(CMLSimCollection):
         runconf = simcfg.run_configuration
         if not osutils.path_exists(tmpl_dir):
             raise FileNotFoundError(
-                "Cannot find case template directory: %s"%tmpl_dir)
+                "Cannot find case template directory: %s" % tmpl_dir
+            )
 
         cases = []
         if "run_matrix" in setup_params:
             osutils.ensure_directory(self.casedir)
-            cases = [self.setup_case(cname, tmpl_dir, cparams, runconf,
-                                     tmpl_info)
-                     for cname, cparams in
-                     iter_case_params(setup_params, self.udf.sim_case_name)]
+            cases = [
+                self.setup_case(cname, tmpl_dir, cparams, runconf, tmpl_info)
+                for cname, cparams in iter_case_params(
+                    setup_params, self.udf.sim_case_name
+                )
+            ]
         self.cases = [case for case in cases if case is not None]
         self.case_names = [case.name for case in self.cases]
         fname = os.path.join(self.casedir, "caelus_sim.yaml")
@@ -142,14 +140,15 @@ class CMLParametricRun(CMLSimCollection):
         cdir = os.path.join(self.casedir, cname)
         osutils.ensure_directory(os.path.dirname(cdir))
         skip_setup = self.udf.case_setup_prologue(
-            name=cname, case_params=cparams, run_config=runconf)
+            name=cname, case_params=cparams, run_config=runconf
+        )
 
         if skip_setup:
             return None
 
         case = self.simulation_class()(
-            cname, cml_env=self.env,
-            basedir=self.casedir, parent=self)
+            cname, cml_env=self.env, basedir=self.casedir, parent=self
+        )
         case.clone(tmpl_dir, **clone_opts)
         case.run_config = runconf
         case.udf = self.udf

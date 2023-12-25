@@ -6,14 +6,15 @@ Caelus Job Manager Interface
 
 """
 
-import os
 import logging
+import os
 
 from ..config import config
 from ..utils import osutils
 from .hpc_queue import get_job_scheduler
 
 _lgr = logging.getLogger(__name__)
+
 
 class CaelusCmd(object):
     """CML execution interface.
@@ -22,10 +23,7 @@ class CaelusCmd(object):
     appropriate enviroment across different operating systems.
     """
 
-    def __init__(self, cml_exe,
-                 casedir=None,
-                 cml_env=None,
-                 output_file=None):
+    def __init__(self, cml_exe, casedir=None, cml_env=None, output_file=None):
         """
         Args:
             cml_exe (str): The binary to be executed (e.g., blockMesh)
@@ -41,11 +39,9 @@ class CaelusCmd(object):
         self.casedir = casedir or os.getcwd()
         #: CML version used for this run
         self.cml_env = cml_env
-        exe_base, _ = os.path.splitext(
-            os.path.basename(cml_exe))
+        exe_base, _ = os.path.splitext(os.path.basename(cml_exe))
         #: Log file where all output and error are captured
-        self.output_file = (output_file or
-                            "%s.log"%exe_base)
+        self.output_file = output_file or "%s.log" % exe_base
 
         #: Handle to the subprocess instance running the command
         self.runner = get_job_scheduler()(self.cml_exe)
@@ -87,21 +83,25 @@ class CaelusCmd(object):
         Returns:
             The CML command invocation with all its options
         """
-        cmd_args = (" -parallel " + self.cml_exe_args
-                    if self.parallel else
-                    self.cml_exe_args)
+        cmd_args = (
+            " -parallel " + self.cml_exe_args
+            if self.parallel
+            else self.cml_exe_args
+        )
         cmd_line = self.cml_exe + " " + cmd_args
         if self.runner.is_job_scheduler():
-            cmd_line += " >& %s"%self.output_file
+            cmd_line += " >& %s" % self.output_file
         else:
             self.runner.stdout = self.output_file
         return cmd_line
 
     def prepare_shell_cmd(self):
         """Prepare the complete command line string as executed"""
-        return (self.runner.prepare_mpi_cmd() + " " + self.prepare_exe_cmd()
-                if self.parallel else
-                self.prepare_exe_cmd())
+        return (
+            self.runner.prepare_mpi_cmd() + " " + self.prepare_exe_cmd()
+            if self.parallel
+            else self.prepare_exe_cmd()
+        )
 
     def __call__(self, wait=True, job_dependencies=None):
         """Run the executable"""
@@ -109,9 +109,8 @@ class CaelusCmd(object):
             runner = self.runner
             runner.cml_env = self.cml_env
             runner.script_body = self.prepare_shell_cmd()
-            if runner.is_job_scheduler(): # pylint: disable=no-else-return
-                self.job_id = runner(
-                    job_dependencies=job_dependencies)
+            if runner.is_job_scheduler():  # pylint: disable=no-else-return
+                self.job_id = runner(job_dependencies=job_dependencies)
                 return 0
             else:
                 return runner(wait=wait)

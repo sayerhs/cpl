@@ -5,10 +5,11 @@ CPL Version
 """
 
 import os
-import subprocess
 import shlex
+import subprocess
 
 _basic_version = "v2.0.0"
+
 
 def git_describe():
     """Get version from git-describe"""
@@ -19,8 +20,9 @@ def git_describe():
         os.chdir(dirname)
         cmdline = "git describe --tags --dirty"
         cmd = shlex.split(cmdline)
-        task = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+        task = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         out, _ = task.communicate()
         if task.poll() == 0:
             git_ver = out.strip().decode('ascii')
@@ -29,6 +31,7 @@ def git_describe():
     finally:
         os.chdir(cwd)
     return git_ver
+
 
 #: Version string
 version = git_describe()

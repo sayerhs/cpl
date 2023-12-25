@@ -20,11 +20,11 @@ tabular files suitable for loading with ``numpy.loadtxt`` or
 ``pandas.read_table``.
 """
 
-import os
-import logging
-from os.path import join
-from collections import OrderedDict
 import json
+import logging
+import os
+from collections import OrderedDict
+from os.path import join
 
 import numpy as np
 
@@ -32,6 +32,7 @@ from ..utils import osutils
 from ..utils.coroutines import coroutine, grep
 
 _lgr = logging.getLogger(__name__)
+
 
 class LogProcessor(object):
     """Process the log file and extract information for analysis.
@@ -53,12 +54,10 @@ class LogProcessor(object):
         convergence=r"(\S+) solution converged in (\S+) iterations",
         completion=r"^End$",
         exiting="^.*(CAELUS|OpenFOAM).*exiting",
-        fatal_error="^.*(CAELUS|OpenFOAM).*FATAL ERROR"
+        fatal_error="^.*(CAELUS|OpenFOAM).*FATAL ERROR",
     )
 
-    def __init__(self, logfile,
-                 case_dir=None,
-                 logs_dir="logs"):
+    def __init__(self, logfile, case_dir=None, logs_dir="logs"):
         """
         Args:
             logfile (str): Name of the Caelus log file
@@ -70,8 +69,7 @@ class LogProcessor(object):
         #: Absolute path to the case directory
         self.case_dir = case_dir or os.getcwd()
         #: Absolute path to the directory containing processed logs
-        self.logs_dir = osutils.ensure_directory(
-            join(self.case_dir, logs_dir))
+        self.logs_dir = osutils.ensure_directory(join(self.case_dir, logs_dir))
         #: User-supplied log file (relative to case directory)
         self.logfile = join(self.case_dir, logfile)
 
@@ -132,8 +130,8 @@ class LogProcessor(object):
             wait_time (seconds): Wait time between checking the log file for
                                  updates
         """
-        import time
         import signal
+        import time
 
         def _signal_handler(*args):
             """Handle quit signal for plot watching"""
@@ -165,8 +163,7 @@ class LogProcessor(object):
             action (func): A coroutine that can consume matching patterns
         """
         act_list = actions if hasattr(actions, "append") else [actions]
-        self._user_rules.append(
-            grep(regexp, act_list))
+        self._user_rules.append(grep(regexp, act_list))
 
     def extend_rule(self, line_type, actions):
         """Extend a pre-defined regexp with extra functions
@@ -181,13 +178,13 @@ class LogProcessor(object):
         """
         act_list = actions if hasattr(actions, "append") else [actions]
         if line_type not in self.expressions:
-            raise RuntimeError("No pre-defined line type: %s"%line_type)
+            raise RuntimeError("No pre-defined line type: %s" % line_type)
         self._extra_rules.setdefault(line_type, []).extend(act_list)
 
     def _init_builtins(self):
         """Helper function to initialize builtin patterns"""
         for k, rexp in self.expressions.items():
-            func = getattr(self, "%s_processor"%k)()
+            func = getattr(self, "%s_processor" % k)()
             yield (rexp, [func] + self._extra_rules.get(k, []))
 
     def _process_file(self, patterns):
@@ -208,7 +205,8 @@ class LogProcessor(object):
             converged_time=self.converged_time,
             failed=self.failed,
             fields=list(self.res_files.keys()),
-            bounding_fields=list(self.bound_files.keys()))
+            bounding_fields=list(self.bound_files.keys()),
+        )
         return curr_state
 
     def _save_state(self, filename=".logs_state.json"):
@@ -221,7 +219,7 @@ class LogProcessor(object):
     def time_processor(self):
         """Processor for the Time line in log files"""
         while True:
-            rexp = (yield)
+            rexp = yield
             self.time = float(rexp.group(1))
             self.time_str = rexp.group(1)
             # Reset subIteration counters
@@ -232,6 +230,7 @@ class LogProcessor(object):
     @coroutine
     def residual_processor(self):
         """Process a residual line and output data to the relevant file."""
+
         def get_file(field, solver):
             """Helper method to get the file handle for a field.
 
@@ -239,25 +238,31 @@ class LogProcessor(object):
             subsequent invocations it just returns the relevant file handle.
             """
             if not field in self.res_files:
-                fh = open(join(self.logs_dir, field+".dat"), 'w')
-                fh.write("# Field: %s; Solver: %s\n"%(field, solver))
-                fh.write("Time SubIteration InitialResidual FinalResidual NoIterations\n")
+                fh = open(join(self.logs_dir, field + ".dat"), 'w')
+                fh.write("# Field: %s; Solver: %s\n" % (field, solver))
+                fh.write(
+                    "Time SubIteration InitialResidual FinalResidual NoIterations\n"
+                )
                 self.res_files[field] = fh
             return self.res_files[field]
+
         # end get_file
 
         try:
             while True:
-                rexp = (yield)
-                solver = rexp.group(1)       # e.g., PCB, GAMG, etc.
-                field = rexp.group(2)        # Ux, Uy, p, etc.
+                rexp = yield
+                solver = rexp.group(1)  # e.g., PCB, GAMG, etc.
+                field = rexp.group(2)  # Ux, Uy, p, etc.
 
                 icorr = self.subiter_map.get(field, 0) + 1
                 self.subiter_map[field] = icorr
                 fh = get_file(field, solver)
                 fh.write(
-                    self.time_str + "\t%d\t"%icorr +
-                    "\t".join([rexp.group(i) for i in range(3, 6)]) + "\n")
+                    self.time_str
+                    + "\t%d\t" % icorr
+                    + "\t".join([rexp.group(i) for i in range(3, 6)])
+                    + "\n"
+                )
         except GeneratorExit:
             for fh in self.res_files.values():
                 if not fh.closed:
@@ -266,6 +271,7 @@ class LogProcessor(object):
     @coroutine
     def bounding_processor(self):
         """Process the bounding lines"""
+
         def get_file(field):
             """Helper method to get the file handle for a field.
 
@@ -273,22 +279,28 @@ class LogProcessor(object):
             subsequent invocations it just returns the relevant file handle.
             """
             if not field in self.bound_files:
-                fh = open(join(self.logs_dir, "bounding_"+field+".dat"), 'w')
-                fh.write("# Bounding Field: %s\n"%(field))
+                fh = open(
+                    join(self.logs_dir, "bounding_" + field + ".dat"), 'w'
+                )
+                fh.write("# Bounding Field: %s\n" % (field))
                 fh.write("Time SubIteration Min Max Average\n")
                 self.bound_files[field] = fh
             return self.bound_files[field]
+
         # end get_file
 
         try:
             while True:
-                rexp = (yield)
+                rexp = yield
                 field = rexp.group(1)
                 icorr = self.subiter_map.get(field, 0)
                 fh = get_file(field)
                 fh.write(
-                    self.time_str + "\t%d\t"%icorr +
-                    "\t".join(rexp.group(i) for i in range(2, 5)) + "\n")
+                    self.time_str
+                    + "\t%d\t" % icorr
+                    + "\t".join(rexp.group(i) for i in range(2, 5))
+                    + "\n"
+                )
         except GeneratorExit:
             for fh in self.bound_files.values():
                 if not fh.closed:
@@ -298,14 +310,19 @@ class LogProcessor(object):
     def continuity_processor(self):
         """Process continuity error lines from log file"""
         with open(join(self.logs_dir, "continuity_errors.dat"), 'w') as fh:
-            fh.write("Time SubIteration LocalError GlobalError CumulativeError\n")
+            fh.write(
+                "Time SubIteration LocalError GlobalError CumulativeError\n"
+            )
             while True:
-                rexp = (yield)
+                rexp = yield
                 icorr = self.subiter_map.get('continuity', 0) + 1
                 self.subiter_map['continuity'] = icorr
                 fh.write(
-                    self.time_str + "\t%d\t"%icorr +
-                    "\t".join(x for x in rexp.groups()) + "\n")
+                    self.time_str
+                    + "\t%d\t" % icorr
+                    + "\t".join(x for x in rexp.groups())
+                    + "\n"
+                )
 
     @coroutine
     def exec_time_processor(self):
@@ -313,9 +330,13 @@ class LogProcessor(object):
         with open(join(self.logs_dir, "clock_time.dat"), 'w') as fh:
             fh.write("Time ExecutionTime ClockTime\n")
             while True:
-                rexp = (yield)
-                fh.write(self.time_str + "\t" +
-                         "\t".join(x for x in rexp.groups()) + "\n")
+                rexp = yield
+                fh.write(
+                    self.time_str
+                    + "\t"
+                    + "\t".join(x for x in rexp.groups())
+                    + "\n"
+                )
                 self._tick = True
 
     @coroutine
@@ -324,15 +345,19 @@ class LogProcessor(object):
         with open(join(self.logs_dir, "courant.dat"), 'w') as fh:
             fh.write("Time CoMean CoMax\n")
             while True:
-                rexp = (yield)
-                fh.write(self.time_str + "\t" +
-                         "\t".join(x for x in rexp.groups()) + "\n")
+                rexp = yield
+                fh.write(
+                    self.time_str
+                    + "\t"
+                    + "\t".join(x for x in rexp.groups())
+                    + "\n"
+                )
 
     @coroutine
     def convergence_processor(self):
         """Process convergence information (steady solvers only)"""
         while True:
-            rexp = (yield)
+            rexp = yield
             self.converged = True
             self.converged_time = int(rexp.group(2))
 
@@ -340,14 +365,14 @@ class LogProcessor(object):
     def completion_processor(self):
         """Process End line indicating solver completion"""
         while True:
-            _ = (yield)
+            _ = yield
             self.solve_completed = True
 
     @coroutine
     def exiting_processor(self):
         """Process exiting option"""
         while True:
-            _ = (yield)
+            _ = yield
             self.failed = True
             self.converged = False
             self.solve_completed = False
@@ -356,10 +381,11 @@ class LogProcessor(object):
     def fatal_error_processor(self):
         """Process CAELUS FATAL ERROR line"""
         while True:
-            _ = (yield)
+            _ = yield
             self.failed = True
             self.converged = False
             self.solve_completed = False
+
 
 class SolverLog(object):
     """Caelus solver log file interface.
@@ -369,9 +395,9 @@ class SolverLog(object):
     objects.
     """
 
-    def __init__(self, case_dir=None,
-                 logs_dir="logs", force_reload=False,
-                 logfile=None):
+    def __init__(
+        self, case_dir=None, logs_dir="logs", force_reload=False, logfile=None
+    ):
         """
         Args:
             case_dir (path): Absolute path to case directory
@@ -390,15 +416,18 @@ class SolverLog(object):
         self.casedir = case_dir or os.getcwd()
         self.logs_dir = os.path.join(self.casedir, logs_dir)
         has_logs = os.path.exists(
-            os.path.join(self.logs_dir, ".logs_state.json"))
+            os.path.join(self.logs_dir, ".logs_state.json")
+        )
 
         data = {}
         if not has_logs and logfile is None:
-            raise RuntimeError("Cannot find processed logs data. "
-                               "Provide a valid log file.")
+            raise RuntimeError(
+                "Cannot find processed logs data. " "Provide a valid log file."
+            )
         elif has_logs:
-            data = json.load(open(
-                os.path.join(self.logs_dir, ".logs_state.json")))
+            data = json.load(
+                open(os.path.join(self.logs_dir, ".logs_state.json"))
+            )
             if logfile:
                 inpfile = os.path.basename(logfile)
                 oldfile = os.path.basename(data.get("logfile", None))
@@ -410,8 +439,7 @@ class SolverLog(object):
         self.fields = []
         self.bounding_fields = []
         if force_reload or not has_logs:
-            logs = LogProcessor(logfile,
-                                self.casedir, logs_dir)
+            logs = LogProcessor(logfile, self.casedir, logs_dir)
             logs()
             data = logs.current_state
 
@@ -425,18 +453,22 @@ class SolverLog(object):
     def residual(self, field, all_cols=False):
         """Return the residual time-history for a field"""
         if field not in self.fields:
-            raise KeyError("Invalid field name: %s. Valid fields are: %s"%
-                           (field, self.fields))
-        fname = os.path.join(self.logs_dir, field+".dat")
+            raise KeyError(
+                "Invalid field name: %s. Valid fields are: %s"
+                % (field, self.fields)
+            )
+        fname = os.path.join(self.logs_dir, field + ".dat")
         data = np.loadtxt(fname, skiprows=2)
         return data if all_cols else data[:, :3]
 
     def bounding_var(self, field):
         """Return the bounding information for a field"""
         if field not in self.bounding_fields:
-            raise KeyError("Invalid field name: %s. Valid fields are: %s"%
-                           (field, self.bounding_fields))
-        fname = os.path.join(self.logs_dir, "bounding_"+field+".dat")
+            raise KeyError(
+                "Invalid field name: %s. Valid fields are: %s"
+                % (field, self.bounding_fields)
+            )
+        fname = os.path.join(self.logs_dir, "bounding_" + field + ".dat")
         data = np.loadtxt(fname, skiprows=2)
         return data
 

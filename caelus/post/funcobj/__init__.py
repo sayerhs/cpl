@@ -22,6 +22,6 @@ objects.
    ~sampling.SampledSurfaces
 """
 
+from .forces import ForceCoeffs
 from .functions import PostProcessing
 from .sampling import SampledSets, SampledSurfaces
-from .forces import ForceCoeffs

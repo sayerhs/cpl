@@ -5,23 +5,26 @@ Caelus Tasks Manager
 ----------------------
 """
 
-import os
 import glob
 import logging
+import os
 import shutil
 from collections import OrderedDict
+
 import six
+
+from ..config import cmlenv
+from ..io import dictfile as cmlio
+from ..post.logs import SolverLog
+from ..post.plots import CaelusPlot
 from ..utils import osutils
 from ..utils.struct import Struct
 from . import core as run_cmds
-from ..post.logs import SolverLog
-from ..post.plots import CaelusPlot
-from ..config import cmlenv
-from ..io import dictfile as cmlio
 from .cmd import CaelusCmd
 from .hpc_queue import python_execute
 
 _lgr = logging.getLogger(__name__)
+
 
 class TasksMeta(type):
     """Process available tasks within each Tasks class.
@@ -38,14 +41,17 @@ class TasksMeta(type):
     def __init__(cls, name, bases, cdict):
         super(TasksMeta, cls).__init__(name, bases, cdict)
         parent = super(cls, cls)
-        task_map = (OrderedDict(parent.task_map)
-                    if hasattr(parent, "task_map")
-                    else OrderedDict())
+        task_map = (
+            OrderedDict(parent.task_map)
+            if hasattr(parent, "task_map")
+            else OrderedDict()
+        )
         for key, value in cdict.items():
             if key.startswith("cmd_"):
                 fname = key[4:]
                 task_map[fname] = value
         cls.task_map = task_map
+
 
 @six.add_metaclass(TasksMeta)
 class Tasks(object):
@@ -75,9 +81,7 @@ class Tasks(object):
         self.task_set_count = 0
 
     @classmethod
-    def load(cls,
-             task_file="caelus_tasks.yaml",
-             task_node="tasks"):
+    def load(cls, task_file="caelus_tasks.yaml", task_node="tasks"):
         """Load tasks from a YAML file.
 
         If ``exedir is None`` then the execution directory is set to the
@@ -90,8 +94,7 @@ class Tasks(object):
         absfile = osutils.abspath(task_file)
         act_file = Struct.load_yaml(absfile)
         if "tasks" not in act_file:
-            raise KeyError("Cannot find tasks list in file: " +
-                           task_file)
+            raise KeyError("Cannot find tasks list in file: " + task_file)
         self.tasks = act_file[task_node]
         self.task_file = absfile
         _lgr.info("Loaded tasks from: %s", absfile)
@@ -118,8 +121,9 @@ class Tasks(object):
             for act in self.tasks:
                 for key in act:
                     act_map[key](self, act[key])
-        _lgr.info("Successfully executed %d tasks in %s",
-                  num_tasks, self.case_dir)
+        _lgr.info(
+            "Successfully executed %d tasks in %s", num_tasks, self.case_dir
+        )
 
     def _validate_tasks(self):
         """Validate tasks provided by the user before executing"""
@@ -135,9 +139,12 @@ class Tasks(object):
             print("Valid tasks are: ")
             for key, value in self.task_map.items():
                 docstr = value.__doc__
-                desc = (docstr.strip().split("\n")[0]
-                        if docstr else "No help description.")
-                print("  - %s - %s"%(key, desc))
+                desc = (
+                    docstr.strip().split("\n")[0]
+                    if docstr
+                    else "No help description."
+                )
+                print("  - %s - %s" % (key, desc))
             raise RuntimeError("Invalid tasks provided")
 
     def cmd_run_command(self, options):
@@ -147,18 +154,20 @@ class Tasks(object):
         """
         cml_exe = options.cmd_name
         log_file = options.get("log_file", None)
-        cml_cmd = CaelusCmd(cml_exe,
-                            casedir=self.case_dir,
-                            cml_env=self.env,
-                            output_file=log_file)
+        cml_cmd = CaelusCmd(
+            cml_exe,
+            casedir=self.case_dir,
+            cml_env=self.env,
+            output_file=log_file,
+        )
         parallel = options.get("parallel", False)
         cml_cmd.cml_exe_args = options.get("cmd_args", "")
         cml_cmd.parallel = parallel
         if parallel:
             cml_cmd.num_mpi_ranks = options.get(
-                "num_ranks", run_cmds.get_mpi_size(self.case_dir))
-            cml_cmd.mpi_extra_args = options.get(
-                "mpi_extra_args", "")
+                "num_ranks", run_cmds.get_mpi_size(self.case_dir)
+            )
+            cml_cmd.mpi_extra_args = options.get("mpi_extra_args", "")
         if "queue_settings" in options:
             cml_cmd.runner.update(options["queue_settings"])
         _lgr.info("Executing command: %s", cml_exe)
@@ -167,7 +176,7 @@ class Tasks(object):
         self.dep_job_id = cml_cmd.job_id
         self.used_job_scheduler = cml_cmd.runner.is_job_scheduler()
         if status != 0:
-            raise RuntimeError("Error executing command: %s"%cml_exe)
+            raise RuntimeError("Error executing command: %s" % cml_exe)
 
     def cmd_run_python(self, options):
         """Execute a python script"""
@@ -179,11 +188,14 @@ class Tasks(object):
         if not osutils.path_exists(pysfull):
             raise FileNotFoundError("Python file not found: %s", pyscript)
         status = python_execute(
-            pysfull, pyargs, env=self.env, log_file=pylog,
-            log_to_file=log_to_file)
+            pysfull,
+            pyargs,
+            env=self.env,
+            log_file=pylog,
+            log_to_file=log_to_file,
+        )
         if status != 0:
-            raise RuntimeError(
-                "Error executing python script: %s"%pyscript)
+            raise RuntimeError("Error executing python script: %s" % pyscript)
 
     def cmd_copy_files(self, options):
         """Copy given file(s) to the destination."""
@@ -192,7 +204,8 @@ class Tasks(object):
 
         if not srcfiles:
             raise RuntimeError(
-                "Error src pattern %s returns no files", options.src)
+                "Error src pattern %s returns no files", options.src
+            )
 
         if len(srcfiles) > 1:
             osutils.ensure_directory(dest)
@@ -209,8 +222,9 @@ class Tasks(object):
         ignore_func = None
         if ignore_pat:
             ignore_func = shutil.ignore_patterns(*ignore_pat)
-        osutils.copy_tree(srcdir, destdir,
-                        symlinks=symlinks, ignore_func=ignore_func)
+        osutils.copy_tree(
+            srcdir, destdir, symlinks=symlinks, ignore_func=ignore_func
+        )
 
     def cmd_clean_case(self, options):
         """Clean a case directory"""
@@ -223,12 +237,14 @@ class Tasks(object):
         preserve_extra = options.get("preserve", None)
         remove_extra = options.get("remove_extra", None)
         _lgr.info("Cleaning case directory: %s", self.case_dir)
-        run_cmds.clean_casedir(self.case_dir,
-                               preserve_zero=(not remove_zero),
-                               preserve_times=(not remove_times),
-                               preserve_processors=(not remove_processors),
-                               purge_mesh=remove_mesh,
-                               preserve_extra=preserve_extra)
+        run_cmds.clean_casedir(
+            self.case_dir,
+            preserve_zero=(not remove_zero),
+            preserve_times=(not remove_times),
+            preserve_processors=(not remove_processors),
+            purge_mesh=remove_mesh,
+            preserve_extra=preserve_extra,
+        )
         if remove_extra:
             osutils.remove_files_dirs(remove_extra, self.case_dir)
 
@@ -242,9 +258,8 @@ class Tasks(object):
         logs_dir = options.get("logs_directory", "logs")
         _lgr.info("Processing log file: %s", log_file)
         clog = SolverLog(
-            case_dir=self.case_dir,
-            logs_dir=logs_dir,
-            logfile=log_file)
+            case_dir=self.case_dir, logs_dir=logs_dir, logfile=log_file
+        )
         do_plots = options.get("plot_residuals", None)
         if do_plots:
             plot_file = options.get("residuals_plot_file", "residuals.png")
@@ -261,7 +276,7 @@ class Tasks(object):
         try:
             with osutils.set_work_dir(self.case_dir):
                 cname = os.path.basename(self.case_dir)
-                with open(cname+".foam", 'w') as fh:
+                with open(cname + ".foam", 'w') as fh:
                     fh.write(" ")
         except IOError:
             _lgr.warning("Error creating .foam file")
@@ -277,7 +292,7 @@ class Tasks(object):
     def cmd_task_set(self, options):
         """A subset of tasks for grouping"""
         self.task_set_count += 1
-        name = options.get("name", "Task set #%d"%self.task_set_count)
+        name = options.get("name", "Task set #%d" % self.task_set_count)
         casedir = osutils.abspath(options.case_dir)
         _lgr.info("Executing task set: %s", name)
         tasks = Tasks()

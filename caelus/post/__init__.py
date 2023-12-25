@@ -12,5 +12,5 @@ Provides log analysis and plotting utilities
    ~plots.CaelusPlot
 """
 
-from .logs import SolverLog
 from .funcobj import PostProcessing
+from .logs import SolverLog

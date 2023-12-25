@@ -9,22 +9,22 @@ This module provides the capability to plot various quantities of interest
 using matplotlib through :class:`CaelusPlot`.
 """
 
-import os
 import logging
+import os
 import warnings
-from contextlib import contextmanager
 from collections import OrderedDict
+from contextlib import contextmanager
 
-import six
 import numpy as np
-import matplotlib.pyplot as plt
 
-from .logs import SolverLog
-from ..utils import osutils
-from ..utils import coroutines
-from .logs import LogProcessor
+import matplotlib.pyplot as plt
+import six
+
+from ..utils import coroutines, osutils
+from .logs import LogProcessor, SolverLog
 
 _lgr = logging.getLogger(__name__)
+
 
 @contextmanager
 def mpl_settings(backend="agg"):
@@ -35,13 +35,15 @@ def mpl_settings(backend="agg"):
     yield
     plt.switch_backend(cur_backend)
 
+
 def make_plot_method(func):
     """Make a wrapper plot method"""
+
     def plot_wrapper(self, plotfile=None, dpi=300, **kwargs):
         """%s
 
-            plotfile: File to save plot (e.g., residuals.png)
-            dpi: Resolution for saving plots (default=300)
+        plotfile: File to save plot (e.g., residuals.png)
+        dpi: Resolution for saving plots (default=300)
         """
         if plotfile:
             osutils.ensure_directory(self.plotdir)
@@ -50,15 +52,15 @@ def make_plot_method(func):
                 if out is None:
                     return
                 outfile = os.path.join(self.plotdir, plotfile)
-                plt.savefig(outfile, dpi=dpi,
-                            bbox_inches='tight')
+                plt.savefig(outfile, dpi=dpi, bbox_inches='tight')
                 _lgr.info("Saved figure: %s", outfile)
                 plt.close()
         else:
             return func(self, **kwargs)
 
-    plot_wrapper.__doc__ = plot_wrapper.__doc__%func.__doc__
+    plot_wrapper.__doc__ = plot_wrapper.__doc__ % func.__doc__
     return plot_wrapper
+
 
 class PlotsMeta(type):
     """Provide interactive and non-interactive versions of plot methods.
@@ -76,6 +78,7 @@ class PlotsMeta(type):
                 cdict[key[1:]] = make_plot_method(cdict[key])
         cls = super(PlotsMeta, mcls).__new__(mcls, name, bases, cdict)
         return cls
+
 
 @six.add_metaclass(PlotsMeta)
 class CaelusPlot(object):
@@ -134,9 +137,7 @@ class CaelusPlot(object):
         plt.legend()
         return (fig, ax)
 
-    def _force_plot_helper(self,
-                           func_object, filename,
-                           ylabels):
+    def _force_plot_helper(self, func_object, filename, ylabels):
         root = os.path.join(self.casedir, "postProcessing", func_object)
         times = os.listdir(root)
         if not times:
@@ -148,7 +149,7 @@ class CaelusPlot(object):
         time = force_hist[:, 0]
         fig, axes = plt.subplots(nrows=3, ncols=1, sharex=True)
         for i, (ax, ylabel) in enumerate(zip(axes, ylabels)):
-            ax.plot(time, force_hist[:, (3-i)])
+            ax.plot(time, force_hist[:, (3 - i)])
             ax.set_ylabel(ylabel)
             ax.grid(True)
             if ax.is_last_row():
@@ -162,8 +163,7 @@ class CaelusPlot(object):
             func_object (str): The function object used in controlDict
         """
         ylabels = ["$C_l$", "$C_d$", "$C_m$"]
-        return self._force_plot_helper(
-            func_object, "forceCoeffs.dat", ylabels)
+        return self._force_plot_helper(func_object, "forceCoeffs.dat", ylabels)
 
     def _plot_forces_hist(self, func_object="forces"):
         """Plot forces
@@ -172,8 +172,8 @@ class CaelusPlot(object):
             func_object (str): The function object used in controlDict
         """
         ylabels = ["Lift", "Drag", "Moment"]
-        return self._force_plot_helper(
-            func_object, "forces.dat", ylabels)
+        return self._force_plot_helper(func_object, "forces.dat", ylabels)
+
 
 class LogWatcher(object):
     """Real-time log monitoring utility"""
@@ -204,14 +204,13 @@ class LogWatcher(object):
     def __call__(self):
         """Run the residual watcher"""
         # Register time and residual consumers with LogProcessor
-        self.logprocessor.extend_rule(
-            "time", self.time_processor())
-        self.logprocessor.extend_rule(
-            "residual", self.residual_processor())
+        self.logprocessor.extend_rule("time", self.time_processor())
+        self.logprocessor.extend_rule("residual", self.residual_processor())
 
         if self.plot_continuity_errors:
             self.logprocessor.extend_rule(
-                "continuity", self.continuity_processor())
+                "continuity", self.continuity_processor()
+            )
         with warnings.catch_warnings():
             # Quell warning issued by matplotlib during the first timestep for
             # axis limits
@@ -238,7 +237,7 @@ class LogWatcher(object):
         """Capture time array"""
         logp = self.logprocessor
         while True:
-            _ = (yield)
+            _ = yield
             if self.time_array is None:
                 self.time_array = np.array([logp.time])
             else:
@@ -250,7 +249,7 @@ class LogWatcher(object):
         """Capture residuals for plot updates"""
         logp = self.logprocessor
         while True:
-            rexp = (yield)
+            rexp = yield
             field = rexp.group(2)
             icorr = logp.subiter_map[field]
             if not self.skip_field(field) and icorr == 1:
@@ -269,7 +268,7 @@ class LogWatcher(object):
         key = 'continuity'
         logp = self.logprocessor
         while True:
-            rexp = (yield)
+            rexp = yield
             icorr = logp.subiter_map[key]
             if icorr == 1:
                 value = np.abs(float(rexp.group(1)))
@@ -281,21 +280,21 @@ class LogWatcher(object):
                     self._field_data[key] = data
                 self._needs_update = True
 
-
     @coroutines.coroutine
     def plot_residuals(self):
         """Update plot for residuals"""
         logp = self.logprocessor
         self._need_init = True
         fig = plt.figure()
-        ax = None # pylint: disable=invalid-name
+        ax = None  # pylint: disable=invalid-name
         lines = {}
         fields = None
-        title_str = "Case = %s; timestep = %%d"%(
-            os.path.basename(logp.case_dir))
+        title_str = "Case = %s; timestep = %%d" % (
+            os.path.basename(logp.case_dir)
+        )
         tstep = 0
         while True:
-            _ = (yield)
+            _ = yield
             tarr = self.time_array
             tstep += 1
             if not self._needs_update:
@@ -307,7 +306,7 @@ class LogWatcher(object):
                 ax.relim()
                 ax.autoscale_view()
                 plt.legend(fields)
-                plt.title(title_str%tstep)
+                plt.title(title_str % tstep)
                 fig.canvas.draw()
                 fig.canvas.flush_events()
                 plt.pause(0.00001)
@@ -321,7 +320,7 @@ class LogWatcher(object):
                 ax.set_xlabel("Time/Iterations")
                 plt.grid()
                 for key, val in self._field_data.items():
-                    line, = ax.plot(tarr, val)
+                    (line,) = ax.plot(tarr, val)
                     lines[key] = line
                 plt.show()
                 plt.pause(0.00001)

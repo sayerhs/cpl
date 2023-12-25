@@ -56,9 +56,9 @@ class FVMesh:
         Args:
             casedir (path): Path to the casedir (default: cwd)
         """
-        self.casedir = (osutils.abspath(casedir)
-                        if casedir is not None
-                        else os.getcwd())
+        self.casedir = (
+            osutils.abspath(casedir) if casedir is not None else os.getcwd()
+        )
         self._ofp = self._load_openfoam()
 
         # Set data to latest time
@@ -89,6 +89,7 @@ class FVMesh:
     def available_times(self):
         """Return the list of times"""
         import vtk.util.numpy_support as vns
+
         ofp = self._ofp
         return vns.vtk_to_numpy(ofp.GetTimeValues())
 
@@ -150,10 +151,17 @@ class FVMesh:
     def __repr__(self):
         return "<%s: case = %s, time = %.3f>" % (
             self.__class__.__name__,
-            self.casedir, self.time)
+            self.casedir,
+            self.time,
+        )
 
     def __str__(self):
-        return textwrap.dedent(f"""\
+        return (
+            textwrap.dedent(
+                f"""\
         Case: {self.casedir}
         Time: {self.time} ({self.time_index + 1} / {len(self.available_times)})
-        """) + f"""{self.multi_block}"""
+        """
+            )
+            + f"""{self.multi_block}"""
+        )

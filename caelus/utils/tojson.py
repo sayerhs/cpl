@@ -6,8 +6,11 @@ JSON Encoding Helper Classes for CPL
 """
 
 import json
+
 import numpy as np
+
 from .struct import Struct
+
 
 class CPLJsonEncoder(json.JSONEncoder):
     """JSON convertor for classes used in CPL"""
@@ -22,6 +25,7 @@ class CPLJsonEncoder(json.JSONEncoder):
             return obj.tolist()
         else:
             return json.JSONEncoder.default(self, obj)
+
 
 class JSONSerializer(object):
     """A mixin class to serialize CPL classes"""
@@ -48,8 +52,7 @@ class JSONSerializer(object):
         Returns:
             str: Valid JSON data
         """
-        return json.dumps(self.to_json(),
-                          cls=self._json_dumper_, **kwargs)
+        return json.dumps(self.to_json(), cls=self._json_dumper_, **kwargs)
 
     def to_json(self):
         """Return a json serializable object"""

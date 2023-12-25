@@ -33,14 +33,14 @@ Example:
   >>>
 """
 
-import os
 import logging
+import os
 from pathlib import Path
 
 from ...io import ControlDict
 from ...io.caelusdict import CaelusDict
-from .sampling import SampledSets, SampledSurfaces
 from .forces import ForceCoeffs, Forces
+from .sampling import SampledSets, SampledSurfaces
 
 _func_objects_list = [
     ForceCoeffs,
@@ -118,7 +118,8 @@ class PostProcessing:
         if func_type not in _func_obj_map:
             raise ValueError(
                 f"Invalid function type = '{func_type}'.\nValid types are:"
-                "{_func_obj_map.keys()}")
+                "{_func_obj_map.keys()}"
+            )
         fcls = _func_obj_map[func_type]
         for val in self.func_objects.values():
             if isinstance(val, fcls):

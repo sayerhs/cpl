@@ -7,8 +7,9 @@ VTK wrappers to represent OpenFOAM fvMesh components
 
 import numpy as np
 
-import vtk
 import pyvista as pv
+import vtk
+
 
 class Field(pv.pyvista_ndarray):
     """OpenFOAM field.
@@ -30,6 +31,7 @@ class Field(pv.pyvista_ndarray):
     def field_mean(self):
         """Mean value of the field"""
         return self.mean(axis=0)
+
 
 class FieldList:
     """Collection of finite volume fields associated with a mesh."""
@@ -69,10 +71,12 @@ class FieldList:
         return "<%s: (%s) %s>" % (
             self.__class__.__name__,
             self.field_arr.association.name,
-            self.field_arr.keys())
+            self.field_arr.keys(),
+        )
 
     def __str__(self):
         return f"Fields:\n  {self.field_arr.keys()}"
+
 
 class Domain:
     """Extents of the computational domain."""
@@ -98,14 +102,15 @@ class Domain:
     @property
     def lengths(self):
         """Lengths of the bounding box"""
-        return (self.high - self.low)
+        return self.high - self.low
 
     def __str__(self):
         blen = self.lengths
         dirs = "X Y Z".split()
         return "Domain:\n" + '\n'.join(
             f"  {dirs[i]}: {self.low[i]} - {self.high[i]} ({blen[i]})"
-            for i in range(3))
+            for i in range(3)
+        )
 
 
 class FoamMixin:
@@ -127,8 +132,7 @@ class FoamMixin:
         Returns the cell-centered fields if available, otherwise returns the
         point fields. Useful when wrapping ``vtk.vtkPolyData`` objects.
         """
-        return FieldList(self.cell_data or
-                         self.point_data)
+        return FieldList(self.cell_data or self.point_data)
 
     @property
     def point_fields(self):
@@ -155,8 +159,12 @@ class InternalMesh(pv.UnstructuredGrid, FoamMixin):
 
     def __repr__(self):
         return "<%s: %s (%d cells, %d points, %d fields)>" % (
-            self.__class__.__name__, self.name,
-            self.n_cells, self.n_points, self.fields.n_fields)
+            self.__class__.__name__,
+            self.name,
+            self.n_cells,
+            self.n_points,
+            self.fields.n_fields,
+        )
 
     def __str__(self):
         out = f"{self.name} ({self.n_cells} cells, {self.n_points} points, {self.fields.n_fields} fields)\n"
@@ -171,8 +179,12 @@ class BoundaryMesh(pv.PolyData, FoamMixin):
 
     def __repr__(self):
         return "<%s: %s (%d cells, %d points, %d fields)>" % (
-            self.__class__.__name__, self.name,
-            self.n_cells, self.n_points, self.fields.n_fields)
+            self.__class__.__name__,
+            self.name,
+            self.n_cells,
+            self.n_points,
+            self.fields.n_fields,
+        )
 
     def __str__(self):
         out = f"{self.name} ({self.n_cells} cells, {self.n_points} points, {self.fields.n_fields} fields)\n"
@@ -206,8 +218,7 @@ class FoamMultiBlock(pv.MultiBlock, FoamMixin):
                 self.SetBlock(i, wrap(block))
 
     def __repr__(self):
-        return "<%s: %d blocks>" % (
-            self.__class__.__name__, self.n_blocks)
+        return "<%s: %d blocks>" % (self.__class__.__name__, self.n_blocks)
 
     def __str__(self):
         out = f"{self.__class__.__name__} ({self.n_blocks} blocks)\n"
@@ -235,9 +246,7 @@ def wrap(obj):
     # Wrap OpenFOAM specific types
     if hasattr(obj, 'GetClassName'):
         key = obj.GetClassName()
-        return (foam_wrap[key](obj)
-                if key in foam_wrap
-                else pv.wrap(obj))
+        return foam_wrap[key](obj) if key in foam_wrap else pv.wrap(obj)
 
     # Default is to let pyvista decide
-    return pv.wrap(obj) # pragma: no cover
+    return pv.wrap(obj)  # pragma: no cover

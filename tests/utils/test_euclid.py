@@ -2,12 +2,15 @@
 
 """Unit tests for euclid module"""
 
-import pytest
 import numpy as np
+
+import pytest
+
 from caelus.utils.euclid import TrMat, Vec
 
+
 def test_trmat_create():
-    """Test matrix creation """
+    """Test matrix creation"""
     angle = 45.0
     xrot = TrMat.X(angle)
     qxrot = TrMat.Q(Vec.ihat(), angle)
@@ -29,6 +32,7 @@ def test_trmat_create():
     ztmp = zrot[:-1, :-1]
     assert np.allclose(np.abs(ztmp), np.sin(np.radians(angle)))
 
+
 def test_trmat_axes_create():
     """Axes based transformations"""
     t1 = TrMat.Y(90.0)
@@ -36,24 +40,17 @@ def test_trmat_axes_create():
     trot = t2 * t1
 
     trot_axes = TrMat.axes(
-        x=[0.0, 1.0, 0.0],
-        y=[0.0, 0.0, 1.0],
-        z=[1.0, 0.0, 0.0])
+        x=[0.0, 1.0, 0.0], y=[0.0, 0.0, 1.0], z=[1.0, 0.0, 0.0]
+    )
     assert trot_axes == trot
 
-    trot_axes = TrMat.axes(
-        x=[0.0, 1.0, 0.0],
-        y=[0.0, 0.0, 1.0])
+    trot_axes = TrMat.axes(x=[0.0, 1.0, 0.0], y=[0.0, 0.0, 1.0])
     assert trot_axes == trot
 
-    trot_axes = TrMat.axes(
-        y=[0.0, 0.0, 1.0],
-        z=[1.0, 0.0, 0.0])
+    trot_axes = TrMat.axes(y=[0.0, 0.0, 1.0], z=[1.0, 0.0, 0.0])
     assert trot_axes == trot
 
-    trot_axes = TrMat.axes(
-        x=[0.0, 1.0, 0.0],
-        z=[1.0, 0.0, 0.0])
+    trot_axes = TrMat.axes(x=[0.0, 1.0, 0.0], z=[1.0, 0.0, 0.0])
     assert trot_axes == trot
 
     with pytest.raises(ValueError):
@@ -68,6 +65,7 @@ def test_trmat_axes_create():
     with pytest.raises(AssertionError):
         TrMat.axes(x=[0.0, 1.0, 0.0], z=[0.0, 1.0, 1.0])
 
+
 def test_trmat_quarternion():
     """Quarternion checks"""
     t1 = TrMat.Y(90.0)
@@ -76,6 +74,7 @@ def test_trmat_quarternion():
 
     qrot = TrMat.Q(Vec.xyz(1.0, 1.0, 1.0), angle=120.0)
     assert trot == qrot
+
 
 def test_trmat_rotations():
     """Rotation checks"""
@@ -112,11 +111,12 @@ def test_trmat_rotations():
     vx3 = zrot * jvec
     assert vx3 == np.array([sval, cval, 0.0])
 
+
 def test_vec():
     """Test vector methods"""
-    arr = np.vstack((np.eye(3),
-                     np.array([1.0, 1.0, 0.0]),
-                     np.array([0.0, 1.0, 1.0])))
+    arr = np.vstack(
+        (np.eye(3), np.array([1.0, 1.0, 0.0]), np.array([0.0, 1.0, 1.0]))
+    )
     vec = Vec(arr)
 
     mag = np.array([1.0, 1.0, 1.0, np.sqrt(2.0), np.sqrt(2.0)])
@@ -139,19 +139,23 @@ def test_vec():
     vec.normalize()
     assert np.allclose(1.0, vec.mag)
 
+
 def test_vec_rotations():
     """Test rotations"""
-    arr = np.vstack((np.eye(3),
-                     np.array([1.0, 1.0, 0.0]),
-                     np.array([0.0, 1.0, 1.0])))
+    arr = np.vstack(
+        (np.eye(3), np.array([1.0, 1.0, 0.0]), np.array([0.0, 1.0, 1.0]))
+    )
     vec = Vec(arr)
 
-    expected_arr = np.array([
-        [1.0, 0.0, 0.0],
-        [0.0, 0.0, 1.0],
-        [0.0, -1.0, 0.0],
-        [1.0, 0.0, 1.0],
-        [0.0, -1.0, 1.0]])
+    expected_arr = np.array(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [0.0, -1.0, 0.0],
+            [1.0, 0.0, 1.0],
+            [0.0, -1.0, 1.0],
+        ]
+    )
     expected = Vec(expected_arr)
 
     xrot = TrMat.X(90.0)

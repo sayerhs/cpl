@@ -3,12 +3,13 @@
 
 import os
 import shutil
+
 import pytest
 
-from caelus.utils.struct import Struct
-from caelus.utils import osutils
 from caelus.run import core
 from caelus.run.tasks import Tasks
+from caelus.utils import osutils
+from caelus.utils.struct import Struct
 
 task_yaml = """
 tasks:
@@ -28,8 +29,10 @@ tasks:
             dest: destdir
 """
 
+
 def noop_func(*args, **kwargs):
     pass
+
 
 def test_run_command(test_casedir):
     casedir = str(test_casedir)
@@ -43,6 +46,7 @@ def test_run_command(test_casedir):
         tasks.case_dir = casedir
         tasks.cmd_run_command(opts)
 
+
 def test_copy_files(tmpdir, monkeypatch):
     monkeypatch.setattr(shutil, "copy2", noop_func)
     fname = tmpdir.join("dummy.txt")
@@ -53,25 +57,27 @@ def test_copy_files(tmpdir, monkeypatch):
         tasks.case_dir = str(tmpdir)
         tasks.cmd_copy_files(opts)
 
+
 def test_copy_tree(monkeypatch):
     monkeypatch.setattr(shutil, "copytree", noop_func)
     opts = Struct(
         src="srcdir",
         dest="destdir",
         ignore_patterns=["*.txt"],
-        preserve_symlinks=False)
+        preserve_symlinks=False,
+    )
     tasks = Tasks()
     tasks.cmd_copy_tree(opts)
 
+
 def test_clean_case(test_casedir):
     casedir = str(test_casedir)
-    opts = Struct(
-        remove_zero=True,
-        remove_mesh=True)
+    opts = Struct(remove_zero=True, remove_mesh=True)
     tasks = Tasks()
     tasks.case_dir = casedir
     tasks.cmd_clean_case(opts)
-    assert(not os.path.exists(os.path.join(casedir, "0")))
+    assert not os.path.exists(os.path.join(casedir, "0"))
+
 
 def test_tasks(test_casedir, monkeypatch):
     monkeypatch.setattr(shutil, "copytree", noop_func)
@@ -82,6 +88,7 @@ def test_tasks(test_casedir, monkeypatch):
     task_file.write(task_yaml)
     tasks = Tasks.load(task_file=str(task_file))
     tasks(case_dir=casedir)
+
 
 def test_run_python(tmpdir):
     with osutils.set_work_dir(str(tmpdir)):

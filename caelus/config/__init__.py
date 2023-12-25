@@ -21,8 +21,7 @@
    ~cmlenv.CMLEnv
 """
 
-# pylint: disable=unused-import
-from .config import (get_config, reload_config,
-                     reset_default_config, CaelusCfg)
+from .cmlenv import cml_get_latest_version, cml_get_version
 
-from .cmlenv import (cml_get_version, cml_get_latest_version)
+# pylint: disable=unused-import
+from .config import CaelusCfg, get_config, reload_config, reset_default_config

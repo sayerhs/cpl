@@ -15,26 +15,29 @@ non-standard locations by customizing their Caelus Python configuration file.
 
 """
 
-import os
 import glob
+import itertools
+import json
+import logging
+import os
 import shlex
 import subprocess
-import itertools
-import logging
-import json
+
 try:
     from packaging.version import parse as pkg_version
 except ImportError:
     from distutils.version import LooseVersion as pkg_version
 
+from ..utils import Struct, env_module, osutils
 from . import config
-from ..utils import osutils, Struct, env_module
 
 _lgr = logging.getLogger(__name__)
+
 
 def is_foam_var(key):
     """Test if the variable is an OpenFOAM variable"""
     return key.startswith("WM_") or key.startswith("FOAM_")
+
 
 def discover_versions(root=None):
     """Discover Caelus versions if no configuration is provided.
@@ -46,6 +49,7 @@ def discover_versions(root=None):
         root (path): Absolute path to root directory to be searched
 
     """
+
     def path_to_cfg(caelus_dirs):
         """Convert Caelus directories to configuration objects"""
         for cpath in caelus_dirs:
@@ -53,12 +57,12 @@ def discover_versions(root=None):
             tmp = bname.split("-")
             if tmp:
                 version = tmp[-1]
-                yield config.CaelusCfg(version=version,
-                                       path=cpath)
+                yield config.CaelusCfg(version=version, path=cpath)
 
     rpath = root or config.get_caelus_root()
     cdirs = glob.glob(os.path.join(rpath, "[Cc]aelus-*"))
     return list(path_to_cfg(cdirs))
+
 
 def _filter_invalid_versions(cml_cfg):
     """Process user configuration and filter invalid versions
@@ -77,9 +81,9 @@ def _filter_invalid_versions(cml_cfg):
             # If the user has specified modules, always yield this version
             yield ver
         else:
-            pdir = ver.get("path",
-                           os.path.join(root_default,
-                                        "caelus-%s"%vid))
+            pdir = ver.get(
+                "path", os.path.join(root_default, "caelus-%s" % vid)
+            )
             if osutils.path_exists(pdir):
                 yield ver
 
@@ -97,16 +101,18 @@ def _determine_platform_dir(root_path):
     opt_types = ['Opt', 'Prof', 'Debug']
 
     for at, pt, ot, ct in itertools.product(
-            arch_types, prec_types, opt_types, compilers):
-        bdir_name = "%s%s%s%s%s"%(ostype, at, ct, pt, ot)
+        arch_types, prec_types, opt_types, compilers
+    ):
+        bdir_name = "%s%s%s%s%s" % (ostype, at, ct, pt, ot)
         bdir_path = os.path.join(basepath, bdir_name)
         if osutils.path_exists(bdir_path):
             return bdir_path
 
+
 def _determine_mpi_dir(root_path, mpi_type="openmpi"):
     """Determine the installed MPI path"""
     basepath = os.path.join(root_path, "external", osutils.ostype())
-    mpidirs = glob.glob(os.path.join(basepath, "%s-*"%mpi_type))
+    mpidirs = glob.glob(os.path.join(basepath, "%s-*" % mpi_type))
     if not mpidirs:
         _lgr.warning("Cannot find MPI directory in %s", basepath)
     elif len(mpidirs) > 1:
@@ -120,15 +126,16 @@ class CMLEnv(object):
     This class provides an interface to an installed Caelus CML version.
     """
 
-    _root_dir = ""     # Root directory
+    _root_dir = ""  # Root directory
     _project_dir = ""  # Project directory
-    _version = ""      # Version
+    _version = ""  # Version
 
     @classmethod
     def from_modules(cls, cfg):
         """Instantiate an environment from modules"""
         raise NotImplementedError(
-            "Module initialization only supported for OpenFOAM")
+            "Module initialization only supported for OpenFOAM"
+        )
 
     def __init__(self, cfg):
         """
@@ -139,7 +146,8 @@ class CMLEnv(object):
         self._version = cfg.version
         self._project_dir = cfg.get(
             "path",
-            os.path.join(config.get_caelus_root(), "caelus-%s"%self.version))
+            os.path.join(config.get_caelus_root(), "caelus-%s" % self.version),
+        )
         self._project_dir = osutils.abspath(self._project_dir)
         self._root_dir = os.path.dirname(self._project_dir)
 
@@ -148,12 +156,12 @@ class CMLEnv(object):
         build_dir = None
         if build_option:
             build_dir = os.path.join(
-                self._project_dir, "platforms", build_option)
+                self._project_dir, "platforms", build_option
+            )
         else:
             build_dir = _determine_platform_dir(self._project_dir)
         if not build_dir:
-            _lgr.debug("Cannot find platform directory: %s",
-                       self._project_dir)
+            _lgr.debug("Cannot find platform directory: %s", self._project_dir)
             self._build_dir = ""
             self._build_option = ""
         else:
@@ -163,10 +171,10 @@ class CMLEnv(object):
         self._process_scons_env_file()
 
     def __repr__(self):
-        return "<CMLEnv v%s>"%(self.version)
+        return "<CMLEnv v%s>" % (self.version)
 
     def __str__(self):
-        return "Caleus CML version %s"%(self.version)
+        return "Caleus CML version %s" % (self.version)
 
     @property
     def root(self):
@@ -193,8 +201,9 @@ class CMLEnv(object):
     def build_dir(self):
         """Return the build platform directory"""
         if not self._build_dir or not osutils.path_exists(self._build_dir):
-            raise IOError("Cannot find Caelus platform directory: %s"%
-                          self._build_dir)
+            raise IOError(
+                "Cannot find Caelus platform directory: %s" % self._build_dir
+            )
         return self._build_dir
 
     @property
@@ -203,9 +212,12 @@ class CMLEnv(object):
         ostype = osutils.ostype()
         if ostype == "windows":
             return (
-                self.lib_dir + os.pathsep +
-                self.mpi_libdir + os.pathsep +
-                os.path.join(self.build_dir, "bin"))
+                self.lib_dir
+                + os.pathsep
+                + self.mpi_libdir
+                + os.pathsep
+                + os.path.join(self.build_dir, "bin")
+            )
         else:
             return os.path.join(self.build_dir, "bin")
 
@@ -229,8 +241,8 @@ class CMLEnv(object):
         """Return the MPI library path for this installation"""
         if not hasattr(self, "_mpi_libdir"):
             self._mpi_libdir = self._cfg.get(
-                "mpi_lib_path",
-                os.path.join(self.mpi_dir, "lib"))
+                "mpi_lib_path", os.path.join(self.mpi_dir, "lib")
+            )
         return self._mpi_libdir
 
     @property
@@ -238,8 +250,8 @@ class CMLEnv(object):
         """Return the MPI executables path for this installation"""
         if not hasattr(self, "_mpi_bindir"):
             self._mpi_bindir = self._cfg.get(
-                "mpi_bin_path",
-                os.path.join(self.mpi_dir, "bin"))
+                "mpi_bin_path", os.path.join(self.mpi_dir, "bin")
+            )
         return self._mpi_bindir
 
     @property
@@ -249,10 +261,12 @@ class CMLEnv(object):
             udir = self._cfg.get("user_dir", None)
             if not udir:
                 udir = os.path.join(
-                    self.root, "%s-%s"%(osutils.username(), self.version))
+                    self.root, "%s-%s" % (osutils.username(), self.version)
+                )
             self._user_dir = udir
             self._user_build_dir = os.path.join(
-                udir, "platforms", self._build_option)
+                udir, "platforms", self._build_option
+            )
         return self._user_dir
 
     @property
@@ -266,8 +280,7 @@ class CMLEnv(object):
         """Return path to user bin directory"""
         _ = self.user_dir
         if osutils.ostype() == "windows":
-            return (self.user_libdir +
-                    os.path.join(self._user_build_dir, "bin"))
+            return self.user_libdir + os.path.join(self._user_build_dir, "bin")
         else:
             return os.path.join(self._user_build_dir, "bin")
 
@@ -296,47 +309,65 @@ class CMLEnv(object):
         ostype = osutils.ostype()
         senv = os.environ
         senv['PROJECT_DIR'] = self.root
-        senv['PROJECT'] = "caelus-%s"%self.version
+        senv['PROJECT'] = "caelus-%s" % self.version
         senv['CAELUS_PROJECT_DIR'] = self.project_dir
         senv['BUILD_OPTION'] = self._build_option
-        senv['EXTERNAL_DIR'] = os.path.join(
-            self.project_dir, "external")
+        senv['EXTERNAL_DIR'] = os.path.join(self.project_dir, "external")
         if ostype == "windows":
-            win_ext_dir = os.path.normpath(os.path.join(
-                self.project_dir, "external", "windows"))
-            mingw_bin_dir = os.path.normpath(os.path.join(
-                win_ext_dir, "mingw64", "bin"))
-            term_bin_dir = os.path.normpath(os.path.join(
-                win_ext_dir, "terminal", "bin"))
-            ansicon_bin_dir = os.path.normpath(os.path.join(
-                win_ext_dir, "ansicon", "x64"))
+            win_ext_dir = os.path.normpath(
+                os.path.join(self.project_dir, "external", "windows")
+            )
+            mingw_bin_dir = os.path.normpath(
+                os.path.join(win_ext_dir, "mingw64", "bin")
+            )
+            term_bin_dir = os.path.normpath(
+                os.path.join(win_ext_dir, "terminal", "bin")
+            )
+            ansicon_bin_dir = os.path.normpath(
+                os.path.join(win_ext_dir, "ansicon", "x64")
+            )
             senv['PATH'] = (
-                self.bin_dir + os.pathsep +
-                self.mpi_bindir + os.pathsep +
-                self.user_bindir + os.pathsep +
-                mingw_bin_dir + os.pathsep +
-                term_bin_dir + os.pathsep +
-                ansicon_bin_dir + os.pathsep +
-                os.environ.get('PATH'))
+                self.bin_dir
+                + os.pathsep
+                + self.mpi_bindir
+                + os.pathsep
+                + self.user_bindir
+                + os.pathsep
+                + mingw_bin_dir
+                + os.pathsep
+                + term_bin_dir
+                + os.pathsep
+                + ansicon_bin_dir
+                + os.pathsep
+                + os.environ.get('PATH')
+            )
         else:
             senv['PATH'] = (
-                self.bin_dir + os.pathsep +
-                self.mpi_bindir + os.pathsep +
-                self.user_bindir + os.pathsep +
-                os.environ.get('PATH'))
+                self.bin_dir
+                + os.pathsep
+                + self.mpi_bindir
+                + os.pathsep
+                + self.user_bindir
+                + os.pathsep
+                + os.environ.get('PATH')
+            )
         senv['MPI_BUFFER_SIZE'] = self._scons_env.get(
-            'MPI_BUFFER_SIZE', "20000000")
-        senv['OPAL_PREFIX'] = self._scons_env.get(
-            'OPAL_PREFIX', self.mpi_dir)
+            'MPI_BUFFER_SIZE', "20000000"
+        )
+        senv['OPAL_PREFIX'] = self._scons_env.get('OPAL_PREFIX', self.mpi_dir)
 
         lib_var = 'LD_LIBRARY_PATH'
         if ostype == "darwin":
             lib_var = 'DYLD_FALLBACK_LIBRARY_PATH'
         senv[lib_var] = (
-            self.lib_dir + os.pathsep +
-            self.mpi_libdir + os.pathsep +
-            self.user_libdir + os.pathsep +
-            os.environ.get(lib_var, ''))
+            self.lib_dir
+            + os.pathsep
+            + self.mpi_libdir
+            + os.pathsep
+            + self.user_libdir
+            + os.pathsep
+            + os.environ.get(lib_var, '')
+        )
         return senv
 
     @property
@@ -359,10 +390,13 @@ class CMLEnv(object):
                 self._mpi_dir = os.path.dirname(self._mpi_libdir)
                 self._user_dir = env['CAELUS_USER_DIR']
                 self._user_build_dir = os.path.dirname(
-                    env['CAELUS_USER_APPBIN'])
+                    env['CAELUS_USER_APPBIN']
+                )
                 _lgr.debug(
                     "CML build environment loaded from SCons: %s (%s)",
-                    env_file, self._build_option)
+                    env_file,
+                    self._build_option,
+                )
 
 
 class FOAMEnv:
@@ -382,7 +416,8 @@ class FOAMEnv:
         with env_module.module.with_modules(*mod_list):
             if 'WM_PROJECT_DIR' not in os.environ:
                 raise RuntimeError(
-                    "Cannot determine OpenFOAM path from modules")
+                    "Cannot determine OpenFOAM path from modules"
+                )
             cfg.path = os.environ['WM_PROJECT_DIR']
             obj = cls(cfg)
             return obj
@@ -397,15 +432,14 @@ class FOAMEnv:
         self._project_dir = osutils.abspath(cfg.path)
         self._root_dir = os.path.dirname(self._project_dir)
         self._has_modules = 'modules' in cfg
-        self._env = self._process_foam_env(
-            self._project_dir, self._has_modules)
+        self._env = self._process_foam_env(self._project_dir, self._has_modules)
         self._build_option = self._env.get("WM_OPTIONS", "")
 
     def __repr__(self):
-        return "<FOAMEnv %s>"%(self.version)
+        return "<FOAMEnv %s>" % (self.version)
 
     def __str__(self):
-        return "OpenFOAM version %s"%(self.version)
+        return "OpenFOAM version %s" % (self.version)
 
     @property
     def root(self):
@@ -451,8 +485,7 @@ class FOAMEnv:
         """Return the build platform directory"""
         bdir = os.path.join(self.project_dir, "platforms", self._build_option)
         if not osutils.path_exists(bdir):
-            raise IOError("Cannot find OpenFOAM platform directory: %s"%
-                          bdir)
+            raise IOError("Cannot find OpenFOAM platform directory: %s" % bdir)
         return bdir
 
     @property
@@ -460,8 +493,7 @@ class FOAMEnv:
         """Return the bin directory for executables"""
         bindir = self._env.get("FOAM_APPBIN", '')
         if not os.path.exists(bindir):
-            raise IOError("Cannot find OpenFOAM bin directory: %s"%
-                          bindir)
+            raise IOError("Cannot find OpenFOAM bin directory: %s" % bindir)
         return bindir
 
     @property
@@ -469,8 +501,7 @@ class FOAMEnv:
         """Return the lib directory for executables"""
         libdir = self._env.get("FOAM_LIBBIN", '')
         if not os.path.exists(libdir):
-            raise IOError("Cannot find OpenFOAM lib directory: %s"%
-                          libdir)
+            raise IOError("Cannot find OpenFOAM lib directory: %s" % libdir)
         return libdir
 
     @property
@@ -503,10 +534,11 @@ class FOAMEnv:
                 self._mpi_dir = self._env.get('MPI_ARCH_PATH', '')
 
             check_mpi = self._cfg.get("check_mpi_path", True)
-            if (check_mpi and not os.path.exists(self._mpi_dir)):
+            if check_mpi and not os.path.exists(self._mpi_dir):
                 raise ValueError(
                     "Cannot determine OpenFOAM MPI installation. "
-                    "Please specify 'mpi_root' in Caelus configuration.")
+                    "Please specify 'mpi_root' in Caelus configuration."
+                )
         return self._mpi_dir
 
     @property
@@ -514,8 +546,8 @@ class FOAMEnv:
         """Return the path to MPI libraries"""
         if not hasattr(self, "_mpi_libdir"):
             self._mpi_libdir = self._cfg.get(
-                "mpi_lib_path",
-                os.path.join(self.mpi_dir, "lib"))
+                "mpi_lib_path", os.path.join(self.mpi_dir, "lib")
+            )
         return self._mpi_libdir
 
     @property
@@ -523,8 +555,8 @@ class FOAMEnv:
         """Return the path to MPI binraries"""
         if not hasattr(self, "_mpi_bindir"):
             self._mpi_bindir = self._cfg.get(
-                "mpi_bin_path",
-                os.path.join(self.mpi_dir, "bin"))
+                "mpi_bin_path", os.path.join(self.mpi_dir, "bin")
+            )
         return self._mpi_bindir
 
     @property
@@ -537,18 +569,26 @@ class FOAMEnv:
         """Return the environment"""
         senv = self._env
         senv['PATH'] = (
-            self.bin_dir + os.pathsep +
-            self.mpi_bindir + os.pathsep +
-            self.user_bindir + os.pathsep +
-            self._env.get('PATH', ''))
+            self.bin_dir
+            + os.pathsep
+            + self.mpi_bindir
+            + os.pathsep
+            + self.user_bindir
+            + os.pathsep
+            + self._env.get('PATH', '')
+        )
         lib_var = 'LD_LIBRARY_PATH'
         if osutils.ostype() == "darwin":
             lib_var = 'DYLD_FALLBACK_LIBRARY_PATH'
         senv[lib_var] = (
-            self.lib_dir + os.pathsep +
-            self.mpi_libdir + os.pathsep +
-            self.user_libdir + os.pathsep +
-            self._env.get(lib_var, ''))
+            self.lib_dir
+            + os.pathsep
+            + self.mpi_libdir
+            + os.pathsep
+            + self.user_libdir
+            + os.pathsep
+            + self._env.get(lib_var, '')
+        )
         return senv
 
     @property
@@ -560,18 +600,18 @@ class FOAMEnv:
     def site_dir(self):
         """Return site directory"""
         return self._env.get(
-            "WM_PROJECT_SITE",
-            os.path.join(self.project_dir, "site"))
+            "WM_PROJECT_SITE", os.path.join(self.project_dir, "site")
+        )
 
     @property
     def foam_api_info(self):
         """Get API information"""
         if not hasattr(self, "_foam_api_info"):
-            fname = os.path.join(
-                self.project_dir, "META-INFO", "api-info")
+            fname = os.path.join(self.project_dir, "META-INFO", "api-info")
             contents = open(fname, 'r').readlines()
-            self._foam_api_info = Struct([
-                ll.strip().split('=') for ll in contents])
+            self._foam_api_info = Struct(
+                [ll.strip().split('=') for ll in contents]
+            )
         return self._foam_api_info
 
     @property
@@ -606,31 +646,32 @@ class FOAMEnv:
         bashrc_path = os.path.join(project_dir, "etc", "bashrc")
         if not os.path.exists(bashrc_path):
             raise FileNotFoundError(
-                "Cannot find OpenFOAM config file: %s"%bashrc_path)
-        bash_cmd = ("bash --noprofile --norc -c 'source %s && env'"%
-                    bashrc_path)
-        cmd_env = {k : os.environ.get(k, "")
-                   for k in "HOME USER".split()}
-        pp = subprocess.Popen(bash_cmd,
-                              env=cmd_env if not use_full_env else None,
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE,
-                              shell=True)
+                "Cannot find OpenFOAM config file: %s" % bashrc_path
+            )
+        bash_cmd = "bash --noprofile --norc -c 'source %s && env'" % bashrc_path
+        cmd_env = {k: os.environ.get(k, "") for k in "HOME USER".split()}
+        pp = subprocess.Popen(
+            bash_cmd,
+            env=cmd_env if not use_full_env else None,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+        )
         out, _ = pp.communicate()
         retcode = pp.wait()
         if retcode:
-            _lgr.exception("Error initializing OpenFOAM environment: %s"%
-                           self.version)
+            _lgr.exception(
+                "Error initializing OpenFOAM environment: %s" % self.version
+            )
 
         # No errors... process the bash variables
         outbuf = out.decode('UTF-8')
-        bash_vars = dict([l.split("=", 1) for l in outbuf.splitlines()
-                          if "=" in l])
-        foam_keys = [k for k in bash_vars.keys()
-                     if is_foam_var(k)]
+        bash_vars = dict(
+            [l.split("=", 1) for l in outbuf.splitlines() if "=" in l]
+        )
+        foam_keys = [k for k in bash_vars.keys() if is_foam_var(k)]
         env = {k: bash_vars[k] for k in foam_keys}
-        env.update((k, bash_vars[k]) for k in extra_vars
-                   if k in bash_vars)
+        env.update((k, bash_vars[k]) for k in extra_vars if k in bash_vars)
         self._adjust_library_path(env)
         self._bashrc_file = bashrc_path
         return env
@@ -643,11 +684,10 @@ class FOAMEnv:
         """
         ld_foam = env.get("LD_LIBRARY_PATH", "")
         ld_osenv = os.environ.get("LD_LIBRARY_PATH", "")
-        ld_path = os.pathsep.join(ff for ff in [ld_foam, ld_osenv]
-                                  if ff)
+        ld_path = os.pathsep.join(ff for ff in [ld_foam, ld_osenv] if ff)
         if ld_path:
-            env['LD_LIBRARY_PATH'] = (ld_path + os.pathsep +
-                                      "${LD_LIBRARY_PATH}")
+            env['LD_LIBRARY_PATH'] = ld_path + os.pathsep + "${LD_LIBRARY_PATH}"
+
 
 def get_cmlenv_instance(cml):
     """Return a Caelus or OpenFOAM instance
@@ -660,8 +700,8 @@ def get_cmlenv_instance(cml):
 
     version = cml.version
     project_dir = cml.get(
-        "path",
-        os.path.join(config.get_caelus_root(), "caelus-%s"%version))
+        "path", os.path.join(config.get_caelus_root(), "caelus-%s" % version)
+    )
     project_dir = osutils.abspath(project_dir)
     if os.path.exists(os.path.join(project_dir, "SConstruct")):
         return CMLEnv(cml)
@@ -669,7 +709,8 @@ def get_cmlenv_instance(cml):
         return FOAMEnv(cml)
     else:
         raise FileNotFoundError(
-            "Cannot find a proper Caleus/OpenFOAM version: %s"%version)
+            "Cannot find a proper Caleus/OpenFOAM version: %s" % version
+        )
 
 
 def _cml_env_mgr():
@@ -685,7 +726,8 @@ def _cml_env_mgr():
             cml_filtered = list(_filter_invalid_versions(cml_opts))
             if cml_opts and not cml_filtered:
                 _lgr.warning(
-                    "No valid versions provided; check configuration file.")
+                    "No valid versions provided; check configuration file."
+                )
             for cml in cml_filtered:
                 cenv = get_cmlenv_instance(cml)
                 cml_versions[cenv.version] = cenv
@@ -708,15 +750,21 @@ def _cml_env_mgr():
             _init_cml_versions()
 
         # Maintain backwards compatibility and search CML versions first
-        vkeys = [(pkg_version(x), x) for x in cml_versions
-                 if isinstance(cml_versions[x], CMLEnv)]
+        vkeys = [
+            (pkg_version(x), x)
+            for x in cml_versions
+            if isinstance(cml_versions[x], CMLEnv)
+        ]
         if vkeys:
             vlist = sorted(vkeys, key=lambda x: x[0], reverse=True)
             return cml_versions[vlist[0][1]]
 
         # If only OpenFOAM versions are found return latest
-        vkeys = [(pkg_version(x), x) for x in cml_versions
-                 if isinstance(cml_versions[x], FOAMEnv)]
+        vkeys = [
+            (pkg_version(x), x)
+            for x in cml_versions
+            if isinstance(cml_versions[x], FOAMEnv)
+        ]
         vlist = sorted(vkeys, key=lambda x: x[0], reverse=True)
         return cml_versions[vlist[0][1]]
 
@@ -737,8 +785,7 @@ def _cml_env_mgr():
         else:
             _init_cml_versions()
         cfg = config.get_config()
-        vkey = version or cfg.caelus.caelus_cml.get("default",
-                                                    "latest")
+        vkey = version or cfg.caelus.caelus_cml.get("default", "latest")
         if vkey == "latest":
             return _get_latest_version()
         if not vkey in cml_versions:
@@ -754,6 +801,5 @@ def _cml_env_mgr():
 
     return _get_latest_version, _get_version, _cml_reset_versions
 
-(cml_get_latest_version,
- cml_get_version,
- cml_reset_versions) = _cml_env_mgr()
+
+(cml_get_latest_version, cml_get_version, cml_reset_versions) = _cml_env_mgr()

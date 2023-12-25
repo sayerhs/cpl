@@ -2,9 +2,11 @@
 # pylint: disable=missing-docstring
 
 import subprocess
+
 import pytest
 
 from caelus.config import cmlenv
+
 
 class MockPopen(object):
     """Mock a Popen instance"""
@@ -23,6 +25,7 @@ class MockPopen(object):
 
     def wait(self):
         return 0
+
 
 class MockCMLEnv(object):
     """Mock CMLEnv object"""
@@ -64,13 +67,15 @@ class MockCMLEnv(object):
         """Return an empty environment"""
         return {}
 
+
 def mock_cml_get_latest_version():
     return MockCMLEnv()
+
 
 @pytest.fixture(autouse=True)
 def patch_cml_execution(monkeypatch):
     monkeypatch.setattr(subprocess, "Popen", MockPopen)
-    monkeypatch.setattr(cmlenv, "cml_get_latest_version",
-                        mock_cml_get_latest_version)
-    monkeypatch.setattr(cmlenv, "cml_get_version",
-                        mock_cml_get_latest_version)
+    monkeypatch.setattr(
+        cmlenv, "cml_get_latest_version", mock_cml_get_latest_version
+    )
+    monkeypatch.setattr(cmlenv, "cml_get_version", mock_cml_get_latest_version)

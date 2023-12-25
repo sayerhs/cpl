@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=missing-docstring,redefined-outer-name
 
-import sys
 import os
+import sys
+
 import pytest
+
 from caelus.io.printer import foam_writer
 
 pytestmark = pytest.mark.skipif(
     sys.platform == "win32",
-    reason="Formatting differences with numpy on windows")
+    reason="Formatting differences with numpy on windows",
+)
+
 
 def check_text(left, right):
     """Check output for formatting
@@ -18,7 +22,8 @@ def check_text(left, right):
     indentation in the file.
     """
     for lline, rline in zip(left.splitlines(), right.splitlines()):
-        assert(lline.rstrip() == rline.rstrip())
+        assert lline.rstrip() == rline.rstrip()
+
 
 def test_simple_entries(cprinter, cparse):
     expected = """\
@@ -40,6 +45,7 @@ deltaT          1;
     text = cprinter.buf.getvalue()
     check_text(text, expected)
 
+
 def test_multi_valued(cprinter, cparse):
     expected = """\
 laplacianSchemes
@@ -59,6 +65,7 @@ laplacianSchemes
     cprinter(out)
     text = cprinter.buf.getvalue()
     check_text(text, expected)
+
 
 def test_arrays(cprinter, cparse):
     expected = """\
@@ -111,6 +118,7 @@ boundary
     cprinter(out)
     text = cprinter.buf.getvalue()
     check_text(text, expected)
+
 
 def test_function_objects(cprinter, cparse):
     expected = """\
@@ -199,6 +207,7 @@ functions
     text = cprinter.buf.getvalue()
     check_text(text, expected)
 
+
 def test_uniform_fields(cprinter, cparse):
     expected = """\
 dimensions        [0 1 -1 0 0 0 0];
@@ -232,6 +241,7 @@ boundaryField
     text = cprinter.buf.getvalue()
     check_text(text, expected)
 
+
 def test_no_keyword_entries(cprinter, cparse):
     expected = """
 #includeEtc "myIncludeFile"
@@ -263,6 +273,7 @@ solvers
     cprinter(out)
     text = cprinter.buf.getvalue()
     check_text(text, expected)
+
 
 def test_code_objects(cprinter, cparse):
     expected = """\
@@ -343,7 +354,7 @@ deltaT          1;
     fname = str(outfile)
     with foam_writer(fname, header) as printer:
         printer(out)
-    assert(os.path.exists(fname))
+    assert os.path.exists(fname)
     text = outfile.read()
     # Skip the banner because of timestamp and CPL version differences
     idx2 = expected.find("FoamFile")

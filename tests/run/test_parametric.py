@@ -5,14 +5,15 @@ Test parametric run setups
 """
 
 import sys
+
 import pytest
 
 from caelus.io.caelusdict import CaelusDict
 from caelus.run.parametric import CMLParametricRun
 
 pytestmark = pytest.mark.skipif(
-    sys.platform == "win32",
-    reason="Issues with yaml parser")
+    sys.platform == "win32", reason="Issues with yaml parser"
+)
 
 params_yaml = """
 simulation:
@@ -62,13 +63,14 @@ simulation:
     reconstruct: no
 """
 
+
 def test_parametric(tmpdir, template_casedir):
     yout = params_yaml % (str(template_casedir))
     cdict = CaelusDict.from_yaml(yout)
 
     sim = CMLParametricRun(
-        "test_airfoil", cdict.simulation,
-        basedir=str(tmpdir))
+        "test_airfoil", cdict.simulation, basedir=str(tmpdir)
+    )
 
     sim.setup()
     stats = list(sim.status())

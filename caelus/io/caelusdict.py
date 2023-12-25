@@ -6,6 +6,7 @@ Caelus/OpenFOAM Dictionary Implementation
 """
 
 import re
+
 try:
     from collections import deque
     from collections.abc import Mapping
@@ -13,10 +14,12 @@ except ImportError:  # pragma: no cover
     from collections import Mapping
 
 import six
-from ..utils import struct, osutils
+
 from ..config import cmlenv
-from .printer import DictPrinter
+from ..utils import osutils, struct
 from . import dtypes
+from .printer import DictPrinter
+
 
 class CaelusDict(struct.Struct):
     """Caelus Input File Dictionary"""
@@ -31,6 +34,7 @@ class CaelusDict(struct.Struct):
         """Load an include file with given name"""
         # Prevent circular imports
         from .dictfile import DictFile
+
         out = DictFile.load(filename=fname.strip('"')).data
         tmp = out._foam_expand_includes(env)
         return tmp
@@ -43,12 +47,14 @@ class CaelusDict(struct.Struct):
 
     def _foam_expand_includes(self, env=None):
         """Expand all macros/include directives"""
+
         def has_includes(din):
             """Check whether a dictionary has include directive"""
             return any(
-                isinstance(dval, dtypes.Directive) and
-                "#include" in dval.directive
-                for dval in din.values())
+                isinstance(dval, dtypes.Directive)
+                and "#include" in dval.directive
+                for dval in din.values()
+            )
 
         def _update(din, dout):
             if has_includes(din):
@@ -67,15 +73,21 @@ class CaelusDict(struct.Struct):
             if isinstance(val, CaelusDict):
                 dout = out.setdefault(k, CaelusDict())
                 _update(val, dout)
-            elif (isinstance(val, dtypes.Directive) and
-                  val.directive == "#includeEtc"):
+            elif (
+                isinstance(val, dtypes.Directive)
+                and val.directive == "#includeEtc"
+            ):
                 out.update(self._foam_load_etc_include(val.value, cenv))
-            elif (isinstance(val, dtypes.Directive) and
-                  val.directive == "#include"):
+            elif (
+                isinstance(val, dtypes.Directive)
+                and val.directive == "#include"
+            ):
                 out.update(self._foam_load_include(val.value, cenv))
-            elif (isinstance(val, dtypes.Directive) and
-                  val.directive == "#includeIfPresent" and
-                  osutils.path_exists(val.value.strip('"'))):
+            elif (
+                isinstance(val, dtypes.Directive)
+                and val.directive == "#includeIfPresent"
+                and osutils.path_exists(val.value.strip('"'))
+            ):
                 out.update(self._foam_load_include(val.value, cenv))
             else:
                 out[k] = val
@@ -87,8 +99,9 @@ class CaelusDict(struct.Struct):
         removes = []
         for k in keys:
             val = self[k]
-            if (isinstance(val, dtypes.Directive) and
-                (val.directive == "#remove")):
+            if isinstance(val, dtypes.Directive) and (
+                val.directive == "#remove"
+            ):
                 keyre = re.compile(val.value.strip('"'))
                 removes.append(keyre)
                 self.pop(k)

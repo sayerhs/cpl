@@ -10,13 +10,13 @@ subclasses.
 
 """
 
-import os
 import abc
 import glob
+import os
 from pathlib import Path
 
-from ...utils import osutils
 from ...io.caelusdict import CaelusDict
+from ...utils import osutils
 
 
 class DictMeta(abc.ABCMeta):
@@ -30,6 +30,7 @@ class DictMeta(abc.ABCMeta):
       - (name, default_value)
       - (name, default_value, valid_values)
     """
+
     # pylint: disable=no-value-for-parameter
 
     def __init__(cls, name, bases, cdict, **kwargs):
@@ -46,23 +47,30 @@ class DictMeta(abc.ABCMeta):
         """Process a property"""
         name = plist[0]
         options = plist[2] if len(plist) == 3 else None
-        doc = "%s"%name
+        doc = "%s" % name
+
         def getter(self):
             """Getter"""
             return self.data.get(name, plist[1])
+
         if options:
+
             def setter(self, value):
                 """Setter"""
                 if not value in options:
                     raise ValueError(
                         "%s: Invalid option for '%s'. "
-                        "Valid options are:\n\t%s"%(
-                            cls.__name__, name, options))
+                        "Valid options are:\n\t%s"
+                        % (cls.__name__, name, options)
+                    )
                 self.data[name] = value
+
         else:
+
             def setter(self, value):
                 "Setter"
                 self.data[name] = value
+
         setattr(cls, name, property(getter, setter, doc=doc))
 
 
@@ -72,8 +80,7 @@ class FuncObjMeta(DictMeta):
     def __call__(cls, *args, **kwargs):
         """Check if it is a concrete type"""
         if not hasattr(cls, "_funcobj_type"):
-            raise RuntimeError(
-                f"Cannot instantiate {cls.__name__}")
+            raise RuntimeError(f"Cannot instantiate {cls.__name__}")
         return super().__call__(*args, **kwargs)
 
 
@@ -142,9 +149,7 @@ class FunctionObject(metaclass=FuncObjMeta):
     def times(self):
         """Return the list of time directories available"""
         with osutils.set_work_dir(self.root):
-            return sorted(glob.glob("[0-9]*"),
-                          key=float,
-                          reverse=True)
+            return sorted(glob.glob("[0-9]*"), key=float, reverse=True)
 
     @property
     def latest_time(self):
