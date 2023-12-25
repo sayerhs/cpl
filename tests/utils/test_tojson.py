@@ -8,6 +8,7 @@ import numpy as np
 from caelus.utils import struct, tojson
 
 
+
 class Serializable(tojson.JSONSerializer):
     """Test class for JSONSerializer"""
 

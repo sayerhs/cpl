@@ -11,6 +11,7 @@ from caelus.run import hpc_queue as hq
 from caelus.utils import osutils
 
 
+
 def test_get_job_scheduler(monkeypatch):
     types = "no_mpi local_mpi slurm pbs".split()
     cfg = config.get_config()
