@@ -22,7 +22,11 @@ import subprocess
 import itertools
 import logging
 import json
-from distutils.version import LooseVersion
+try:
+    from packaging.version import parse as pkg_version
+except ImportError:
+    from distutils.version import LooseVersion as pkg_version
+
 from . import config
 from ..utils import osutils, Struct, env_module
 
@@ -704,17 +708,17 @@ def _cml_env_mgr():
             _init_cml_versions()
 
         # Maintain backwards compatibility and search CML versions first
-        vkeys = [LooseVersion(x) for x in cml_versions
+        vkeys = [(pkg_version(x), x) for x in cml_versions
                  if isinstance(cml_versions[x], CMLEnv)]
         if vkeys:
-            vlist = sorted(vkeys, reverse=True)
-            return cml_versions[vlist[0].vstring]
+            vlist = sorted(vkeys, key=lambda x: x[0], reverse=True)
+            return cml_versions[vlist[0][1]]
 
         # If only OpenFOAM versions are found return latest
-        vkeys = [LooseVersion(x) for x in cml_versions
+        vkeys = [(pkg_version(x), x) for x in cml_versions
                  if isinstance(cml_versions[x], FOAMEnv)]
-        vlist = sorted(vkeys, reverse=True)
-        return cml_versions[vlist[0].vstring]
+        vlist = sorted(vkeys, key=lambda x: x[0], reverse=True)
+        return cml_versions[vlist[0][1]]
 
     def _get_version(version=None):
         """Get the CML environment for the version requested
