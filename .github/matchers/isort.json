@@ -1,0 +1,18 @@
+{
+  "problemMatcher": [
+    {
+      "owner": "isort-error",
+      "severity": "error",
+      "line": 1,
+      "column": 1,
+      "pattern": [
+        {
+          "regexp": "^([A-Z]+): (\\S*) (.*)$",
+          "file": 2,
+          "code": 1,
+          "message": 3
+        }
+      ]
+    }
+  ]
+}

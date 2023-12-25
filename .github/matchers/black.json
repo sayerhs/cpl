@@ -1,0 +1,17 @@
+{
+  "problemMatcher": [
+    {
+      "owner": "black-error",
+      "severity": "error",
+      "line": 1,
+      "column": 1,
+      "pattern": [
+        {
+          "regexp": "^(would reformat) (.*)$",
+          "file": 2,
+          "message": 1
+        }
+      ]
+    }
+  ]
+}
