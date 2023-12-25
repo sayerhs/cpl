@@ -51,7 +51,7 @@ jobs:
         if: github.event_name == 'push'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          token: {{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           folder: ./docs/build/html
           single-commit: true
 
