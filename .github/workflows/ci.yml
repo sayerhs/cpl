@@ -39,6 +39,21 @@ jobs:
       - name: Run tests
         run: |
           python -m pytest tests/
+      - name: Run docs
+        run: |
+          echo "::group::Install sphinx depdencies"
+          python -m pip install sphinx
+          cd ./docs/
+          echo "::endgroup::"
+          make html
+          touch build/html/.nojekyll
+      - name: Deploy docs
+        if: github.event_name == 'push'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: {{ secrets.GITHUB_TOKEN }}
+          folder: ./docs/build/html
+          single-commit: true
 
   build:
     strategy:
