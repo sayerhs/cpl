@@ -256,6 +256,7 @@ def test_helyx_get_version(helyx_directory):
     assert cenv.project_dir == (helyx_directory / "HELYXCore-4.1.1")
     assert cenv.version == "4.1.1"
 
+
 def test_cmlenv_object(caelus_directory):
     """Test CMLenv properties"""
     proj_dir = os.path.join(caelus_directory, "caelus-10.11")
