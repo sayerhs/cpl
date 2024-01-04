@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=protected-access, import-outside-toplevel
 
 """\
 Caelus/OpenFOAM Dictionary Implementation
@@ -6,13 +7,6 @@ Caelus/OpenFOAM Dictionary Implementation
 """
 
 import re
-
-try:
-    from collections import deque
-    from collections.abc import Mapping
-except ImportError:  # pragma: no cover
-    from collections import Mapping
-
 import six
 
 from ..config import cmlenv
