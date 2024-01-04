@@ -27,6 +27,9 @@ caelus:
       - version: "10.11"
 
       - version: "v2012"
+
+      - version: "4.1.1"
+        variant: "helyx"
 """
 
 
@@ -143,8 +146,36 @@ def openfoam_directory(tmpdir_factory):
     yield foam_root
 
 
+@pytest.fixture(scope="module")
+def helyx_directory(tmpdir_factory):
+    """Temporary helyx directory for testing"""
+    temp_dir = tmpdir_factory.mktemp("__test_helyxdir")
+    helyx_root = temp_dir / "Engys"
+    helyx_root.mkdir()
+    helyx_v411 = helyx_root / "HELYXCore-4.1.1"
+    helyx_v411.mkdir()
+    platforms_dir = helyx_v411 / "platforms"
+    platforms_dir.mkdir()
+    bindir = platforms_dir / "linux64Gcc94DPInt32Opt"
+    bindir.mkdir()
+    bashrc = platforms_dir / "activeBuild.cshrc"
+    bashrc.write_text(
+        textwrap.dedent(
+            f"""
+            export HELYX_PROJECT_DIR="{helyx_v411}"
+            export HELYX_OPTIONS="linux64Gcc94DPInt32Opt"
+            export MPI_ARCH_PATH="{platforms_dir}/openmpi/"
+            """
+        ),
+        'utf-8',
+    )
+    yield helyx_root
+
+
 @pytest.fixture(autouse=True)
-def no_get_config(monkeypatch, caelus_directory, openfoam_directory):
+def no_get_config(
+    monkeypatch, caelus_directory, openfoam_directory, helyx_directory
+):
     """Mock CaelusCfg object for testing"""
     monkeypatch.setattr(config, "get_config", mock_get_config())
     cfg = config.get_config()
@@ -154,6 +185,7 @@ def no_get_config(monkeypatch, caelus_directory, openfoam_directory):
     cfg.caelus.caelus_cml.versions[1].path = (
         openfoam_directory / "OpenFOAM-v2012"
     )
+    cfg.caelus.caelus_cml.versions[2].path = helyx_directory / "HELYXCore-4.1.1"
 
 
 @pytest.fixture()
@@ -217,6 +249,12 @@ def test_foam_get_version(openfoam_directory):
     assert cenv.version == "v2012"
     assert cenv.foam_api_info.api == "2012"
 
+
+def test_helyx_get_version(helyx_directory):
+    cmlenv.cml_reset_versions()
+    cenv = cmlenv.cml_get_version("4.1.1")
+    assert cenv.project_dir == (helyx_directory / "HELYXCore-4.1.1")
+    assert cenv.version == "4.1.1"
 
 def test_cmlenv_object(caelus_directory):
     """Test CMLenv properties"""

@@ -689,12 +689,230 @@ class FOAMEnv:
             env['LD_LIBRARY_PATH'] = ld_path + os.pathsep + "${LD_LIBRARY_PATH}"
 
 
+class HelyxEnv:
+    """Engys Helyx environment"""
+
+    _root_dir = ""
+    _project_dir = ""
+    _version = ""
+
+    def __init__(self, cfg):
+        """
+        Args:
+            cfg (CaelusCfg): The CML configuration object
+        """
+        self._cfg = cfg
+        self._version = cfg.version
+        self._project_dir = osutils.abspath(cfg.path)
+        self._root_dir = os.path.dirname(self._project_dir)
+        self._has_models = "modules" in cfg
+        self._env = self._process_helyx_env(self._project_dir)
+        self._build_option = self._env.get("WM_OPTIONS", "")
+
+    def __repr__(self):
+        return f"<HelyxEnv {self.version}>"
+
+    def __str__(self):
+        return f"HelyxCore-{self.version}"
+
+    @property
+    def project_dir(self):
+        """Return the project directory path"""
+        return self._env.get("HELYX_PROJECT_DIR", self._project_dir)
+
+    @property
+    def version(self):
+        """Return the helyxcore project version"""
+        return self._version
+
+    @property
+    def build_option(self):
+        """Return the build option"""
+        return self._env.get("HELYX_OPTIONS", "")
+
+    @property
+    def build_dir(self):
+        """Return the build platform directory"""
+        return os.path.join(self.project_dir, "platforms", self.build_option)
+
+    @property
+    def bin_dir(self):
+        """Return the bin directory for executables"""
+        return self._env.get(
+            "HELYX_RUNTIME_OUTPUT_DIRECTORY",
+            os.path.join(self.build_dir, "bin"),
+        )
+
+    @property
+    def lib_dir(self):
+        """Return the lib directory for executables"""
+        return self._env.get(
+            "HELYX_LIBRARY_OUTPUT_DIRECTORY",
+            os.path.join(self.build_dir, "bin"),
+        )
+
+    @property
+    def user_dir(self):
+        """Return the user directory"""
+        return self._env.get("HELYX_PROJECT_USER_DIR", '')
+
+    @property
+    def user_libdir(self):
+        """Return the user lib directory"""
+        return self._env.get("HELYX_USER_LIBBIN", '')
+
+    @property
+    def user_bindir(self):
+        """Return the user binary directory"""
+        return self._env.get("HELYX_USER_APPBIN", '')
+
+    @property
+    def mpi_dir(self):
+        """Return the path to MPI dir"""
+        if not hasattr(self, "_mpi_dir"):
+            cfg = self._cfg
+            if "mpi_root" in cfg:
+                self._mpi_dir = cfg["mpi_root"]
+            elif "mpi_lib_path" in cfg:
+                self._mpi_dir = os.path.dirname(cfg["mpi_lib_path"])
+            elif "mpi_bin_path" in cfg:
+                self._mpi_dir = os.path.dirname(cfg["mpi_bin_path"])
+            else:
+                self._mpi_dir = self._env.get('MPI_ARCH_PATH', '')
+
+            check_mpi = self._cfg.get("check_mpi_path", False)
+            if check_mpi and not os.path.exists(self._mpi_dir):
+                raise ValueError(
+                    "Cannot determine OpenFOAM MPI installation. "
+                    "Please specify 'mpi_root' in Caelus configuration."
+                )
+        return self._mpi_dir
+
+    @property
+    def mpi_libdir(self):
+        """Return the path to MPI libraries"""
+        if not hasattr(self, "_mpi_libdir"):
+            self._mpi_libdir = self._cfg.get(
+                "mpi_lib_path", os.path.join(self.mpi_dir, "lib")
+            )
+        return self._mpi_libdir
+
+    @property
+    def mpi_bindir(self):
+        """Return the path to MPI binraries"""
+        if not hasattr(self, "_mpi_bindir"):
+            self._mpi_bindir = self._cfg.get(
+                "mpi_bin_path", os.path.join(self.mpi_dir, "bin")
+            )
+        return self._mpi_bindir
+
+    @property
+    def site_libdir(self):
+        """Return the site lib directory"""
+        return self._env.get("HELYX_SITE_LIBBIN", '')
+
+    @property
+    def environ(self):
+        """Return the environment"""
+        senv = self._env
+        senv['PATH'] = (
+            self.bin_dir
+            + os.pathsep
+            + self.mpi_bindir
+            + os.pathsep
+            + self.user_bindir
+            + os.pathsep
+            + self._env.get('PATH', '')
+        )
+        lib_var = 'LD_LIBRARY_PATH'
+        if osutils.ostype() == "darwin":
+            lib_var = 'DYLD_FALLBACK_LIBRARY_PATH'
+        senv[lib_var] = (
+            self.lib_dir
+            + os.pathsep
+            + self.mpi_libdir
+            + os.pathsep
+            + self.user_libdir
+            + os.pathsep
+            + self._env.get(lib_var, '')
+        )
+        return senv
+
+    @property
+    def foam_bashrc(self):
+        """Return the path to the bashrc file"""
+        return os.path.join(self.project_dir, "platforms", "activeBuild.cshrc")
+
+    @property
+    def site_dir(self):
+        """Return site directory"""
+        return self._env.get(
+            "HELYX_PROJECT_SITE", os.path.join(self.project_dir, "site")
+        )
+
+    @property
+    def etc_dirs(self):
+        """Return list of etc directories"""
+        return [os.path.join(self.project_dir, "etc")]
+
+    @property
+    def module_list(self):
+        """Return modules to be activated"""
+        return self._cfg.get('modules', [])
+
+    def etc_file(self, fname):
+        """Return the first configuration file from etc directories"""
+        for edir in self.etc_dirs:
+            efile = os.path.join(edir, fname)
+            if os.path.exists(efile):
+                return efile
+        return None
+
+    def _process_helyx_env(self, project_dir):
+        """Parse the bashrc file and return the environment variables"""
+        extra_vars = "PATH LD_LIBRARY_PATH MPI_ARCH_PATH".split()
+        script_path = os.path.join(
+            project_dir, "platforms", "activeBuild.cshrc"
+        )
+        if not os.path.exists(script_path):
+            raise FileNotFoundError(
+                f"Cannot find Helyx config file: {script_path}"
+            )
+
+        bash_cmd = f"bash --noprofile -norc -c 'source {script_path}' && env"
+        pp = subprocess.Popen(
+            bash_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        )
+        out, _err = pp.communicate()
+        retcode = pp.wait()
+        if retcode:
+            _lgr.exception(
+                "Error initializing Helyx environment: %s",
+                self.version,
+            )
+
+        outbuf = out.decode('UTF-8')
+        bash_vars = dict(
+            ll.split("=", 1) for ll in outbuf.splitlines() if "=" in ll
+        )
+        helyx_keys = [k for k in bash_vars.keys() if "HELYX_" in k]
+        env = {k: bash_vars[k] for k in helyx_keys}
+        env.update((k, bash_vars[k]) for k in extra_vars if k in bash_vars)
+        return env
+
+
 def get_cmlenv_instance(cml):
     """Return a Caelus or OpenFOAM instance
 
     Args:
         cml (dict): A configuration dictionary
     """
+    variant_map = {
+        "caelus": CMLEnv,
+        "openfoam": FOAMEnv,
+        "helyx": HelyxEnv,
+    }
+
     if 'modules' in cml:
         return FOAMEnv.from_modules(cml)
 
@@ -703,13 +921,18 @@ def get_cmlenv_instance(cml):
         "path", os.path.join(config.get_caelus_root(), "caelus-%s" % version)
     )
     project_dir = osutils.abspath(project_dir)
+    if "variant" in cml:
+        return variant_map[cml.variant](cml)
+
     if os.path.exists(os.path.join(project_dir, "SConstruct")):
         return CMLEnv(cml)
     elif os.path.exists(os.path.join(project_dir, "wmake")):
         return FOAMEnv(cml)
+    elif os.path.exists(os.path.join(project_dir, "CMakeLists.txt")):
+        return HelyxEnv(cml)
     else:
         raise FileNotFoundError(
-            "Cannot find a proper Caleus/OpenFOAM version: %s" % version
+            "Cannot find a proper OpenFOAM version: %s" % version
         )
 
 
