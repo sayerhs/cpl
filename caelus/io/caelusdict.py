@@ -7,6 +7,7 @@ Caelus/OpenFOAM Dictionary Implementation
 """
 
 import re
+
 import six
 
 from ..config import cmlenv
