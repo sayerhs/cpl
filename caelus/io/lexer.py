@@ -106,7 +106,7 @@ class CaelusLexer(object):
 
 
     exponent_part = r"""([eE][-+]?[0-9]+)"""
-    fractional_constant = r"""([-+]?[0-9]*\.[0-9]+)|([0-9]+\.)"""
+    fractional_constant = r"""([-+]?[0-9]*\.[0-9]+)|([-+]?[0-9]+\.)"""
     floating_constant = ('(((('+fractional_constant+')' +
                          exponent_part + '?)|([0-9]+' +
                          exponent_part + '))[FfLl]?)')
