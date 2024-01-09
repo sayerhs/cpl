@@ -158,7 +158,7 @@ def helyx_directory(tmpdir_factory):
     platforms_dir.mkdir()
     bindir = platforms_dir / "linux64Gcc94DPInt32Opt"
     bindir.mkdir()
-    bashrc = platforms_dir / "activeBuild.cshrc"
+    bashrc = platforms_dir / "activeBuild.shrc"
     bashrc.write_text(
         textwrap.dedent(
             f"""
