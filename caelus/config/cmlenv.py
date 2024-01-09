@@ -841,7 +841,7 @@ class HelyxEnv:
     @property
     def foam_bashrc(self):
         """Return the path to the bashrc file"""
-        return os.path.join(self.project_dir, "platforms", "activeBuild.cshrc")
+        return os.path.join(self.project_dir, "platforms", "activeBuild.shrc")
 
     @property
     def site_dir(self):
@@ -871,15 +871,13 @@ class HelyxEnv:
     def _process_helyx_env(self, project_dir):
         """Parse the bashrc file and return the environment variables"""
         extra_vars = "PATH LD_LIBRARY_PATH MPI_ARCH_PATH".split()
-        script_path = os.path.join(
-            project_dir, "platforms", "activeBuild.cshrc"
-        )
+        script_path = os.path.join(project_dir, "platforms", "activeBuild.shrc")
         if not os.path.exists(script_path):
             raise FileNotFoundError(
                 f"Cannot find Helyx config file: {script_path}"
             )
 
-        bash_cmd = f"bash --noprofile -norc -c 'source {script_path}' && env"
+        bash_cmd = f"bash --noprofile -norc -c 'source {script_path} && env'"
         pp = subprocess.Popen(
             bash_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
         )
