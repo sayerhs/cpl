@@ -24,6 +24,7 @@ import os
 import shutil
 from contextlib import contextmanager
 from datetime import datetime
+from pathlib import Path
 
 import pytz
 
@@ -243,3 +244,8 @@ def split_path(fname):
     ftmp = os.path.basename(abs_fname)
     base, ext = os.path.splitext(ftmp)
     return (fdir, base, ext)
+
+
+def path_or_cwd(pdir: Path) -> Path:
+    """Sanitize the given path. If None, return current workding directory"""
+    return Path(abspath(str(pdir))) if pdir is not None else Path.cwd()
