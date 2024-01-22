@@ -190,10 +190,10 @@ class LiftDrag(FunctionObject):
         ('runOnLastIterOnly', False),
         ('porosity', True),
         ('outputRegionData', False),
-        ('writeFields', False)
+        ('writeFields', False),
     ]
 
-    def __call__(self, time: str =None):
+    def __call__(self, time: str = None):
         """Load the liftDrag file and return as pandas DataFrame."""
         dtime = str(time) if time else self.latest_time
         dpath = self.root / dtime
