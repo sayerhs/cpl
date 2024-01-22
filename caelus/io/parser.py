@@ -253,6 +253,7 @@ class CaelusParser(object):
     def p_list_item(self, p):
         """ list_item : value
                       | simple_list
+                      | simple_dict
                       | identifier simple_dict
                       | directive
         """
