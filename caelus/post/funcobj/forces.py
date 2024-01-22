@@ -13,6 +13,7 @@ import re
 from io import StringIO
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from .funcobj import FunctionObject
@@ -165,3 +166,55 @@ class Forces(FunctionObject):
         moments = self._parse_file(dpath / "moment.dat", self._col_names('M'))
         moments.drop(columns=['Time'], inplace=True)
         return pd.concat([forces, moments], axis=1)
+
+
+class LiftDrag(FunctionObject):
+    """A variation of ForceCoeffs that calculates lift/drag for specific use case."""
+
+    _funcobj_type = "liftDrag"
+    _funcobj_libs = "forces"
+
+    _dict_properties = [
+        ('patches', None),
+        ('liftDirection', None),
+        ('dragDirection', None),
+        ('pitchAxis', None),
+        ('Uinf', None),
+        ('rhoInfo', None),
+        ('referenceArea', None),
+        ('referenceLength', None),
+        ('nAveragingSteps', 1),
+        ('maxCp', 1.0e14),
+        ('minCp', 1.0e14),
+        ('wheelbase', None),
+        ('runOnLastIterOnly', False),
+        ('porosity', True),
+        ('outputRegionData', False),
+        ('writeFields', False)
+    ]
+
+    def __call__(self, time: str =None):
+        """Load the liftDrag file and return as pandas DataFrame."""
+        dtime = str(time) if time else self.latest_time
+        dpath = self.root / dtime
+        fname = dpath / "liftDrag.dat"
+
+        if not fname.exists():
+            raise FileNotFoundError(f"Lift-drag output not found: {fname}")
+
+        data = np.loadtxt(fname)
+        return pd.DataFrame(data, columns=self._col_names())
+
+    def _col_names(self):
+        """Get the column names for the dataset"""
+        return [
+            "time",
+            "total_lift",
+            "front_lift",
+            "rear_lift",
+            "drag",
+            "side_force",
+            "x_moment",
+            "y_moment",
+            "z_moment",
+        ]

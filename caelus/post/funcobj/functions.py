@@ -39,12 +39,13 @@ from pathlib import Path
 
 from ...io import ControlDict
 from ...io.caelusdict import CaelusDict
-from .forces import ForceCoeffs, Forces
+from .forces import ForceCoeffs, Forces, LiftDrag
 from .sampling import SampledSets, SampledSurfaces
 
 _func_objects_list = [
     ForceCoeffs,
     Forces,
+    LiftDrag,
     SampledSets,
     SampledSurfaces,
 ]
