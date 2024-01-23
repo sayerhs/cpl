@@ -151,9 +151,12 @@ class Directive(FoamType):
         #: Value of the directive (e.g., file to be included)
         self.value = value
 
-    def write_value(self, fh=sys.stdout, indent_str=''):
+    def write_value(self, fh=sys.stdout, indent_str='', nested=False):
         """Write out the dimensional value"""
-        fh.write("\n%s %s\n" % (self.directive, self.value))
+        if not nested:
+            fh.write("\n%s %s\n" % (self.directive, self.value))
+        else:
+            fh.write("%s%s %s\n" % (indent_str, self.directive, self.value))
 
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self.directive[1:])
@@ -170,9 +173,12 @@ class CalcDirective(FoamType):
         self.directive = directive
         self.value = value
 
-    def write_value(self, fh=sys.stdout, indent_str=''):
+    def write_value(self, fh=sys.stdout, indent_str='', nested=False):
         """Write out the dimensional value"""
-        fh.write("%s %s;\n" % (self.directive, self.value))
+        if not nested:
+            fh.write("%s %s;\n" % (self.directive, self.value))
+        else:
+            fh.write("%s%s %s;\n" % (indent_str, self.directive, self.value))
 
 
 class EvalDirective(FoamType):
