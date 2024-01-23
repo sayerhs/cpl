@@ -42,14 +42,16 @@ from ...io.caelusdict import CaelusDict
 from .forces import ForceCoeffs, Forces, LiftDrag
 from .residuals import Residuals
 from .sampling import SampledSets, SampledSurfaces
+from .volume_report import VolumeReport
 
 _func_objects_list = [
     ForceCoeffs,
     Forces,
     LiftDrag,
+    Residuals,
     SampledSets,
     SampledSurfaces,
-    Residuals,
+    VolumeReport
 ]
 
 _func_obj_map = {fobj.funcobj_type(): fobj for fobj in _func_objects_list}

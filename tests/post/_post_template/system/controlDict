@@ -50,6 +50,7 @@ functions
     #include "forceCoeffs"
     #include "forces"
     #include "residuals"
+    #include "volumeReport"
 }
 
 

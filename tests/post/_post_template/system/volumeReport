@@ -1,0 +1,11 @@
+volumeReport
+{
+    functionObjectLibs ( "libreport.so" );
+    logToFile       yes;
+    fields          ( U p k omega );
+    executeControl  timeStep;
+    type            volumeReport;
+    writeControl    timeStep;
+    writeInterval   1;
+    regions         1 ( region0 );
+}

@@ -46,7 +46,7 @@ def patch_cml_execution(monkeypatch):
 def test_post_processing():
     """Test postprocessing"""
     post = PostProcessing(casedir=os.path.join(script_dir, "_post_template"))
-    assert len(post.keys()) == 5
+    assert len(post.keys()) == 6
     assert len(list(post.filter('forceCoeffs'))) == 1
     with pytest.raises(ValueError):
         list(post.filter('fieldFunctionObjects'))
@@ -63,6 +63,10 @@ def test_post_processing():
     residuals = post['residuals']()
     assert len(residuals.columns) == 7
     assert residuals.shape == (8, 7)
+
+    volrep = post['volumeReport']()
+    assert len(volrep.columns) == 41
+    assert volrep.shape == (9, 41)
 
     samples = post['samples']
     assert samples.latest_time == "2000"
