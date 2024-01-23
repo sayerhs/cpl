@@ -1,0 +1,6 @@
+residuals
+{
+    type        residuals;
+    libs        ( "libutilityFunctionObjects.so" );
+    fields      ( U p k omega );
+}

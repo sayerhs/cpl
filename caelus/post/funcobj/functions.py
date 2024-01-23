@@ -40,6 +40,7 @@ from pathlib import Path
 from ...io import ControlDict
 from ...io.caelusdict import CaelusDict
 from .forces import ForceCoeffs, Forces, LiftDrag
+from .residuals import Residuals
 from .sampling import SampledSets, SampledSurfaces
 
 _func_objects_list = [
@@ -48,6 +49,7 @@ _func_objects_list = [
     LiftDrag,
     SampledSets,
     SampledSurfaces,
+    Residuals,
 ]
 
 _func_obj_map = {fobj.funcobj_type(): fobj for fobj in _func_objects_list}
@@ -81,12 +83,14 @@ class PostProcessing:
 
         fobj = {}
         for k, v in self.data.items():
-            if not (self.root / k).exists():
-                _lgr.warning("Missing postProcessing entry for %s", k)
-                continue
             ftype = v['type']
             if ftype not in _func_obj_map:
                 _lgr.info("Skipping function object: %s (%s)", k, ftype)
+                continue
+            if not (self.root / k).exists():
+                _lgr.warning(
+                    "Missing postProcessing entry for %s (%s)", k, ftype
+                )
                 continue
 
             fcls = _func_obj_map[ftype]

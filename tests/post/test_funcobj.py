@@ -46,7 +46,7 @@ def patch_cml_execution(monkeypatch):
 def test_post_processing():
     """Test postprocessing"""
     post = PostProcessing(casedir=os.path.join(script_dir, "_post_template"))
-    assert len(post.keys()) == 4
+    assert len(post.keys()) == 5
     assert len(list(post.filter('forceCoeffs'))) == 1
     with pytest.raises(ValueError):
         list(post.filter('fieldFunctionObjects'))
@@ -57,9 +57,12 @@ def test_post_processing():
         assert cname in fcoeffs.columns
 
     forces = post['forces1']()
-    print(forces)
     assert len(forces.columns) == 19
     assert forces.shape == (7, 19)
+
+    residuals = post['residuals']()
+    assert len(residuals.columns) == 7
+    assert residuals.shape == (8, 7)
 
     samples = post['samples']
     assert samples.latest_time == "2000"
