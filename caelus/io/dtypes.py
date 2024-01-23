@@ -234,7 +234,7 @@ class MacroSubstitution(FoamType):
         self.value = value
         self.semi = semi
 
-    def write_value(self, fh=sys.stdout, indent_str=''):
+    def write_value(self, fh=sys.stdout, indent_str='', nested=False):
         """Write standalone macro substitution"""
         if self.semi:
             fh.write(indent_str + "%s;\n" % self.value)
