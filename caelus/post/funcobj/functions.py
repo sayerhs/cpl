@@ -51,7 +51,7 @@ _func_objects_list = [
     Residuals,
     SampledSets,
     SampledSurfaces,
-    VolumeReport
+    VolumeReport,
 ]
 
 _func_obj_map = {fobj.funcobj_type(): fobj for fobj in _func_objects_list}
