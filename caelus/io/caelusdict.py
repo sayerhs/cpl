@@ -30,7 +30,9 @@ class CaelusDict(struct.Struct):
         # Prevent circular imports
         from .dictfile import DictFile
 
-        out = DictFile.load(filename=fname.strip('"')).data
+        fname = fname.strip('"')
+        fname = osutils.abspath(fname)
+        out = DictFile.load(filename=fname).data
         tmp = out._foam_expand_includes(env)
         return tmp
 
