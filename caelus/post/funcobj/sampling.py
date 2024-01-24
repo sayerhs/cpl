@@ -382,5 +382,11 @@ class SampledSurfaces(Sampling):
     def __init__(self, name, obj_dict, *, casedir=None):
         super().__init__(name, obj_dict, casedir=casedir)
 
-        for k, v in self.data.surfaces.items():
-            self.samples[k] = SampledSurface(k, v, self)
+        surfaces = self.data.surfaces
+        if isinstance(surfaces, list):
+            for surf in surfaces:
+                for k, v in surf.items():
+                    self.samples[k] = SampledSurface(k, v, self)
+        else:
+            for k, v in surfaces.items():
+                self.samples[k] = SampledSurface(k, v, self)
