@@ -55,7 +55,7 @@ class CaelusDict(struct.Struct):
 
         def _update(din, dout):
             if has_includes(din):
-                dout.update(din._foam_expand_includes())
+                dout.update(din._foam_expand_includes(env))
             else:
                 for k, v in din.items():
                     if isinstance(v, CaelusDict):

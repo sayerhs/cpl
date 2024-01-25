@@ -242,12 +242,16 @@ class DictFile(object):
     def contents(self):
         """Access entries within the Caelus CML dictionary"""
         # return self.data
+        return self.get_full_contents()
+
+    def get_full_contents(self, env=None):
+        """Return the full dictionary after expanding includes"""
         if not hasattr(self, "_expanded_data_dict"):
             cdir = getattr(self, "casedir", os.getcwd())
             fdir = os.path.dirname(self.filename)
             wdir = os.path.join(cdir, fdir)
             with osutils.set_work_dir(wdir):
-                out = self.data._foam_expand_includes()
+                out = self.data._foam_expand_includes(env=env)
                 out._foam_expand_macros()
                 self._expanded_data_dict = out
         return self._expanded_data_dict
