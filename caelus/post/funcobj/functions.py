@@ -62,7 +62,9 @@ _lgr = logging.getLogger(__name__)
 class PostProcessing:
     """Main entry point for accessing OpenFOAM ``postProcessing`` data."""
 
-    def __init__(self, casedir=None, func_dict=None):
+    def __init__(
+        self, casedir=None, func_dict=None, raise_on_error: bool = False
+    ):
         """
         If the function object dictionary is not provided as an argument, the
         class will attempt to infer the functions activated in ``controlDict``
@@ -71,6 +73,7 @@ class PostProcessing:
         Args:
             casedir (path): Path to the case directory (default: cwd)
             func_dict (CaelusDict): Function objects dictionary
+            raise_on_error (bool): Raise exception if some objects fail to process
 
         """
         #: Absolute path to the case directory
@@ -95,8 +98,15 @@ class PostProcessing:
                 )
                 continue
 
-            fcls = _func_obj_map[ftype]
-            fobj[k] = fcls(k, v, casedir=self.casedir)
+            try:
+                fcls = _func_obj_map[ftype]
+                fobj[k] = fcls(k, v, casedir=self.casedir)
+            except Exception:
+                _lgr.exception(
+                    "Failed to parse function object entry: %s (%s)", k, ftype
+                )
+                if raise_on_error:
+                    raise
         self.func_objects = fobj
 
     def filter(self, func_type):
