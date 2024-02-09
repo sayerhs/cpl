@@ -210,11 +210,10 @@ def clone_case(
     absdir = osutils.abspath(casedir)
     tmpl_dir = osutils.abspath(template_dir)
     if os.path.exists(absdir):
-        raise IOError("Cannot overwrite existing file/directory: %s", absdir)
+        raise IOError(f"Cannot overwrite existing file/directory: {absdir}")
     if not (os.path.exists(tmpl_dir) and is_caelus_casedir(tmpl_dir)):
         raise IOError(
-            "Invalid Caelus case directory provided as template: %s",
-            template_dir,
+            "Invalid Caelus case directory provided as template: {template_dir}"
         )
 
     default_ignore = [
@@ -250,7 +249,5 @@ def clone_case(
 
 def get_mpi_size(casedir):
     """Determine the number of MPI ranks to run"""
-    # TODO: Implement decomposeParDict options. How do we handle
-    # redistributePar?
     with osutils.set_work_dir(casedir):
         return len(glob.glob("processor*"))
