@@ -154,7 +154,7 @@ class FunctionObject(metaclass=FuncObjMeta):
     @property
     def latest_time(self):
         """Return the latest time available"""
-        return self.times[0]
+        return self.times[0] if self.times else ""
 
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self.name}>"
