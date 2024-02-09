@@ -213,7 +213,7 @@ def clone_case(
         raise IOError(f"Cannot overwrite existing file/directory: {absdir}")
     if not (os.path.exists(tmpl_dir) and is_caelus_casedir(tmpl_dir)):
         raise IOError(
-            "Invalid Caelus case directory provided as template: {template_dir}"
+            f"Invalid Caelus case directory provided as template: {template_dir}"
         )
 
     default_ignore = [
