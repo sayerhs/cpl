@@ -39,6 +39,7 @@ from pathlib import Path
 
 from ...io import ControlDict
 from ...io.caelusdict import CaelusDict
+from ...io.dtypes import FoamType
 from .forces import ForceCoeffs, Forces, LiftDrag
 from .residuals import Residuals
 from .sampling import SampledSets, SampledSurfaces
@@ -88,6 +89,9 @@ class PostProcessing:
 
         fobj = {}
         for k, v in self.data.items():
+            if isinstance(v, FoamType):
+                continue
+
             ftype = v['type']
             if ftype not in _func_obj_map:
                 _lgr.info("Skipping function object: %s (%s)", k, ftype)
