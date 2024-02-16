@@ -427,6 +427,7 @@ class SlurmQueue(HPCQueue):
         mem_per_node="mem",
         mem_per_rank="mem-per-cpu",
         exclusive="exclusive",
+        kill_invalid="kill-on-invalid-dep",
     )
 
     _queue_default_values = dict(
