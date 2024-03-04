@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=import-outside-toplevel
 
 """
 Utilities for working with Jinja2 templates
 """
 
 import os
-
-from jinja2 import Environment, FileSystemLoader
 
 from ..utils import osutils
 from ..version import version
@@ -41,6 +40,8 @@ class CaelusTemplates(object):
         Args:
             template_dirs (list): Absolute path to template directories
         """
+        from jinja2 import Environment, FileSystemLoader
+
         tmpl1 = template_dirs or []
         tmpl2 = get_template_dirs()
         all_templates = tmpl1 + tmpl2
