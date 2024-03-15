@@ -22,7 +22,7 @@ from ..version import version
 from . import dtypes
 
 file_banner = r"""/*---------------------------------------------------------------------------*\
- * Caelus (http://www.caelus-cml.com)
+ * Caelus (https://github.com/sayerhs/cpl)
  *
  * Caelus Python Library (CPL) %(version)s
  * Auto-generated on: %(timestamp)s

@@ -6,7 +6,7 @@ REM ### Create a Conda package for Caelus Python Library
 REM # Run from the script directory
 cd "%~dp0" || exit /B 1
 
-set caelus_version="v2.0.0"
+set caelus_version="v3.0.0"
 set script_dir="%~dp0"
 
 REM Activate base/root environment for build and constructor
