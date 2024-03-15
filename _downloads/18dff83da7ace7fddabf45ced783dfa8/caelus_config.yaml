@@ -1,0 +1,34 @@
+# -*- mode: yaml -*-
+#
+# Sample CPL configuration file
+#
+
+# Root CPL configuration node
+caelus:
+  # Control logging of CPL library
+  logging:
+    log_to_file: true
+    log_file: ~/Caelus/cpl.log
+
+  # Configuration for Caelus CML or OpenFOAM versions
+  caelus_cml:
+    # Pick the development version of CML available; use "latest" to choose the
+    # latest version available.
+    default: "v2012"
+
+    # Versions that can be used with CPL
+    versions:
+      - version: "9.04"
+        path: ~/Caelus/caelus-9.04
+
+      - version: "10.04"
+        path: ~/Caelus/caelus-10.04
+
+      - version: "dev-gcc"
+        path: ~/Caelus/caelus-cml            # Use latest git repository
+        mpi_path: /usr/local/openmpi         # Use system OpenMPI
+        build_option: "linux64gcc++DPOpt"    # Use the GCC version
+
+      - version: "v2012"
+        path: ~/OpenFOAM/OpenFOAM-v2012      # Use OpenFOAM
+        mpi_path: /usr/local/openmpi         # Use system OpenMPI
