@@ -25,15 +25,6 @@ classifiers = [
 ]
 
 
-def parse_reqs_file(fname: str):
-    """Parse requirements file and return dependencies"""
-    with open(fname, 'r') as fh:
-        return [line.strip() for line in fh]
-
-
-install_requires = parse_reqs_file('requirements.txt')
-
-
 setup(
     name="caelus",
     version=VERSION,
@@ -65,5 +56,18 @@ setup(
         caelus_sim=caelus.scripts.caelus_sim:main
     """,
     python_requires='>=3.10',
-    install_requires=install_requires,
+    install_requires=[
+        "pip",
+        "six>=1.16.0",
+        "numpy>=1.26.0",
+        "scipy>=1.11.0",
+        "pandas>=2.1.0",
+        "matplotlib>=3.8.0",
+        "PyYAML>=6.0.0",
+        "pytz",
+        "Jinja2>=3.0.0",
+        "ply>=3.11",
+        "vtk>=9.2.0",
+        "pyvista>=0.42",
+    ],
 )
