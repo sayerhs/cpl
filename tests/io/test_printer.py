@@ -316,7 +316,7 @@ momentOfInertia     #codeStream
 
 def test_file_write(cparse, tmpdir):
     expected = r"""/*---------------------------------------------------------------------------*\
- * Caelus (http://www.caelus-cml.com)
+ * Caelus (https://github.com/sayerhs/cpl)
  *
  * Caelus Python Library (CPL) v0.0.2-50-gb0244da
  * Auto-generated on: 2018-04-08 01:55:07 (UTC)

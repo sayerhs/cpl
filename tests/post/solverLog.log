@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*\
  Caelus 7.04                                   
- Web:      www.caelus-cml.com 
 \*---------------------------------------------------------------------------*/
 Build  : 7.04-b66c1d6952b6
 Exec   : /home/cnsidero/Development/AppliedCCM/caelus/caelus-nextrelease-chris/platforms/linux64g++DPOpt/bin/pisoSolver -case .
