@@ -13,8 +13,11 @@ without the need to source *environment* files (e.g., using
 Some highlights of CPL include:
 
 - The library is built using Python programming language and uses scientific
-  python libraries (e.g., NumPy, Matplotlib). Versions 2.0.0 and older support
-  both python 2.7 and 3.x. Newer versions only support python 3.6 and higher.
+  python libraries (e.g., NumPy, Matplotlib).
+
+  - Versions 2.0.0 and older support both python 2.7 and 3.x.
+  - Version 2.0.0 requires python-3.6 or higher.
+  - Version 3.0.0 reequires python-3.10 or higher.
 
 - Uses `YAML <http://yaml.org>`_ format for configuration files and input files.
   The YAML files can be read, manipulated, and written out to disk using

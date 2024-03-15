@@ -9,7 +9,7 @@ Caelus Python Library (CPL)
 
 Caelus Python Library is a companion package for interacting with `OpenFOAM
 <http://openfoam.com/>`_ and its derivative `Caelus CML
-<http://www.caelus-cml.com>`_ open-source CFD packages. The library provides
+<https://www.appliedccm.com/caelus/>`_ open-source CFD packages. The library provides
 utilities for pre and post-processing, as well as automating various aspects of
 the CFD simulation workflow. Written in Python, it provides a consistent
 user-interface across the three major operating systems Linux, Windows, and Mac

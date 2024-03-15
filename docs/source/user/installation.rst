@@ -3,17 +3,16 @@
 Installing Caelus Python Library (CPL)
 ======================================
 
-CPL is a python package for use with `OpenFOAM <https://openfoam.com>`_ or
-`Caelus CML <http://www.caelus-cml.com>`_ simulation suite. Therefore, it is
-assumed that users have a properly functioning OpenFOAM or CML installation on
-their system. In addition to OpenFoAM/Caelus CML and python, it also requires
-several scientific python libraries:
+CPL is a python package for use with `OpenFOAM <https://openfoam.com>`_ or `Caelus CML <https://www.appliedccm.com/caelus/>`_.
+Therefore, it is assumed that users have a properly functioning OpenFOAM
+installation on their system. In addition to OpenFoAM/Caelus CML and python, it
+also requires several scientific python libraries:
 
    - `NumPy <http://www.numpy.org>`_ -- Arrays, linear algebra
    - `Pandas <http://pandas.pydata.org>`_ -- Data Analysis library
    - `Matplotlib <https://matplotlib.org>`_ -- Plotting package
 
-The quickey way to install CPL is to install through `Anaconda Python
+The quickest way to install CPL is to install through `Anaconda Python
 Distribution <http://docs.continuum.io/anaconda/index>`_. This distribution
 provides a comprehensive set of python packages necessary to get up and running
 with CPL. Once installed, please proceed to :ref:`check_install` to learn how to
