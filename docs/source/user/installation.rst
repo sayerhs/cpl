@@ -52,8 +52,6 @@ Install Anaconda
    environment to be updated.
 
 
-.. _install_dev_git:
-
 Install CPL from conda-forge (recommended)
 ------------------------------------------
 
@@ -63,6 +61,15 @@ Install CPL from conda-forge (recommended)
 
       conda install -c conda-forge caelus
 
+Install using pip
+-----------------
+
+.. code-block:: console
+
+   pip install py-caelus
+
+.. _install_dev_git:
+
 Install CPL from source
 -----------------------
 
@@ -71,8 +78,8 @@ Install CPL from source
    .. code-block:: console
 
       # Change to directory where you want to develop/store sources
-      git clone https://bitbucket.org/appliedccm/CPL
-      cd CPL
+      git clone https://github.com/sayerhs/cpl
+      cd cpl
 
 #. Create a custom conda environment
 
@@ -84,7 +91,7 @@ Install CPL from source
    .. note::
 
       #. Developers interested in developing CPL might want to install the
-         development environment available in :file:`etc/caelus2-dev.yml`. This
+         development environment available in :file:`etc/caelus3-dev.yml`. This
          installs additional packages like ``sphinx`` for document generation,
          and ``pytest`` for running the test suite.
 
@@ -124,8 +131,8 @@ Install CPL
    .. code-block:: console
 
       # Change to directory where you want to develop/store sources
-      git clone https://bitbucket.org/appliedccm/CPL
-      cd CPL
+      git clone https://github.com/sayerhs/cpl
+      cd cpl
 
 #. Create a virtual environment with all dependencies for CPL
 

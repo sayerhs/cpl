@@ -27,6 +27,6 @@ requirements:
     - pyvista
 
 about:
-  home: https://bitbucket.org/appliedccm/cpl
+  home: https://github.com/sayerhs/cpl
   license: "Apache License 2.0"
   summmary: Python library for use with Caelus CML and OpenFOAM

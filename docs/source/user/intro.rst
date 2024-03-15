@@ -36,7 +36,7 @@ Usage
 
 CPL is distributed under the terms Apache License Version 2.0 open-source
 license. Users can install the package using `conda <https://conda.io>`_, or
-access the `Git repository <https://bitbucket.org/appliedccm/cpl>`_ hosted on
+access the `Git repository <https://github.com/sayerhs/cpl>`_ hosted on
 BitBucket. Please follow :ref:`installation` for more details on how to install
 CPL and its dependencies within an existing Python installation on your system.
 
