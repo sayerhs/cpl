@@ -246,6 +246,6 @@ def split_path(fname):
     return (fdir, base, ext)
 
 
-def path_or_cwd(pdir: Path) -> Path:
+def path_or_cwd(pdir: Path | str | None) -> Path:
     """Sanitize the given path. If None, return current workding directory"""
     return Path(abspath(str(pdir))) if pdir is not None else Path.cwd()

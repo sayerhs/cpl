@@ -14,3 +14,8 @@ Provides log analysis and plotting utilities
 
 from .funcobj import PostProcessing
 from .logs import SolverLog
+
+__all__ = [
+    "PostProcessing",
+    "SolverLog",
+]
