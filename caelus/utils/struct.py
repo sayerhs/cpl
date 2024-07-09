@@ -130,7 +130,7 @@ def gen_yaml_encoder(cls):
             yaml.Dumper.__init__(self, *args, **kwargs)
             self.add_representer(cls, struct_representer)
             self.add_representer(np.ndarray, numpy_representer)
-            self.add_representer(np.float_, numpy_scalar_representer)
+            self.add_representer(np.float64, numpy_scalar_representer)
             self.add_representer(np.int_, numpy_scalar_representer)
             self.add_representer(np.bool_, numpy_scalar_representer)
             self.add_representer(np.float32, numpy_scalar_representer)

@@ -209,7 +209,7 @@ class CaelusParser(object):
                 #     print(p[2])
                 #     p[0] = np.asarray(p[2])
                 else:
-                    p[0] = np.asarray(p[2], dtype=np.float_)
+                    p[0] = np.asarray(p[2], dtype=np.float64)
             except (ValueError, TypeError):
                 p[0] = p[2]
         else:
@@ -223,7 +223,7 @@ class CaelusParser(object):
             elif all(isinstance(ii, (np.ndarray, list)) for ii in p[3]):
                 p[0] = np.asarray(p[3])
             else:
-                p[0] = np.asarray(p[3], dtype=np.float_)
+                p[0] = np.asarray(p[3], dtype=np.float64)
         except (ValueError, TypeError):
             p[0] = p[3]
 
@@ -240,7 +240,7 @@ class CaelusParser(object):
                     p[1], np.asarray(p[2]))
             else:
                 p[0] = dtypes.ListTemplate(
-                    p[1], np.asarray(p[2], dtype=np.float_))
+                    p[1], np.asarray(p[2], dtype=np.float64))
         except (ValueError, TypeError):
             p[0] = dtypes.ListTemplate(p[1], p[2])
 
