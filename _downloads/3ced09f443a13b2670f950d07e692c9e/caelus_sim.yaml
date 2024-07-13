@@ -1,0 +1,98 @@
+# -*- mode: yaml -*-
+
+# caelus_sim requires a simulation section in YAML file
+simulation:
+
+  # Name of the parametric run top-level directory. Can also set using -n flag
+  # at command line which takes precedence
+  sim_name: airfoil_demo
+
+  # The template directory for creating case directories. Requires 'path'
+  # argument. Other optional variables can be provided to control clone behavior
+  template:
+    path: "./airfoil_template"
+    # copy_polymesh: no
+    # copy_zero: no
+    # copy_scripts: no
+    # extra_patterns: ["*.py"]
+
+  # This section details the parametric run options
+  simulation_setup:
+    # User defined format for case directory names
+    case_format: "Re_{Re:.1e}/aoa_{aoa:+06.2f}"
+
+    # The matrix of runs
+    run_matrix:
+      - Re: [1.0e6, 2.0e6]
+        aoa:
+          start: 0.0
+          stop: 2.0
+          step: 2.0
+
+      # Only run one Re for the negative AOA
+      - Re: [1.0e6]
+        aoa: [-4.0, -2.0]
+
+    # Other parameters that are passed to cmlControls file
+    constant_parameters:
+      density: 1.225
+      Uinf: 15.0
+      chord: 1.0
+      turbKe: 3.75e-07
+      turbulenceModel: kOmegaSST
+
+    # User-defined transformations on the variables
+    apply_transforms:
+      transform_type: code
+      # Only pass these variables to cmlControls
+      extract_vars: [velVector, Re, nuValue, liftVector, dragVector]
+      # Python code that is executed before generating case parameters
+      code: |
+        Re = float(Re)
+        aoaRad = np.radians(aoa)
+        Ux = Uinf * np.cos(aoaRad)
+        Uy = Uinf * np.sin(aoaRad)
+        velVector = np.array([Ux, Uy, 0.0])
+        nuValue = Uinf / Re
+        liftVector = np.array([-np.sin(aoaRad), np.cos(aoaRad), 0.0])
+        dragVector = np.array([np.cos(aoaRad), np.sin(aoaRad), 0.0])
+
+  # Configuration for running each case within this analysis group
+  run_configuration:
+    # Number of MPI ranks for parallel runs
+    num_ranks: 2
+    # Extra MPI arguments passed during parallel runs
+    # mpi_extra_args: -machinefile mymachines
+
+    # Should the case be reconstructed on successful run
+    reconstruct: no
+
+    # Modify the default template input files
+    change_inputs:
+      controlDict:
+        endTime: 1
+        writeFormat: binary
+
+    # Pre-processing actions to be performed before solve. The syntax is similar
+    # to the Tasks YAML interface. Note, the case manager will automatically
+    # perform decomposition and similar tasks. Users only need to provide
+    # non-standard pre-processing actions (e.g., copy actions, changeDictionary,
+    # or mesh generation) during the prep phase.
+    prep:
+      - copy_tree:
+          src: "0.orig"
+          dest: "0"
+
+    # Perform the solve
+    solve: simpleSolver
+
+    # solve:
+    #   - solver: potentialSolver
+    #     solver_args: "-initializeUBCs -noFunctionObjects"
+
+    #   - solver: pimpleSolver
+
+    # Similar to prep, perform post-processing actions
+    # post:
+    #   - run_command:
+    #       cmd_name: "python ./my_post_process.py"
