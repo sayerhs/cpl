@@ -8,7 +8,7 @@ Mechanics Library (CML).
 
 from setuptools import setup, find_packages
 
-VERSION = "3.0.0"
+VERSION = "4.0.0"
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -26,7 +26,7 @@ classifiers = [
 
 
 setup(
-    name="caelus",
+    name="py-caelus",
     version=VERSION,
     url="https://sayerhs.github.io/cpl/",
     license="Apache License, Version 2.0",
@@ -57,7 +57,6 @@ setup(
     """,
     python_requires='>=3.10',
     install_requires=[
-        "pip",
         "six>=1.16.0",
         "numpy>=1.26.0",
         "scipy>=1.11.0",
