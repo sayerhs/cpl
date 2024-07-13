@@ -345,8 +345,18 @@ class CaelusParser(object):
                       | identifier dimension vector
                       | identifier dimension symm_tensor
                       | identifier dimension tensor
+                      | identifier dimension MACRO_VAR
         """
         p[0] = dtypes.DimValue(p[1], p[2], p[3])
+
+    def p_dim_value_nokey(self, p):
+        """ dim_value : dimension number
+                      | dimension vector
+                      | dimension symm_tensor
+                      | dimension tensor
+                      | dimension MACRO_VAR
+        """
+        p[0] = dtypes.DimValue("", p[1], p[2])
 
     def p_dimension(self, p):
         """ dimension : LBRACKET INT_CONST INT_CONST INT_CONST INT_CONST INT_CONST INT_CONST INT_CONST RBRACKET
