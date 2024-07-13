@@ -257,6 +257,16 @@ def test_dimension_str(cparse):
     out = cparse.parse(text)
     assert(isinstance(out.kappa.dims, dtypes.DimStr))
 
+def test_dimension_nokey(cparse):
+    """Test dimension entry without an identifier key"""
+    text = """
+    rho [1 -3 0 0 0] $rho_input;
+    """
+    out = cparse.parse(text)
+    assert isinstance(out.rho, dtypes.DimValue)
+    assert out.rho.name == ""
+    assert out.rho.value.startswith("$")
+
 def test_arrays(cparse):
     text = """
 vertices
