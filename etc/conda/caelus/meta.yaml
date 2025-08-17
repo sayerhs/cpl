@@ -2,7 +2,7 @@
 
 package:
   name: caelus
-  version: "v4.0.1"
+  version: "v5.0.0"
 
 source:
   git_rev: main

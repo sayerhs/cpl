@@ -5,6 +5,7 @@
 ###
 
 FILES=(setup.py
+       pyproject.toml
        caelus/version.py
        docs/source/conf.py
        etc/conda/caelus/meta.yaml
@@ -14,5 +15,5 @@ FILES=(setup.py
       )
 
 for fname in ${FILES[@]} ; do
-    sed -i '' -e 's/4.0.0/4.0.1/' ${fname}
+    sed -i '' -e 's/4\.0\.1/5.0.0/' ${fname}
 done

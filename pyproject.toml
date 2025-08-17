@@ -1,9 +1,75 @@
+[project]
+name = "py-caelus"
+version = "5.0.0"
+requires-python = ">=3.10"
+authors = [
+  {name = "Shreyas Ananthan", email = "shreyas@umd.edu" },
+  {name = "Chris Sideroff", email = "cnsidero@gmail.com"},
+]
+maintainers = [
+  {name = "Shreyas Ananthan", email = "shreyas@umd.edu" },
+  {name = "Chris Sideroff", email = "cnsidero@gmail.com"},
+]
+description="Caelus python library"
+readme = "README.md"
+license = "Apache-2.0"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Operating System :: POSIX",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Topic :: Scientific/Engineering :: Visualization",
+  "Topic :: Utilities",
+]
+dependencies = [
+  "six>=1.16.0",
+  "numpy>=1.26.0",
+  "pandas>=2.1.0",
+  "matplotlib>=3.8.0",
+  "PyYAML>=6.0.0",
+  "pytz",
+  "Jinja2>=3.0.0",
+  "ply>=3.11",
+]
+
+[project.scripts]
+caelus = "caelus.scripts.caelus:main"
+caelus_tutorials = "caelus.scripts.caelus_tutorials:main"
+caelus_sim = "caelus.scripts.caelus_sim:main"
+
+[project.optional-dependencies]
+viz = [
+  "vtk>=9.2.0",
+  "pyvista>=0.42",
+]
+test = [
+  "pytest>=7.4.0",
+  "pytest-cov>=4.1.0",
+]
+dev = [
+  "pylint>=3.1.0",
+  "black>23.12.1",
+  "isort>=5.13.0"
+]
+
 [build-system]
 requires = [
     "setuptools>=42",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["caelus*"]
+namespaces = false
 
 [tool.black]
 line-length = 80
