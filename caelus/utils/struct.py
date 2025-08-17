@@ -245,7 +245,7 @@ class Struct(OrderedDict, MutableMapping):
             stream=stream,
             Dumper=self.__class__.yaml_encoder,
             default_flow_style=default_flow_style,
-            **kwargs
+            **kwargs,
         )
 
     def pget(self, path, sep="."):
