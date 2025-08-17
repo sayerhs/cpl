@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.post.logs &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../index.html">
+<!--      <img src="../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.logs</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.post.logs</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Caelus Log Analyzer</span>
+<span class="sd">-------------------</span>
+
+<span class="sd">This module provides utilities to parse and extract information from solver</span>
+<span class="sd">outputs (log files) that can be used to monitor and analyze the convergence of</span>
+<span class="sd">runs. It implements the :class:`SolverLog` class that can be used to access</span>
+<span class="sd">time histories of residuals for various fields of interest.</span>
+
+<span class="sd">Example:</span>
+<span class="sd">    &gt;&gt;&gt; logs = SolverLog()</span>
+<span class="sd">    &gt;&gt;&gt; print (&quot;Available fields: &quot;, logs.fields)</span>
+<span class="sd">    &gt;&gt;&gt; ux_residuals = logs.residual(&quot;Ux&quot;)</span>
+
+<span class="sd">The actual extraction of the logs is performed by :class:`LogProcessor` which</span>
+<span class="sd">uses regular expressions to match lines of interest and convert them into</span>
+<span class="sd">tabular files suitable for loading with ``numpy.loadtxt`` or</span>
+<span class="sd">``pandas.read_table``.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">join</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">osutils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.coroutines</span><span class="w"> </span><span class="kn">import</span> <span class="n">coroutine</span><span class="p">,</span> <span class="n">grep</span>
+
+<span class="n">_lgr</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="LogProcessor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LogProcessor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process the log file and extract information for analysis.</span>
+
+<span class="sd">    This is a low-level utility to parse log files and extract information</span>
+<span class="sd">    using regular expressions from the log file. Users should interact with</span>
+<span class="sd">    solver output using the :class:`SolverLog` class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Regular expressions that match common lines of interest in a CML solver</span>
+    <span class="c1"># output</span>
+    <span class="n">expressions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">time</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;^Time = (\S+)&quot;</span><span class="p">,</span>
+        <span class="n">courant</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;^Courant Number mean: (\S+) max: (\S+)&quot;</span><span class="p">,</span>
+        <span class="n">residual</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;(\S+): *Solving for (\S+), Initial residual = (\S+), Final residual = (\S+), No Iterations (\S+)&quot;</span><span class="p">,</span>
+        <span class="n">bounding</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;^bounding (\S+), min:\s*(\S+)\s+max:\s*(\S+)\s+average:\s*(\S+)&quot;</span><span class="p">,</span>
+        <span class="n">continuity</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;time step continuity errors : sum local = (\S+), global = (\S+), cumulative = (\S+)&quot;</span><span class="p">,</span>
+        <span class="n">exec_time</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;ExecutionTime = (\S+) s  ClockTime = (\S+) s&quot;</span><span class="p">,</span>
+        <span class="n">convergence</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;(\S+) solution converged in (\S+) iterations&quot;</span><span class="p">,</span>
+        <span class="n">completion</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;^End$&quot;</span><span class="p">,</span>
+        <span class="n">exiting</span><span class="o">=</span><span class="s2">&quot;^.*(CAELUS|OpenFOAM).*exiting&quot;</span><span class="p">,</span>
+        <span class="n">fatal_error</span><span class="o">=</span><span class="s2">&quot;^.*(CAELUS|OpenFOAM).*FATAL ERROR&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logfile</span><span class="p">,</span> <span class="n">case_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logs_dir</span><span class="o">=</span><span class="s2">&quot;logs&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            logfile (str): Name of the Caelus log file</span>
+<span class="sd">            casedir (path): Path to the case directory (default: cwd)</span>
+
+<span class="sd">            logs_dir (path): Relative path to the directory where logs</span>
+<span class="sd">                             are written</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#: Absolute path to the case directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span> <span class="o">=</span> <span class="n">case_dir</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="c1">#: Absolute path to the directory containing processed logs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ensure_directory</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">,</span> <span class="n">logs_dir</span><span class="p">))</span>
+        <span class="c1">#: User-supplied log file (relative to case directory)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">,</span> <span class="n">logfile</span><span class="p">)</span>
+
+        <span class="c1">#: Track the latest time that was processed by the utility</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="c1">#: Time as a string (for output)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_str</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+
+        <span class="c1">#: (variable, subIteration) pairs tracking the number of predictor</span>
+        <span class="c1">#: subIterations for each flow variable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subiter_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1">#: Open file handles for the residual outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">res_files</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="c1">#: Open file handles for bounding outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bound_files</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+
+        <span class="c1">#: List of user-defined rules to process</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_rules</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1">#: Extra actions for pre-defined expressions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_rules</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1">#: Flag indicating convergence message in logs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1">#: Flag indicating solver completion in logs (if End is found)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solve_completed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1">#: Flag indicating whether the solver failed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1">#: Timestep when the steady state solver converged</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converged_time</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="c1">#: Flag indicating one timestep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tick</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1">#: Flag indicating user exit (Ctrl+C) in watch mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_exit</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process log file&quot;&quot;&quot;</span>
+        <span class="n">pat_builtin</span> <span class="o">=</span> <span class="p">[</span><span class="n">grep</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_builtins</span><span class="p">()]</span>
+        <span class="n">patterns</span> <span class="o">=</span> <span class="n">pat_builtin</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_rules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_process_file</span><span class="p">(</span><span class="n">patterns</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_completed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_save_state</span><span class="p">()</span>
+
+<div class="viewcode-block" id="LogProcessor.watch_file">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.watch_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">watch_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wait_time</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process a log file for an in-progress run.</span>
+
+<span class="sd">        This method takes one parameter, ``target``, a coroutine that is called</span>
+<span class="sd">        at the end of every timestep. See</span>
+<span class="sd">        :class:`~caelus.post.plots.LogWatcher` for an example of using target</span>
+<span class="sd">        to plot residuals for monitoring the run.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target (coroutine): A consumer acting on the data</span>
+<span class="sd">            wait_time (seconds): Wait time between checking the log file for</span>
+<span class="sd">                                 updates</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">signal</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_signal_handler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Handle quit signal for plot watching&quot;&quot;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user_exit</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">_signal_handler</span><span class="p">)</span>
+        <span class="n">pat_builtin</span> <span class="o">=</span> <span class="p">[</span><span class="n">grep</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_builtins</span><span class="p">()]</span>
+        <span class="n">patterns</span> <span class="o">=</span> <span class="n">pat_builtin</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_rules</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="k">while</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_completed</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_exit</span><span class="p">):</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">pat</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">:</span>
+                        <span class="n">pat</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tick</span> <span class="ow">and</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">target</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solve_completed</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_tick</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_completed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_save_state</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_exit</span></div>
+
+
+<div class="viewcode-block" id="LogProcessor.add_rule">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.add_rule">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regexp</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a user-defined rule for processing</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            regexp (str): A string that can be compiled into a regexp</span>
+<span class="sd">            action (func): A coroutine that can consume matching patterns</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">act_list</span> <span class="o">=</span> <span class="n">actions</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="s2">&quot;append&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">actions</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grep</span><span class="p">(</span><span class="n">regexp</span><span class="p">,</span> <span class="n">act_list</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="LogProcessor.extend_rule">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.extend_rule">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extend_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line_type</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extend a pre-defined regexp with extra functions</span>
+
+<span class="sd">        The default action for LogProcessor is to output processed lines into</span>
+<span class="sd">        files. Additional actions on pre-defined lines (e.g., &quot;time&quot;) can be</span>
+<span class="sd">        hooked via this method.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            line_type (str): Pre-defined line type</span>
+<span class="sd">            actions (list): A list of coroutines that receive the matching lines</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">act_list</span> <span class="o">=</span> <span class="n">actions</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="s2">&quot;append&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">actions</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">line_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">expressions</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No pre-defined line type: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">line_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_rules</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">line_type</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">act_list</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_builtins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper function to initialize builtin patterns&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">rexp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">expressions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">_processor&quot;</span> <span class="o">%</span> <span class="n">k</span><span class="p">)()</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">rexp</span><span class="p">,</span> <span class="p">[</span><span class="n">func</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extra_rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">[]))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patterns</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper function to process logs of a completed run&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">pat</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">:</span>
+                    <span class="n">pat</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">current_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the current state of the logs processor&quot;&quot;&quot;</span>
+        <span class="n">curr_state</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">logfile</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="p">),</span>
+            <span class="n">time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
+            <span class="n">converged</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span>
+            <span class="n">solve_completed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">solve_completed</span><span class="p">,</span>
+            <span class="n">converged_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">converged_time</span><span class="p">,</span>
+            <span class="n">failed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">failed</span><span class="p">,</span>
+            <span class="n">fields</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">res_files</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+            <span class="n">bounding_fields</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bound_files</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">curr_state</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_save_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;.logs_state.json&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save state of the logs for future introspection&quot;&quot;&quot;</span>
+        <span class="n">curr_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">curr_state</span><span class="p">,</span> <span class="n">fh</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LogProcessor.time_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.time_processor">[docs]</a>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">time_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Processor for the Time line in log files&quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">rexp</span> <span class="o">=</span> <span class="k">yield</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rexp</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_str</span> <span class="o">=</span> <span class="n">rexp</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># Reset subIteration counters</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subiter_map</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subiter_map</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tick</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="LogProcessor.residual_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.residual_processor">[docs]</a>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residual_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process a residual line and output data to the relevant file.&quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">get_file</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">solver</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Helper method to get the file handle for a field.</span>
+
+<span class="sd">            On first invocation, it creates the file with headers. On</span>
+<span class="sd">            subsequent invocations it just returns the relevant file handle.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">res_files</span><span class="p">:</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="n">field</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;# Field: </span><span class="si">%s</span><span class="s2">; Solver: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">solver</span><span class="p">))</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="s2">&quot;Time SubIteration InitialResidual FinalResidual NoIterations</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">res_files</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">fh</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">res_files</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+
+        <span class="c1"># end get_file</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">rexp</span> <span class="o">=</span> <span class="k">yield</span>
+                <span class="n">solver</span> <span class="o">=</span> <span class="n">rexp</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># e.g., PCB, GAMG, etc.</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">rexp</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Ux, Uy, p, etc.</span>
+
+                <span class="n">icorr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subiter_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subiter_map</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">icorr</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="n">get_file</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">solver</span><span class="p">)</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">time_str</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="si">%d</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">icorr</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">rexp</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)])</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">GeneratorExit</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">fh</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">res_files</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">fh</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+                    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="LogProcessor.bounding_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.bounding_processor">[docs]</a>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bounding_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the bounding lines&quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">get_file</span><span class="p">(</span><span class="n">field</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Helper method to get the file handle for a field.</span>
+
+<span class="sd">            On first invocation, it creates the file with headers. On</span>
+<span class="sd">            subsequent invocations it just returns the relevant file handle.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bound_files</span><span class="p">:</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span>
+                    <span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="s2">&quot;bounding_&quot;</span> <span class="o">+</span> <span class="n">field</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span>
+                <span class="p">)</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;# Bounding Field: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">field</span><span class="p">))</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Time SubIteration Min Max Average</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bound_files</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">fh</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bound_files</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+
+        <span class="c1"># end get_file</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">rexp</span> <span class="o">=</span> <span class="k">yield</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">rexp</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">icorr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subiter_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="n">get_file</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">time_str</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="si">%d</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">icorr</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rexp</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">GeneratorExit</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">fh</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bound_files</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">fh</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+                    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="LogProcessor.continuity_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.continuity_processor">[docs]</a>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">continuity_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process continuity error lines from log file&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="s2">&quot;continuity_errors.dat&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s2">&quot;Time SubIteration LocalError GlobalError CumulativeError</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">rexp</span> <span class="o">=</span> <span class="k">yield</span>
+                <span class="n">icorr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subiter_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;continuity&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subiter_map</span><span class="p">[</span><span class="s1">&#39;continuity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">icorr</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">time_str</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="si">%d</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">icorr</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rexp</span><span class="o">.</span><span class="n">groups</span><span class="p">())</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LogProcessor.exec_time_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.exec_time_processor">[docs]</a>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exec_time_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process execution/clock time lines&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="s2">&quot;clock_time.dat&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Time ExecutionTime ClockTime</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">rexp</span> <span class="o">=</span> <span class="k">yield</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">time_str</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rexp</span><span class="o">.</span><span class="n">groups</span><span class="p">())</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tick</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="LogProcessor.courant_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.courant_processor">[docs]</a>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">courant_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process Courant Number lines&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="s2">&quot;courant.dat&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Time CoMean CoMax</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">rexp</span> <span class="o">=</span> <span class="k">yield</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">time_str</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rexp</span><span class="o">.</span><span class="n">groups</span><span class="p">())</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LogProcessor.convergence_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.convergence_processor">[docs]</a>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convergence_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process convergence information (steady solvers only)&quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">rexp</span> <span class="o">=</span> <span class="k">yield</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">converged_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rexp</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="LogProcessor.completion_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.completion_processor">[docs]</a>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">completion_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process End line indicating solver completion&quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="k">yield</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solve_completed</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="LogProcessor.exiting_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.exiting_processor">[docs]</a>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exiting_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process exiting option&quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="k">yield</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">failed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solve_completed</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="LogProcessor.fatal_error_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.LogProcessor.fatal_error_processor">[docs]</a>
+    <span class="nd">@coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fatal_error_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process CAELUS FATAL ERROR line&quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="k">yield</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">failed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solve_completed</span> <span class="o">=</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SolverLog">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.SolverLog">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SolverLog</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Caelus solver log file interface.</span>
+
+<span class="sd">    :class:`SolverLog` extracts information from solver outputs and allows</span>
+<span class="sd">    interaction with the log data as ``numpy.ndarray`` or ``pandas.Dataframe``</span>
+<span class="sd">    objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">case_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logs_dir</span><span class="o">=</span><span class="s2">&quot;logs&quot;</span><span class="p">,</span> <span class="n">force_reload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            case_dir (path): Absolute path to case directory</span>
+<span class="sd">            logs_dir (path): Path to logs directory relative to case_dir</span>
+
+<span class="sd">            force_reload (bool): If True, force reread of the log file even if</span>
+<span class="sd">                                 the logs were processed previously.</span>
+
+<span class="sd">            logfile (file): If force_reload, then log file to process</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: An error is raised if no logs directory is available</span>
+<span class="sd">                and the user has not provided a logfile that can be processed</span>
+<span class="sd">                on the fly during initialization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">casedir</span> <span class="o">=</span> <span class="n">case_dir</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">casedir</span><span class="p">,</span> <span class="n">logs_dir</span><span class="p">)</span>
+        <span class="n">has_logs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="s2">&quot;.logs_state.json&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_logs</span> <span class="ow">and</span> <span class="n">logfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot find processed logs data. &quot;</span> <span class="s2">&quot;Provide a valid log file.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">has_logs</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+                <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="s2">&quot;.logs_state.json&quot;</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">logfile</span><span class="p">:</span>
+                <span class="n">inpfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">logfile</span><span class="p">)</span>
+                <span class="n">oldfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;logfile&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">oldfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">inpfile</span> <span class="o">!=</span> <span class="n">oldfile</span><span class="p">):</span>
+                    <span class="n">force_reload</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">solve_completed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounding_fields</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">force_reload</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">has_logs</span><span class="p">:</span>
+            <span class="n">logs</span> <span class="o">=</span> <span class="n">LogProcessor</span><span class="p">(</span><span class="n">logfile</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">casedir</span><span class="p">,</span> <span class="n">logs_dir</span><span class="p">)</span>
+            <span class="n">logs</span><span class="p">()</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">logs</span><span class="o">.</span><span class="n">current_state</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_completed</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Solve not completed in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">casedir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">failed</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Detected failed run in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">casedir</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SolverLog.residual">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.SolverLog.residual">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">all_cols</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the residual time-history for a field&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="s2">&quot;Invalid field name: </span><span class="si">%s</span><span class="s2">. Valid fields are: </span><span class="si">%s</span><span class="s2">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="n">field</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span> <span class="k">if</span> <span class="n">all_cols</span> <span class="k">else</span> <span class="n">data</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SolverLog.bounding_var">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.SolverLog.bounding_var">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bounding_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the bounding information for a field&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounding_fields</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="s2">&quot;Invalid field name: </span><span class="si">%s</span><span class="s2">. Valid fields are: </span><span class="si">%s</span><span class="s2">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounding_fields</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="s2">&quot;bounding_&quot;</span> <span class="o">+</span> <span class="n">field</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="SolverLog.continuity_errors">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.SolverLog.continuity_errors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">continuity_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the time history of continuity errors&quot;&quot;&quot;</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="s2">&quot;continuity_errors.dat&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="SolverLog.clock_time">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.logs.SolverLog.clock_time">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clock_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the clock time table&quot;&quot;&quot;</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs_dir</span><span class="p">,</span> <span class="s2">&quot;clock_time.dat&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.logs</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

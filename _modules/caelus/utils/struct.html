@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.utils.struct &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../index.html">
+<!--      <img src="../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.utils.struct</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.utils.struct</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Struct Module</span>
+<span class="sd">-------------</span>
+
+<span class="sd">Implements :class:`~caelus.utils.struct.Struct`.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">six</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_merge</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="n">that</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursive merge from *that* mapping to *this* mapping</span>
+
+<span class="sd">    A utility function to recursively merge entries. New entries are added, and</span>
+<span class="sd">    existing entries are updated.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        this (dict): Mapping that is updated</span>
+<span class="sd">        that (dict): Mapping to be merged. Unmodified within the function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">this_keys</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
+    <span class="n">that_keys</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">that</span><span class="p">)</span>
+
+    <span class="c1"># Items only in &#39;that&#39; dict</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">that_keys</span> <span class="o">-</span> <span class="n">this_keys</span><span class="p">:</span>
+        <span class="n">this</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">that</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">this_keys</span> <span class="o">&amp;</span> <span class="n">that_keys</span><span class="p">:</span>
+        <span class="n">vorig</span> <span class="o">=</span> <span class="n">this</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="n">vother</span> <span class="o">=</span> <span class="n">that</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+        <span class="c1"># pylint: disable=bad-continuation</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">vorig</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vother</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">vorig</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">id</span><span class="p">(</span><span class="n">vother</span><span class="p">))</span>
+        <span class="p">):</span>
+            <span class="n">_merge</span><span class="p">(</span><span class="n">vorig</span><span class="p">,</span> <span class="n">vother</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">this</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vother</span>
+
+
+<div class="viewcode-block" id="merge">
+<a class="viewcode-back" href="../../../dev/caelus.utils.html#caelus.utils.struct.merge">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursively merge mappings and return consolidated dict.</span>
+
+<span class="sd">    Accepts a variable number of dictionary mappings and returns a new</span>
+<span class="sd">    dictionary that contains the merged entries from all dictionaries. Note</span>
+<span class="sd">    that the update occurs left to right, i.e., entries from later dictionaries</span>
+<span class="sd">    overwrite entries from preceeding ones.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The consolidated map</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="vm">__class__</span><span class="p">()</span>
+    <span class="n">_merge</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+    <span class="n">_merge</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">_merge</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+<div class="viewcode-block" id="gen_yaml_decoder">
+<a class="viewcode-back" href="../../../dev/caelus.utils.html#caelus.utils.struct.gen_yaml_decoder">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gen_yaml_decoder</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a custom YAML decoder with non-default mapping class</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cls: Class used for mapping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">struct_constructor</span><span class="p">(</span><span class="n">loader</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Custom constructor for Struct&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">construct_pairs</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+
+    <span class="c1"># pylint: disable=too-many-ancestors</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">StructYAMLLoader</span><span class="p">(</span><span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Custom YAML loader for Struct data&quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_constructor</span><span class="p">(</span>
+                <span class="n">yaml</span><span class="o">.</span><span class="n">resolver</span><span class="o">.</span><span class="n">BaseResolver</span><span class="o">.</span><span class="n">DEFAULT_MAPPING_TAG</span><span class="p">,</span>
+                <span class="n">struct_constructor</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">StructYAMLLoader</span></div>
+
+
+
+<div class="viewcode-block" id="gen_yaml_encoder">
+<a class="viewcode-back" href="../../../dev/caelus.utils.html#caelus.utils.struct.gen_yaml_encoder">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gen_yaml_encoder</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a custom YAML encoder with non-default mapping class</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cls: Class used for mapping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">struct_representer</span><span class="p">(</span><span class="n">dumper</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert Struct to dictionary for YAML&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">dumper</span><span class="o">.</span><span class="n">represent_dict</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">numpy_representer</span><span class="p">(</span><span class="n">dumper</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert numpy arrays to YAML&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">dumper</span><span class="o">.</span><span class="n">represent_list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">numpy_scalar_representer</span><span class="p">(</span><span class="n">dumper</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converty numpy dtypes to YAML&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">dumper</span><span class="o">.</span><span class="n">represent_int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">dumper</span><span class="o">.</span><span class="n">represent_float</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+    <span class="c1"># pylint: disable=too-many-ancestors</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">StructYAMLDumper</span><span class="p">(</span><span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Custom YAML dumper for Struct data&quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">struct_representer</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy_representer</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">numpy_scalar_representer</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">,</span> <span class="n">numpy_scalar_representer</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">numpy_scalar_representer</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">numpy_scalar_representer</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">StructYAMLDumper</span></div>
+
+
+
+<div class="viewcode-block" id="StructMeta">
+<a class="viewcode-back" href="../../../dev/caelus.utils.html#caelus.utils.struct.StructMeta">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StructMeta</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;YAML interface registration</span>
+
+<span class="sd">    Simplify the registration of custom yaml loader/dumper classes for Struct</span>
+<span class="sd">    class hierarchy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="n">mcls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">cdict</span><span class="p">):</span>
+        <span class="n">yaml_decoder</span> <span class="o">=</span> <span class="n">cdict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;yaml_decoder&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">yaml_encoder</span> <span class="o">=</span> <span class="n">cdict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;yaml_encoder&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">StructMeta</span><span class="p">,</span> <span class="n">mcls</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">mcls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">cdict</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">yaml_decoder</span> <span class="o">=</span> <span class="n">yaml_decoder</span> <span class="ow">or</span> <span class="n">gen_yaml_decoder</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">yaml_encoder</span> <span class="o">=</span> <span class="n">yaml_encoder</span> <span class="ow">or</span> <span class="n">gen_yaml_encoder</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span></div>
+
+
+
+<span class="c1"># pylint: disable=too-many-ancestors</span>
+<div class="viewcode-block" id="Struct">
+<a class="viewcode-back" href="../../../dev/caelus.utils.html#caelus.utils.struct.Struct">[docs]</a>
+<span class="nd">@six</span><span class="o">.</span><span class="n">add_metaclass</span><span class="p">(</span><span class="n">StructMeta</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Struct</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dictionary that supports both key and attribute access.</span>
+
+<span class="sd">    Struct is inspired by Matlab ``struct`` data structure that is intended to</span>
+<span class="sd">    support both key and attribute access. It has the following features:</span>
+
+<span class="sd">       #. Preserves ordering of members as initialized</span>
+<span class="sd">       #. Provides attribute and dictionary-style lookups</span>
+<span class="sd">       #. Read/write YAML formatted data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Struct.from_yaml">
+<a class="viewcode-back" href="../../../dev/caelus.utils.html#caelus.utils.struct.Struct.from_yaml">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_yaml</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize mapping from a YAML string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stream: A string or valid file handle</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Struct: YAML data as a python object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">yaml_decoder</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Struct.load_yaml">
+<a class="viewcode-back" href="../../../dev/caelus.utils.html#caelus.utils.struct.Struct.load_yaml">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_yaml</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a YAML file</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str): Absolute path to YAML file</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Struct: YAML data as python object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Struct</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Struct</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="c1"># pylint: disable=signature-differs</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c1"># pylint: disable=bad-continuation</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Struct</span><span class="p">):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">()</span>
+            <span class="n">_merge</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Struct</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Struct</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c1"># Workaround for Python 2.7 OrderedDict</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_OrderedDict&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Struct</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;No attribute named &quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Struct.merge">
+<a class="viewcode-back" href="../../../dev/caelus.utils.html#caelus.utils.struct.Struct.merge">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively update dictionary</span>
+
+<span class="sd">        Merge entries from maps provided such that new entries are added and</span>
+<span class="sd">        existing entries are updated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">other</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Struct.to_yaml">
+<a class="viewcode-back" href="../../../dev/caelus.utils.html#caelus.utils.struct.Struct.to_yaml">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert mapping to YAML format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stream (file): A file handle where YAML is output</span>
+
+<span class="sd">            default_flow_style (bool):</span>
+<span class="sd">                - False - pretty printing</span>
+<span class="sd">                - True  - No pretty printing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span>
+            <span class="n">Dumper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">yaml_encoder</span><span class="p">,</span>
+            <span class="n">default_flow_style</span><span class="o">=</span><span class="n">default_flow_style</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Struct.pget">
+<a class="viewcode-back" href="../../../dev/caelus.utils.html#caelus.utils.struct.Struct.pget">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get value from a nested dictionary entry.</span>
+
+<span class="sd">        A convenience method that serves various purposes:</span>
+
+<span class="sd">          - Access values from a deeply nested dictionary if any of the keys</span>
+<span class="sd">            are not valid python variable names.</span>
+
+<span class="sd">          - Return None if any of the intermediate keys are missing. Does not</span>
+<span class="sd">            raise AttributeError.</span>
+
+<span class="sd">        By default, the method uses the ``.`` character to split keys similar</span>
+<span class="sd">        to attribute access. However, this can be overridden by providing and</span>
+<span class="sd">        extra ``sep`` argument.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path (str): The keys in individual dictionarys separated by sep</span>
+<span class="sd">            sep (str): Separator for splitting keys (default: &quot;.&quot;)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Value corresponding to the key, or None if any of the keys</span>
+<span class="sd">              don&#39;t exist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key_clean</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+        <span class="n">key_list</span> <span class="o">=</span> <span class="n">key_clean</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+
+        <span class="n">rhs</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">key_list</span><span class="p">:</span>
+            <span class="n">rhs</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rhs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">rhs</span></div>
+
+
+<div class="viewcode-block" id="Struct.pset">
+<a class="viewcode-back" href="../../../dev/caelus.utils.html#caelus.utils.struct.Struct.pset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set value for a nested dictionary entry.</span>
+
+<span class="sd">        A convenience method to set values in a nested mapping hierarchy</span>
+<span class="sd">        without individually creating the intermediate dictionaries. Missing</span>
+<span class="sd">        intermediate dictionaries will automatically be created with the same</span>
+<span class="sd">        mapping class as the class of ``self``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path (str): The keys in individual dictionarys separated by sep</span>
+<span class="sd">            value (object): Object assigned to innermost key</span>
+<span class="sd">            sep (str): Separator for splitting keys (default: &quot;.&quot;)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AttributeError: If the object assigned to is a non-mapping type</span>
+<span class="sd">              and not the final key.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key_clean</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+        <span class="n">key_list</span> <span class="o">=</span> <span class="n">key_clean</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
+        <span class="n">lhs</span> <span class="o">=</span> <span class="bp">self</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">key_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">lhs</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">cls</span><span class="p">())</span>
+        <span class="n">lval</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lval</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="n">_merge</span><span class="p">(</span><span class="n">lval</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lhs</span><span class="p">[</span><span class="n">key_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.utils.struct</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

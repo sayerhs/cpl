@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>caelus.io – CML Input File Manipulation &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="caelus.scripts – CLI App Utilities" href="caelus.scripts.html" />
+    <link rel="prev" title="caelus.post – Post-processing utilities" href="caelus.post.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../index.html">
+<!--      <img src="../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus.scripts.html" title="caelus.scripts – CLI App Utilities"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="caelus.post.html" title="caelus.post – Post-processing utilities"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="caelus.html" accesskey="U">Caelus Python API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.io – CML Input File Manipulation</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">caelus.io – CML Input File Manipulation</a><ul>
+<li><a class="reference internal" href="#caelus-openfoam-input-file-interface">Caelus/OpenFOAM Input File Interface</a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.BlockMeshDict"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.BlockMeshDict.create_default_entries"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.create_default_entries()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.BlockMeshDict.blocks"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.blocks</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.BlockMeshDict.boundary"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.boundary</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.BlockMeshDict.convertToMeters"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.convertToMeters</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.BlockMeshDict.edges"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.edges</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.BlockMeshDict.mergePatchPairs"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.mergePatchPairs</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.BlockMeshDict.vertices"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.vertices</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ChangeDictionaryDict"><code class="docutils literal notranslate"><span class="pre">ChangeDictionaryDict</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.ChangeDictionaryDict.create_default_entries"><code class="docutils literal notranslate"><span class="pre">ChangeDictionaryDict.create_default_entries()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ChangeDictionaryDict.dictionaryReplacement"><code class="docutils literal notranslate"><span class="pre">ChangeDictionaryDict.dictionaryReplacement</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.CmlControls"><code class="docutils literal notranslate"><span class="pre">CmlControls</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict"><code class="docutils literal notranslate"><span class="pre">ControlDict</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.create_default_entries"><code class="docutils literal notranslate"><span class="pre">ControlDict.create_default_entries()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.adjustTimeStep"><code class="docutils literal notranslate"><span class="pre">ControlDict.adjustTimeStep</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.application"><code class="docutils literal notranslate"><span class="pre">ControlDict.application</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.deltaT"><code class="docutils literal notranslate"><span class="pre">ControlDict.deltaT</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.endTime"><code class="docutils literal notranslate"><span class="pre">ControlDict.endTime</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.functions"><code class="docutils literal notranslate"><span class="pre">ControlDict.functions</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.graphFormat"><code class="docutils literal notranslate"><span class="pre">ControlDict.graphFormat</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.maxCo"><code class="docutils literal notranslate"><span class="pre">ControlDict.maxCo</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.purgeWrite"><code class="docutils literal notranslate"><span class="pre">ControlDict.purgeWrite</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.runTimeModifiable"><code class="docutils literal notranslate"><span class="pre">ControlDict.runTimeModifiable</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.startFrom"><code class="docutils literal notranslate"><span class="pre">ControlDict.startFrom</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.startTime"><code class="docutils literal notranslate"><span class="pre">ControlDict.startTime</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.stopAt"><code class="docutils literal notranslate"><span class="pre">ControlDict.stopAt</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.timeFormat"><code class="docutils literal notranslate"><span class="pre">ControlDict.timeFormat</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.timePrecision"><code class="docutils literal notranslate"><span class="pre">ControlDict.timePrecision</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.writeCompression"><code class="docutils literal notranslate"><span class="pre">ControlDict.writeCompression</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.writeControl"><code class="docutils literal notranslate"><span class="pre">ControlDict.writeControl</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.writeFormat"><code class="docutils literal notranslate"><span class="pre">ControlDict.writeFormat</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.writeInterval"><code class="docutils literal notranslate"><span class="pre">ControlDict.writeInterval</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.ControlDict.writePrecision"><code class="docutils literal notranslate"><span class="pre">ControlDict.writePrecision</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DecomposeParDict"><code class="docutils literal notranslate"><span class="pre">DecomposeParDict</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.DecomposeParDict.create_default_entries"><code class="docutils literal notranslate"><span class="pre">DecomposeParDict.create_default_entries()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DecomposeParDict.method"><code class="docutils literal notranslate"><span class="pre">DecomposeParDict.method</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DecomposeParDict.numberOfSubdomains"><code class="docutils literal notranslate"><span class="pre">DecomposeParDict.numberOfSubdomains</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile"><code class="docutils literal notranslate"><span class="pre">DictFile</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.create_default_entries"><code class="docutils literal notranslate"><span class="pre">DictFile.create_default_entries()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.create_header"><code class="docutils literal notranslate"><span class="pre">DictFile.create_header()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.get_full_contents"><code class="docutils literal notranslate"><span class="pre">DictFile.get_full_contents()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.keys"><code class="docutils literal notranslate"><span class="pre">DictFile.keys()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.load"><code class="docutils literal notranslate"><span class="pre">DictFile.load()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.merge"><code class="docutils literal notranslate"><span class="pre">DictFile.merge()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.read_if_present"><code class="docutils literal notranslate"><span class="pre">DictFile.read_if_present()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.write"><code class="docutils literal notranslate"><span class="pre">DictFile.write()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.contents"><code class="docutils literal notranslate"><span class="pre">DictFile.contents</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.data"><code class="docutils literal notranslate"><span class="pre">DictFile.data</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.filename"><code class="docutils literal notranslate"><span class="pre">DictFile.filename</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictFile.header"><code class="docutils literal notranslate"><span class="pre">DictFile.header</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictMeta"><code class="docutils literal notranslate"><span class="pre">DictMeta</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictMeta.process_defaults"><code class="docutils literal notranslate"><span class="pre">DictMeta.process_defaults()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictMeta.process_properties"><code class="docutils literal notranslate"><span class="pre">DictMeta.process_properties()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.DictMeta.process_property"><code class="docutils literal notranslate"><span class="pre">DictMeta.process_property()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSchemes.create_default_entries"><code class="docutils literal notranslate"><span class="pre">FvSchemes.create_default_entries()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSchemes.ddtSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.ddtSchemes</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSchemes.divSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.divSchemes</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSchemes.fluxRequired"><code class="docutils literal notranslate"><span class="pre">FvSchemes.fluxRequired</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSchemes.gradSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.gradSchemes</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSchemes.interpolationSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.interpolationSchemes</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSchemes.laplacianSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.laplacianSchemes</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSchemes.snGradSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.snGradSchemes</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSolution"><code class="docutils literal notranslate"><span class="pre">FvSolution</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSolution.create_default_entries"><code class="docutils literal notranslate"><span class="pre">FvSolution.create_default_entries()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSolution.PIMPLE"><code class="docutils literal notranslate"><span class="pre">FvSolution.PIMPLE</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSolution.PISO"><code class="docutils literal notranslate"><span class="pre">FvSolution.PISO</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSolution.SIMPLE"><code class="docutils literal notranslate"><span class="pre">FvSolution.SIMPLE</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSolution.potentialFlow"><code class="docutils literal notranslate"><span class="pre">FvSolution.potentialFlow</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSolution.relaxationFactors"><code class="docutils literal notranslate"><span class="pre">FvSolution.relaxationFactors</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.FvSolution.solvers"><code class="docutils literal notranslate"><span class="pre">FvSolution.solvers</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.LESProperties"><code class="docutils literal notranslate"><span class="pre">LESProperties</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.LESProperties.create_default_entries"><code class="docutils literal notranslate"><span class="pre">LESProperties.create_default_entries()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.LESProperties.delta"><code class="docutils literal notranslate"><span class="pre">LESProperties.delta</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.PolyMeshBoundary"><code class="docutils literal notranslate"><span class="pre">PolyMeshBoundary</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.RASProperties"><code class="docutils literal notranslate"><span class="pre">RASProperties</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.TransportProperties"><code class="docutils literal notranslate"><span class="pre">TransportProperties</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.TransportProperties.create_default_entries"><code class="docutils literal notranslate"><span class="pre">TransportProperties.create_default_entries()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.TransportProperties.transportModel"><code class="docutils literal notranslate"><span class="pre">TransportProperties.transportModel</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.TurbModelProps"><code class="docutils literal notranslate"><span class="pre">TurbModelProps</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.TurbModelProps.create_default_entries"><code class="docutils literal notranslate"><span class="pre">TurbModelProps.create_default_entries()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.TurbModelProps.coeffs"><code class="docutils literal notranslate"><span class="pre">TurbModelProps.coeffs</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.TurbModelProps.model"><code class="docutils literal notranslate"><span class="pre">TurbModelProps.model</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.TurbModelProps.printCoeffs"><code class="docutils literal notranslate"><span class="pre">TurbModelProps.printCoeffs</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.TurbModelProps.turbulence"><code class="docutils literal notranslate"><span class="pre">TurbModelProps.turbulence</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.TurbulenceProperties"><code class="docutils literal notranslate"><span class="pre">TurbulenceProperties</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dictfile.TurbulenceProperties.create_default_entries"><code class="docutils literal notranslate"><span class="pre">TurbulenceProperties.create_default_entries()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.TurbulenceProperties.get_turb_file"><code class="docutils literal notranslate"><span class="pre">TurbulenceProperties.get_turb_file()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dictfile.TurbulenceProperties.simulationType"><code class="docutils literal notranslate"><span class="pre">TurbulenceProperties.simulationType</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dictfile.cml_std_files"><code class="docutils literal notranslate"><span class="pre">cml_std_files</span></code></a></li>
+<li><a class="reference internal" href="#caelus-openfoam-dictionary-implementation">Caelus/OpenFOAM Dictionary Implementation</a></li>
+<li><a class="reference internal" href="#caelus.io.caelusdict.CaelusDict"><code class="docutils literal notranslate"><span class="pre">CaelusDict</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.caelusdict.CaelusDict.yaml_decoder"><code class="docutils literal notranslate"><span class="pre">CaelusDict.yaml_decoder</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.caelusdict.CaelusDict.yaml_encoder"><code class="docutils literal notranslate"><span class="pre">CaelusDict.yaml_encoder</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.BoundaryList"><code class="docutils literal notranslate"><span class="pre">BoundaryList</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.BoundaryList.write_value"><code class="docutils literal notranslate"><span class="pre">BoundaryList.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.CalcDirective"><code class="docutils literal notranslate"><span class="pre">CalcDirective</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.CalcDirective.write_value"><code class="docutils literal notranslate"><span class="pre">CalcDirective.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.CodeStream"><code class="docutils literal notranslate"><span class="pre">CodeStream</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.CodeStream.write_value"><code class="docutils literal notranslate"><span class="pre">CodeStream.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.DimStr"><code class="docutils literal notranslate"><span class="pre">DimStr</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.DimStr.write_value"><code class="docutils literal notranslate"><span class="pre">DimStr.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.DimValue"><code class="docutils literal notranslate"><span class="pre">DimValue</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.DimValue.write_value"><code class="docutils literal notranslate"><span class="pre">DimValue.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.Dimension"><code class="docutils literal notranslate"><span class="pre">Dimension</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.Dimension.write_value"><code class="docutils literal notranslate"><span class="pre">Dimension.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.Directive"><code class="docutils literal notranslate"><span class="pre">Directive</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.Directive.write_value"><code class="docutils literal notranslate"><span class="pre">Directive.write_value()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dtypes.Directive.directive"><code class="docutils literal notranslate"><span class="pre">Directive.directive</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dtypes.Directive.value"><code class="docutils literal notranslate"><span class="pre">Directive.value</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.EvalDirective"><code class="docutils literal notranslate"><span class="pre">EvalDirective</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.EvalDirective.write_value"><code class="docutils literal notranslate"><span class="pre">EvalDirective.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.Field"><code class="docutils literal notranslate"><span class="pre">Field</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.Field.write_nonuniform"><code class="docutils literal notranslate"><span class="pre">Field.write_nonuniform()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dtypes.Field.write_uniform"><code class="docutils literal notranslate"><span class="pre">Field.write_uniform()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.dtypes.Field.write_value"><code class="docutils literal notranslate"><span class="pre">Field.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.FoamType"><code class="docutils literal notranslate"><span class="pre">FoamType</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.FoamType.write_value"><code class="docutils literal notranslate"><span class="pre">FoamType.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.ListTemplate"><code class="docutils literal notranslate"><span class="pre">ListTemplate</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.ListTemplate.write_value"><code class="docutils literal notranslate"><span class="pre">ListTemplate.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.MacroSubstitution"><code class="docutils literal notranslate"><span class="pre">MacroSubstitution</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.MacroSubstitution.write_value"><code class="docutils literal notranslate"><span class="pre">MacroSubstitution.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.dtypes.MultipleValues"><code class="docutils literal notranslate"><span class="pre">MultipleValues</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.dtypes.MultipleValues.write_value"><code class="docutils literal notranslate"><span class="pre">MultipleValues.write_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus-input-file-pretty-printer">Caelus Input File Pretty-printer</a></li>
+<li><a class="reference internal" href="#caelus.io.printer.DictPrinter"><code class="docutils literal notranslate"><span class="pre">DictPrinter</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.printer.DictPrinter.write_dict"><code class="docutils literal notranslate"><span class="pre">DictPrinter.write_dict()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.printer.DictPrinter.write_dict_item"><code class="docutils literal notranslate"><span class="pre">DictPrinter.write_dict_item()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.printer.DictPrinter.write_list"><code class="docutils literal notranslate"><span class="pre">DictPrinter.write_list()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.printer.DictPrinter.write_ndarray"><code class="docutils literal notranslate"><span class="pre">DictPrinter.write_ndarray()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.printer.DictPrinter.write_value"><code class="docutils literal notranslate"><span class="pre">DictPrinter.write_value()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.printer.DictPrinter.keyword_fmt"><code class="docutils literal notranslate"><span class="pre">DictPrinter.keyword_fmt</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.printer.Indenter"><code class="docutils literal notranslate"><span class="pre">Indenter</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.io.printer.Indenter.dedent"><code class="docutils literal notranslate"><span class="pre">Indenter.dedent()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.printer.Indenter.emit"><code class="docutils literal notranslate"><span class="pre">Indenter.emit()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.printer.Indenter.indent"><code class="docutils literal notranslate"><span class="pre">Indenter.indent()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.printer.Indenter.curr_indent"><code class="docutils literal notranslate"><span class="pre">Indenter.curr_indent</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.printer.Indenter.indent_str"><code class="docutils literal notranslate"><span class="pre">Indenter.indent_str</span></code></a></li>
+<li><a class="reference internal" href="#caelus.io.printer.Indenter.tab_width"><code class="docutils literal notranslate"><span class="pre">Indenter.tab_width</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.io.printer.foam_writer"><code class="docutils literal notranslate"><span class="pre">foam_writer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="caelus.post.html"
+                          title="previous chapter">caelus.post – Post-processing utilities</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="caelus.scripts.html"
+                          title="next chapter">caelus.scripts – CLI App Utilities</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/dev/caelus.io.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-caelus.io.dictfile">
+<span id="caelus-io-cml-input-file-manipulation"></span><h1>caelus.io – CML Input File Manipulation<a class="headerlink" href="#module-caelus.io.dictfile" title="Link to this heading">¶</a></h1>
+<section id="caelus-openfoam-input-file-interface">
+<h2>Caelus/OpenFOAM Input File Interface<a class="headerlink" href="#caelus-openfoam-input-file-interface" title="Link to this heading">¶</a></h2>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.BlockMeshDict">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">BlockMeshDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#BlockMeshDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.BlockMeshDict" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a></p>
+<p>constant/polyMesh/blockMeshDict interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.BlockMeshDict.create_default_entries">
+<span class="sig-name descname"><span class="pre">create_default_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.io.dictfile.BlockMeshDict.create_default_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Create defaults from property list</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.BlockMeshDict.blocks">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">blocks</span></span><a class="headerlink" href="#caelus.io.dictfile.BlockMeshDict.blocks" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.BlockMeshDict.boundary">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">boundary</span></span><a class="headerlink" href="#caelus.io.dictfile.BlockMeshDict.boundary" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.BlockMeshDict.convertToMeters">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convertToMeters</span></span><a class="headerlink" href="#caelus.io.dictfile.BlockMeshDict.convertToMeters" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.BlockMeshDict.edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edges</span></span><a class="headerlink" href="#caelus.io.dictfile.BlockMeshDict.edges" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.BlockMeshDict.mergePatchPairs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mergePatchPairs</span></span><a class="headerlink" href="#caelus.io.dictfile.BlockMeshDict.mergePatchPairs" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.BlockMeshDict.vertices">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertices</span></span><a class="headerlink" href="#caelus.io.dictfile.BlockMeshDict.vertices" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ChangeDictionaryDict">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">ChangeDictionaryDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#ChangeDictionaryDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.ChangeDictionaryDict" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a></p>
+<p>system/changeDictionaryDict interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ChangeDictionaryDict.create_default_entries">
+<span class="sig-name descname"><span class="pre">create_default_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.io.dictfile.ChangeDictionaryDict.create_default_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Create defaults from property list</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ChangeDictionaryDict.dictionaryReplacement">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dictionaryReplacement</span></span><a class="headerlink" href="#caelus.io.dictfile.ChangeDictionaryDict.dictionaryReplacement" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.CmlControls">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">CmlControls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#CmlControls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.CmlControls" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a></p>
+<p>cmlControls interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">ControlDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#ControlDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.ControlDict" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a></p>
+<p>system/controlDict interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.create_default_entries">
+<span class="sig-name descname"><span class="pre">create_default_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.create_default_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Create defaults from property list</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.adjustTimeStep">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">adjustTimeStep</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.adjustTimeStep" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.application">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">application</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.application" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.deltaT">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deltaT</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.deltaT" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.endTime">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">endTime</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.endTime" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.functions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">functions</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.functions" title="Link to this definition">¶</a></dt>
+<dd><p>function object definitions in controlDict</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.graphFormat">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">graphFormat</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.graphFormat" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.maxCo">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">maxCo</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.maxCo" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.purgeWrite">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">purgeWrite</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.purgeWrite" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.runTimeModifiable">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">runTimeModifiable</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.runTimeModifiable" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.startFrom">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">startFrom</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.startFrom" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.startTime">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">startTime</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.startTime" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.stopAt">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stopAt</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.stopAt" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.timeFormat">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeFormat</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.timeFormat" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.timePrecision">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timePrecision</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.timePrecision" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.writeCompression">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">writeCompression</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.writeCompression" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.writeControl">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">writeControl</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.writeControl" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.writeFormat">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">writeFormat</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.writeFormat" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.writeInterval">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">writeInterval</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.writeInterval" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.ControlDict.writePrecision">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">writePrecision</span></span><a class="headerlink" href="#caelus.io.dictfile.ControlDict.writePrecision" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DecomposeParDict">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">DecomposeParDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DecomposeParDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DecomposeParDict" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a></p>
+<p>system/decomposeParDict interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DecomposeParDict.create_default_entries">
+<span class="sig-name descname"><span class="pre">create_default_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.io.dictfile.DecomposeParDict.create_default_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Create defaults from property list</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DecomposeParDict.method">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">method</span></span><a class="headerlink" href="#caelus.io.dictfile.DecomposeParDict.method" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DecomposeParDict.numberOfSubdomains">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numberOfSubdomains</span></span><a class="headerlink" href="#caelus.io.dictfile.DecomposeParDict.numberOfSubdomains" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">DictFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictFile" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Caelus/OpenFOAM input file reader/writer</p>
+<p>The default constructor does not read a file, but instead creates a new
+input file object. If a property list is provided, this is used to
+initialize the default entries. To read an existing file, the use of
+<a class="reference internal" href="#caelus.io.dictfile.DictFile.read_if_present" title="caelus.io.dictfile.DictFile.read_if_present"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DictFile.read_if_present()</span></code></a> method is recommended.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.create_default_entries">
+<span class="sig-name descname"><span class="pre">create_default_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictFile.create_default_entries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictFile.create_default_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Create default entries for this file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.create_header">
+<span class="sig-name descname"><span class="pre">create_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictFile.create_header"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictFile.create_header" title="Link to this definition">¶</a></dt>
+<dd><p>Create a default header</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.get_full_contents">
+<span class="sig-name descname"><span class="pre">get_full_contents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictFile.get_full_contents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictFile.get_full_contents" title="Link to this definition">¶</a></dt>
+<dd><p>Return the full dictionary after expanding includes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictFile.keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictFile.keys" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of variable names in the dictionary</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.load">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictFile.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictFile.load" title="Link to this definition">¶</a></dt>
+<dd><p>Load a Caelus input file from disk</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>path</em>) – Path to the input files</p></li>
+<li><p><strong>debug</strong> (<em>bool</em>) – Turn on detailed errors</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.merge">
+<span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictFile.merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictFile.merge" title="Link to this definition">¶</a></dt>
+<dd><p>Merge entries from one dictionary to another</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.read_if_present">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_if_present</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">casedir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictFile.read_if_present"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictFile.read_if_present" title="Link to this definition">¶</a></dt>
+<dd><p>Read the file if present, else create object with default values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory</p></li>
+<li><p><strong>filename</strong> (<em>path</em>) – Filename to read</p></li>
+<li><p><strong>debug</strong> (<em>bool</em>) – Turn on detailed errors</p></li>
+<li><p><strong>populate_defaults</strong> (<em>bool</em>) – Populate the defaults</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">casedir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_object</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictFile.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictFile.write" title="Link to this definition">¶</a></dt>
+<dd><p>Write a formatted Caelus input file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory</p></li>
+<li><p><strong>filename</strong> (<em>path</em>) – Filename to write</p></li>
+<li><p><strong>update_object</strong> (<em>bool</em>) – Ensure object type is consistent</p></li>
+<li><p><strong>write_header</strong> (<em>bool</em>) – Write header for the file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.contents">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">contents</span></span><a class="headerlink" href="#caelus.io.dictfile.DictFile.contents" title="Link to this definition">¶</a></dt>
+<dd><p>Access entries within the Caelus CML dictionary</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#caelus.io.dictfile.DictFile.data" title="Link to this definition">¶</a></dt>
+<dd><p>Contents of the file as a dictionary suitable for manipulation</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.filename">
+<span class="sig-name descname"><span class="pre">filename</span></span><a class="headerlink" href="#caelus.io.dictfile.DictFile.filename" title="Link to this definition">¶</a></dt>
+<dd><p>File to read/write data</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictFile.header">
+<span class="sig-name descname"><span class="pre">header</span></span><a class="headerlink" href="#caelus.io.dictfile.DictFile.header" title="Link to this definition">¶</a></dt>
+<dd><p>Contents of the FoamFile sub-dictionary in the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictMeta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">DictMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictMeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictMeta" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></p>
+<p>Create property methods and add validation for properties.</p>
+<p>This metaclass implements the boilerplate code necessary to add
+getter/setters for various entries found in a Caelus input file. It expects
+a class variable <code class="docutils literal notranslate"><span class="pre">_dict_properties</span></code> that contains tuples for the various
+entries in the input file. The tuple can be of two forms:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>(name, default_value)</p></li>
+<li><p>(name, default_value, valid_values)</p></li>
+</ul>
+</div></blockquote>
+<p>If the default_value is not None, then this value will be used to
+automatically initialize the particular entry by
+<a class="reference internal" href="#caelus.io.dictfile.DictFile.create_default_entries" title="caelus.io.dictfile.DictFile.create_default_entries"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_default_entries()</span></code></a> method. If
+<code class="docutils literal notranslate"><span class="pre">valid_values</span></code> are provided, any attempt to set/modify this value will be
+checked to ensure that only the allowed values are used.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictMeta.process_defaults">
+<span class="sig-name descname"><span class="pre">process_defaults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proplist</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictMeta.process_defaults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictMeta.process_defaults" title="Link to this definition">¶</a></dt>
+<dd><p>Process default entries</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictMeta.process_properties">
+<span class="sig-name descname"><span class="pre">process_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proplist</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictMeta.process_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictMeta.process_properties" title="Link to this definition">¶</a></dt>
+<dd><p>Create getters/setters for properties</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.DictMeta.process_property">
+<span class="sig-name descname"><span class="pre">process_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plist</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#DictMeta.process_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.DictMeta.process_property" title="Link to this definition">¶</a></dt>
+<dd><p>Process a property</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSchemes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">FvSchemes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#FvSchemes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.FvSchemes" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a></p>
+<p>system/fvSchemes interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSchemes.create_default_entries">
+<span class="sig-name descname"><span class="pre">create_default_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.io.dictfile.FvSchemes.create_default_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Create defaults from property list</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSchemes.ddtSchemes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ddtSchemes</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSchemes.ddtSchemes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSchemes.divSchemes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">divSchemes</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSchemes.divSchemes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSchemes.fluxRequired">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fluxRequired</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSchemes.fluxRequired" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSchemes.gradSchemes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gradSchemes</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSchemes.gradSchemes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSchemes.interpolationSchemes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interpolationSchemes</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSchemes.interpolationSchemes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSchemes.laplacianSchemes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">laplacianSchemes</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSchemes.laplacianSchemes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSchemes.snGradSchemes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">snGradSchemes</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSchemes.snGradSchemes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSolution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">FvSolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#FvSolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.FvSolution" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a></p>
+<p>system/fvSolution interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSolution.create_default_entries">
+<span class="sig-name descname"><span class="pre">create_default_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.io.dictfile.FvSolution.create_default_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Create defaults from property list</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSolution.PIMPLE">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PIMPLE</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSolution.PIMPLE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSolution.PISO">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PISO</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSolution.PISO" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSolution.SIMPLE">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SIMPLE</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSolution.SIMPLE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSolution.potentialFlow">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">potentialFlow</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSolution.potentialFlow" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSolution.relaxationFactors">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">relaxationFactors</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSolution.relaxationFactors" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.FvSolution.solvers">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">solvers</span></span><a class="headerlink" href="#caelus.io.dictfile.FvSolution.solvers" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.LESProperties">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">LESProperties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#LESProperties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.LESProperties" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.TurbModelProps" title="caelus.io.dictfile.TurbModelProps"><code class="xref py py-class docutils literal notranslate"><span class="pre">TurbModelProps</span></code></a></p>
+<p>constant/LESProperties interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.LESProperties.create_default_entries">
+<span class="sig-name descname"><span class="pre">create_default_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#LESProperties.create_default_entries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.LESProperties.create_default_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Create the default turbulence model entries</p>
+<p>In addition to the default options specified in turbulence properties
+class, this also triggers the default entries for delta.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.LESProperties.delta">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delta</span></span><a class="headerlink" href="#caelus.io.dictfile.LESProperties.delta" title="Link to this definition">¶</a></dt>
+<dd><p>LES delta</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.PolyMeshBoundary">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">PolyMeshBoundary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#PolyMeshBoundary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.PolyMeshBoundary" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a></p>
+<p>constant/polyMesh/boundary interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.RASProperties">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">RASProperties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#RASProperties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.RASProperties" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.TurbModelProps" title="caelus.io.dictfile.TurbModelProps"><code class="xref py py-class docutils literal notranslate"><span class="pre">TurbModelProps</span></code></a></p>
+<p>constant/RASProperties interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TransportProperties">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">TransportProperties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#TransportProperties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.TransportProperties" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a></p>
+<p>constant/transportProperties interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TransportProperties.create_default_entries">
+<span class="sig-name descname"><span class="pre">create_default_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.io.dictfile.TransportProperties.create_default_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Create defaults from property list</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TransportProperties.transportModel">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transportModel</span></span><a class="headerlink" href="#caelus.io.dictfile.TransportProperties.transportModel" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TurbModelProps">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">TurbModelProps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#TurbModelProps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.TurbModelProps" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a></p>
+<p>Common interface for LES/RAS models</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TurbModelProps.create_default_entries">
+<span class="sig-name descname"><span class="pre">create_default_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.io.dictfile.TurbModelProps.create_default_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Create defaults from property list</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TurbModelProps.coeffs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">coeffs</span></span><a class="headerlink" href="#caelus.io.dictfile.TurbModelProps.coeffs" title="Link to this definition">¶</a></dt>
+<dd><p>Turbulence model coefficients</p>
+<p>This represents the sub-dictionary (e.g., kOmegaSSTCoeffs,
+SmagorinksyCoeffs) containing the additional parameters necessary for
+the turbulence model. The accessor automatically populates the right
+name when generating the dictionary depending on the turbulence model
+selected.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TurbModelProps.model">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#caelus.io.dictfile.TurbModelProps.model" title="Link to this definition">¶</a></dt>
+<dd><p>Turbulence model</p>
+<p>Depending on the type (RANS or LES), this is the entry RASModel or
+LESModel respectively in the RASProperties and LESProperties file. To
+simplify access, it is simply named model here.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TurbModelProps.printCoeffs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">printCoeffs</span></span><a class="headerlink" href="#caelus.io.dictfile.TurbModelProps.printCoeffs" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TurbModelProps.turbulence">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">turbulence</span></span><a class="headerlink" href="#caelus.io.dictfile.TurbModelProps.turbulence" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TurbulenceProperties">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">TurbulenceProperties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">populate_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#TurbulenceProperties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.TurbulenceProperties" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a></p>
+<p>constant/turbulenceProperties interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>path</em>) – Path to the input file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TurbulenceProperties.create_default_entries">
+<span class="sig-name descname"><span class="pre">create_default_entries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.io.dictfile.TurbulenceProperties.create_default_entries" title="Link to this definition">¶</a></dt>
+<dd><p>Create defaults from property list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TurbulenceProperties.get_turb_file">
+<span class="sig-name descname"><span class="pre">get_turb_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dictfile.html#TurbulenceProperties.get_turb_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dictfile.TurbulenceProperties.get_turb_file" title="Link to this definition">¶</a></dt>
+<dd><p>Return the appropriate RASProperties or LESProperties file</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.dictfile.TurbulenceProperties.simulationType">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulationType</span></span><a class="headerlink" href="#caelus.io.dictfile.TurbulenceProperties.simulationType" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="caelus.io.dictfile.cml_std_files">
+<span class="sig-prename descclassname"><span class="pre">caelus.io.dictfile.</span></span><span class="sig-name descname"><span class="pre">cml_std_files</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'LESProperties':</span> <span class="pre">&lt;class</span> <span class="pre">'caelus.io.dictfile.LESProperties'&gt;,</span> <span class="pre">'RASProperties':</span> <span class="pre">&lt;class</span> <span class="pre">'caelus.io.dictfile.RASProperties'&gt;,</span> <span class="pre">'blockMeshDict':</span> <span class="pre">&lt;class</span> <span class="pre">'caelus.io.dictfile.BlockMeshDict'&gt;,</span> <span class="pre">'changeDictionaryDict':</span> <span class="pre">&lt;class</span> <span class="pre">'caelus.io.dictfile.ChangeDictionaryDict'&gt;,</span> <span class="pre">'cmlControls':</span> <span class="pre">&lt;class</span> <span class="pre">'caelus.io.dictfile.CmlControls'&gt;,</span> <span class="pre">'controlDict':</span> <span class="pre">&lt;class</span> <span class="pre">'caelus.io.dictfile.ControlDict'&gt;,</span> <span class="pre">'decomposeParDict':</span> <span class="pre">&lt;class</span> <span class="pre">'caelus.io.dictfile.DecomposeParDict'&gt;,</span> <span class="pre">'fvSchemes':</span> <span class="pre">&lt;class</span> <span class="pre">'caelus.io.dictfile.FvSchemes'&gt;,</span> <span class="pre">'fvSolution':</span> <span class="pre">&lt;class</span> <span class="pre">'caelus.io.dictfile.FvSolution'&gt;,</span> <span class="pre">'transportProperties':</span> <span class="pre">&lt;class</span> <span class="pre">'caelus.io.dictfile.TransportProperties'&gt;,</span> <span class="pre">'turbulenceProperties':</span> <span class="pre">&lt;class</span> <span class="pre">'caelus.io.dictfile.TurbulenceProperties'&gt;}</span></em><a class="headerlink" href="#caelus.io.dictfile.cml_std_files" title="Link to this definition">¶</a></dt>
+<dd><p>Mapping of standard files known to exist in a case directory</p>
+</dd></dl>
+
+<section id="caelus-openfoam-dictionary-implementation">
+<span id="module-caelus.io.caelusdict"></span><h2>Caelus/OpenFOAM Dictionary Implementation<a class="headerlink" href="#caelus-openfoam-dictionary-implementation" title="Link to this heading">¶</a></h2>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.caelusdict.CaelusDict">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.caelusdict.</span></span><span class="sig-name descname"><span class="pre">CaelusDict</span></span><a class="reference internal" href="../_modules/caelus/io/caelusdict.html#CaelusDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.caelusdict.CaelusDict" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="caelus.utils.html#caelus.utils.struct.Struct" title="caelus.utils.struct.Struct"><code class="xref py py-class docutils literal notranslate"><span class="pre">Struct</span></code></a></p>
+<p>Caelus Input File Dictionary</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.io.caelusdict.CaelusDict.yaml_decoder">
+<span class="sig-name descname"><span class="pre">yaml_decoder</span></span><a class="headerlink" href="#caelus.io.caelusdict.CaelusDict.yaml_decoder" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">StructYAMLLoader</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.io.caelusdict.CaelusDict.yaml_encoder">
+<span class="sig-name descname"><span class="pre">yaml_encoder</span></span><a class="headerlink" href="#caelus.io.caelusdict.CaelusDict.yaml_encoder" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">StructYAMLDumper</span></code></p>
+</dd></dl>
+
+</dd></dl>
+
+<p id="module-caelus.io.dtypes">Caelus/OpenFOAM Input File Datatypes</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.BoundaryList">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">BoundaryList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#BoundaryList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.BoundaryList" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>polyMesh/boundary file</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.BoundaryList.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#BoundaryList.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.BoundaryList.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write as a Caelus/OpenFOAM entry</p>
+<p>This method is called by <a class="reference internal" href="#caelus.io.printer.DictPrinter" title="caelus.io.printer.DictPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictPrinter</span></code></a> to
+format the data suitable for writing to a Caelus input file that can be
+read by the solvers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fh</strong> (<em>file</em>) – A valid file handle</p></li>
+<li><p><strong>indent_str</strong> (<em>str</em>) – Padding for indentation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.CalcDirective">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">CalcDirective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#CalcDirective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.CalcDirective" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">#calc</span></code> directive entry</p>
+<dl class="simple">
+<dt>Example::</dt><dd><p>radHalfAngle    #calc “degToRad($halfAngle)”;</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.CalcDirective.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nested=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#CalcDirective.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.CalcDirective.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write out the dimensional value</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.CodeStream">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">CodeStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#CodeStream"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.CodeStream" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>A codestream entry</p>
+<p>Contains C++ code that can be compiled and executed to determine dictionary
+parameters.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.CodeStream.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#CodeStream.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.CodeStream.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write out the dimensional value</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.DimStr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">DimStr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">units</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#DimStr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.DimStr" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>String dimensions</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.DimStr.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#DimStr.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.DimStr.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write as a Caelus/OpenFOAM entry</p>
+<p>This method is called by <a class="reference internal" href="#caelus.io.printer.DictPrinter" title="caelus.io.printer.DictPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictPrinter</span></code></a> to
+format the data suitable for writing to a Caelus input file that can be
+read by the solvers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fh</strong> (<em>file</em>) – A valid file handle</p></li>
+<li><p><strong>indent_str</strong> (<em>str</em>) – Padding for indentation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.DimValue">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">DimValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#DimValue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.DimValue" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>A dimensioned value</p>
+<p>A dimensioned value contains three parts: the name, units, and the value.
+Units are of type <a class="reference internal" href="#caelus.io.dtypes.Dimension" title="caelus.io.dtypes.Dimension"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dimension</span></code></a> and value can be a scalar, vector,
+tensor or a symmetric tensor.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.DimValue.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#DimValue.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.DimValue.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write out the dimensional value</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.Dimension">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">Dimension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#Dimension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.Dimension" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>Caelus dimensional units</p>
+<p>Represents the units of a dimensional quantity as an array of seven
+integers that represent the powers of the fundamental units: mass, length,
+time, temperature, quantity, current, and luminous intensity.</p>
+<p>Provide an array of individual units as keyword arguments</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>units</strong> (<em>list</em>) – A list of 5 or 7 entries</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.Dimension.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#Dimension.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.Dimension.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write out the dimensions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fh</strong> (<em>file</em>) – A valid file handle</p></li>
+<li><p><strong>indent_str</strong> (<em>str</em>) – Padding for indentation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.Directive">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">Directive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#Directive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.Directive" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>A Caelus directive type</p>
+<p>Directives are keyword-less entries that indicate certain processing
+actions and begin with a hash (<code class="docutils literal notranslate"><span class="pre">#</span></code>) symbol. For example, the
+<code class="docutils literal notranslate"><span class="pre">#includeEtc</span></code> directive that can be used to include files from
+<code class="docutils literal notranslate"><span class="pre">foamEtc</span></code> directory.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.Directive.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nested=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#Directive.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.Directive.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write out the dimensional value</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.io.dtypes.Directive.directive">
+<span class="sig-name descname"><span class="pre">directive</span></span><a class="headerlink" href="#caelus.io.dtypes.Directive.directive" title="Link to this definition">¶</a></dt>
+<dd><p>Type of directive (str)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.io.dtypes.Directive.value">
+<span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#caelus.io.dtypes.Directive.value" title="Link to this definition">¶</a></dt>
+<dd><p>Value of the directive (e.g., file to be included)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.EvalDirective">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">EvalDirective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#EvalDirective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.EvalDirective" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">#eval</span></code> directive entry</p>
+<p class="rubric">Examples</p>
+<p>timeStart       #eval #{ 0.1 * ${/endTime} #};
+r0CosT          #eval{ $r0*cos(degToRad($t   )) };</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.EvalDirective.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#EvalDirective.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.EvalDirective.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write as a Caelus/OpenFOAM entry</p>
+<p>This method is called by <a class="reference internal" href="#caelus.io.printer.DictPrinter" title="caelus.io.printer.DictPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictPrinter</span></code></a> to
+format the data suitable for writing to a Caelus input file that can be
+read by the solvers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fh</strong> (<em>file</em>) – A valid file handle</p></li>
+<li><p><strong>indent_str</strong> (<em>str</em>) – Padding for indentation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.Field">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">Field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ftype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#Field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.Field" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>A field declaration</p>
+<p>This class represents both uniform and non-uniform fields. The attribute
+<code class="docutils literal notranslate"><span class="pre">ftype</span></code> indicates the type of field and the <code class="docutils literal notranslate"><span class="pre">value</span></code> contains the value
+for the given field. Uniform fields can be scalar, vector, tensor, or
+symmetric tensors. Non-uniform fields are typically a <a class="reference internal" href="#caelus.io.dtypes.ListTemplate" title="caelus.io.dtypes.ListTemplate"><code class="xref py py-class docutils literal notranslate"><span class="pre">ListTemplate</span></code></a>
+entity.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.Field.write_nonuniform">
+<span class="sig-name descname"><span class="pre">write_nonuniform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#Field.write_nonuniform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.Field.write_nonuniform" title="Link to this definition">¶</a></dt>
+<dd><p>Write a non-uniform field</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.Field.write_uniform">
+<span class="sig-name descname"><span class="pre">write_uniform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#Field.write_uniform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.Field.write_uniform" title="Link to this definition">¶</a></dt>
+<dd><p>Write a uniform field</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.Field.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#Field.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.Field.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write value in OpenFOAM format</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.FoamType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">FoamType</span></span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#FoamType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.FoamType" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for a FOAM type</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.FoamType.write_value">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#FoamType.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.FoamType.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write as a Caelus/OpenFOAM entry</p>
+<p>This method is called by <a class="reference internal" href="#caelus.io.printer.DictPrinter" title="caelus.io.printer.DictPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictPrinter</span></code></a> to
+format the data suitable for writing to a Caelus input file that can be
+read by the solvers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fh</strong> (<em>file</em>) – A valid file handle</p></li>
+<li><p><strong>indent_str</strong> (<em>str</em>) – Padding for indentation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.ListTemplate">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">ListTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ltype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#ListTemplate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.ListTemplate" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>List&lt;T&gt; type entries</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.ListTemplate.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#ListTemplate.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.ListTemplate.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write out a List&lt;T&gt; value</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.MacroSubstitution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">MacroSubstitution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">semi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#MacroSubstitution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.MacroSubstitution" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>Macro substition without keyword</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.MacroSubstitution.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nested=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#MacroSubstitution.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.MacroSubstitution.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write standalone macro substitution</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.dtypes.MultipleValues">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.dtypes.</span></span><span class="sig-name descname"><span class="pre">MultipleValues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#MultipleValues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.MultipleValues" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.io.dtypes.FoamType" title="caelus.io.dtypes.FoamType"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoamType</span></code></a></p>
+<p>Multiple values for single keyword</p>
+<dl class="simple">
+<dt>Example::</dt><dd><p>laplacian(nuEff,U)       Gauss linear corrected;</p>
+</dd>
+</dl>
+<p>Here “Gauss linear corrected” is stored as an instance of this class to
+disambiguate between multi-valued entries and plain lists.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.dtypes.MultipleValues.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_str=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/dtypes.html#MultipleValues.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.dtypes.MultipleValues.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Write as a Caelus/OpenFOAM entry</p>
+<p>This method is called by <a class="reference internal" href="#caelus.io.printer.DictPrinter" title="caelus.io.printer.DictPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictPrinter</span></code></a> to
+format the data suitable for writing to a Caelus input file that can be
+read by the solvers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fh</strong> (<em>file</em>) – A valid file handle</p></li>
+<li><p><strong>indent_str</strong> (<em>str</em>) – Padding for indentation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<section id="caelus-input-file-pretty-printer">
+<span id="module-caelus.io.printer"></span><h2>Caelus Input File Pretty-printer<a class="headerlink" href="#caelus-input-file-pretty-printer" title="Link to this heading">¶</a></h2>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.printer.DictPrinter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.printer.</span></span><span class="sig-name descname"><span class="pre">DictPrinter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buf=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tab_width=4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/printer.html#DictPrinter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.printer.DictPrinter" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Caelus Input File Pretty-printer</p>
+<p>Given a CaelusDict instance, this class will emit formatted data suitable
+for use with Caelus solvers</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buf</strong> (<em>file handle</em>) – A valid buffer to output to</p></li>
+<li><p><strong>tab_width</strong> (<em>int</em>) – Indentation width</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.printer.DictPrinter.write_dict">
+<span class="sig-name descname"><span class="pre">write_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/printer.html#DictPrinter.write_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.printer.DictPrinter.write_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Pretty-print a Caelus dictionary type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>Mapping</em>) – A valid python dict-like instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.printer.DictPrinter.write_dict_item">
+<span class="sig-name descname"><span class="pre">write_dict_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nested</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/printer.html#DictPrinter.write_dict_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.printer.DictPrinter.write_dict_item" title="Link to this definition">¶</a></dt>
+<dd><p>Pretty-print a dictionary entry</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>str</em>) – Keyword for the parameter</p></li>
+<li><p><strong>value</strong> (<em>object</em>) – Value for the keyword</p></li>
+<li><p><strong>nested</strong> (<em>bool</em>) – Flag indicating whether the entries are nested</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.printer.DictPrinter.write_list">
+<span class="sig-name descname"><span class="pre">write_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/printer.html#DictPrinter.write_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.printer.DictPrinter.write_list" title="Link to this definition">¶</a></dt>
+<dd><p>Pretty-print a list entry</p>
+<p>Lists are mixed-type data entries. Empty lists and short string lists
+are printed flat in the same line. All other lists have their entries
+printed on new lines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>list</em>) – A list entry</p></li>
+<li><p><strong>recursive</strong> (<em>bool</em>) – Flag indicating whether this list is part of
+another list or dict</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.printer.DictPrinter.write_ndarray">
+<span class="sig-name descname"><span class="pre">write_ndarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/printer.html#DictPrinter.write_ndarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.printer.DictPrinter.write_ndarray" title="Link to this definition">¶</a></dt>
+<dd><p>Pretty-print a numeric list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>np.ndarray</em>) – Array object</p></li>
+<li><p><strong>recursive</strong> (<em>bool</em>) – Flag indicating whether it is part of a list or dict</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.printer.DictPrinter.write_value">
+<span class="sig-name descname"><span class="pre">write_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indented</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/printer.html#DictPrinter.write_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.printer.DictPrinter.write_value" title="Link to this definition">¶</a></dt>
+<dd><p>Pretty-print an RHS entry based on its type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>object</em>) – Value to be printed</p></li>
+<li><p><strong>recursive</strong> (<em>bool</em>) – Flag indicating whether the value is part of a
+dictionary or a list</p></li>
+<li><p><strong>indented</strong> (<em>bool</em>) – Flag indicating whether value must be indented</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.io.printer.DictPrinter.keyword_fmt">
+<span class="sig-name descname"><span class="pre">keyword_fmt</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'%-20s'</span></em><a class="headerlink" href="#caelus.io.printer.DictPrinter.keyword_fmt" title="Link to this definition">¶</a></dt>
+<dd><p>Default width for keywords</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.io.printer.Indenter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.io.printer.</span></span><span class="sig-name descname"><span class="pre">Indenter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tab_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/printer.html#Indenter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.printer.Indenter" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An indentation utility for use with DictPrinter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tab_width</strong> (<em>int</em>) – Default indentation width</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.printer.Indenter.dedent">
+<span class="sig-name descname"><span class="pre">dedent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/printer.html#Indenter.dedent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.printer.Indenter.dedent" title="Link to this definition">¶</a></dt>
+<dd><p>Dedent the tab</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.printer.Indenter.emit">
+<span class="sig-name descname"><span class="pre">emit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/printer.html#Indenter.emit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.printer.Indenter.emit" title="Link to this definition">¶</a></dt>
+<dd><p>Emit the leading identation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.io.printer.Indenter.indent">
+<span class="sig-name descname"><span class="pre">indent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/printer.html#Indenter.indent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.printer.Indenter.indent" title="Link to this definition">¶</a></dt>
+<dd><p>Indent the tab</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.io.printer.Indenter.curr_indent">
+<span class="sig-name descname"><span class="pre">curr_indent</span></span><a class="headerlink" href="#caelus.io.printer.Indenter.curr_indent" title="Link to this definition">¶</a></dt>
+<dd><p>Current indentation column</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.io.printer.Indenter.indent_str">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">indent_str</span></span><a class="headerlink" href="#caelus.io.printer.Indenter.indent_str" title="Link to this definition">¶</a></dt>
+<dd><p>Return an indentation string</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.io.printer.Indenter.tab_width">
+<span class="sig-name descname"><span class="pre">tab_width</span></span><a class="headerlink" href="#caelus.io.printer.Indenter.tab_width" title="Link to this definition">¶</a></dt>
+<dd><p>Identation width</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.io.printer.foam_writer">
+<span class="sig-prename descclassname"><span class="pre">caelus.io.printer.</span></span><span class="sig-name descname"><span class="pre">foam_writer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/io/printer.html#foam_writer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.io.printer.foam_writer" title="Link to this definition">¶</a></dt>
+<dd><p>Caelus/OpenFOAM file writer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>header</strong> (<a class="reference internal" href="#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – The FoamFile entries</p>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>printer (DictPrinter)</em> – A dictionary printer for printing data</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus.scripts.html" title="caelus.scripts – CLI App Utilities"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="caelus.post.html" title="caelus.post – Post-processing utilities"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="caelus.html" >Caelus Python API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.io – CML Input File Manipulation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

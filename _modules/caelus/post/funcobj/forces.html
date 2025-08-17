@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.post.funcobj.forces &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../../index.html">
+<!--      <img src="../../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.funcobj.forces</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.post.funcobj.forces</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Force and Force coefficients interface</span>
+<span class="sd">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">Provides pythonic interface to OpenFOAM&#39;s `Forces &lt;https://www.openfoam.com/documentation/guides/latest/doc/guide-function-objects-forces.html&gt;`_</span>
+<span class="sd">function objects.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.funcobj</span><span class="w"> </span><span class="kn">import</span> <span class="n">FunctionObject</span>
+
+
+<div class="viewcode-block" id="ForceCoeffs">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.forces.ForceCoeffs">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ForceCoeffs</span><span class="p">(</span><span class="n">FunctionObject</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The class retrieves data from ``coefficient.dat`` file generated during a</span>
+<span class="sd">    run.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">      &gt;&gt;&gt; post = PostProcessing()         # Get the post processing instance</span>
+<span class="sd">      &gt;&gt;&gt; fcoeffs = post[&#39;forceCoeffs1&#39;]  # Retrieve force coefficients object</span>
+<span class="sd">      &gt;&gt;&gt; df = fcoeffs()                  # Dataframe for latest time instance</span>
+<span class="sd">      &gt;&gt;&gt; print(df.columns)               # Examine columns</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_funcobj_type</span> <span class="o">=</span> <span class="s2">&quot;forceCoeffs&quot;</span>
+    <span class="n">_funcobj_libs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;patches&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;liftDir&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dragDir&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;pitchAxis&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;magUInf&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;lRef&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Aref&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the force coefficients file and return as dataframe.</span>
+
+<span class="sd">        If ``time`` is provided, the force coefficients are retrieved from the</span>
+<span class="sd">        corresponding time directory. Otherwise, the data from the latest</span>
+<span class="sd">        timestep is retrieved.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            time (str): Name of the time directory.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: DataFrame corresponding to ``coefficient.dat``</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FileNotFoundError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dtime</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="k">if</span> <span class="n">time</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">latest_time</span>
+        <span class="n">dpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="n">dtime</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">dpath</span> <span class="o">/</span> <span class="s2">&quot;coefficient.dat&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fname</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Force coefficients output not found: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">prev</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;#&quot;</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">prev</span> <span class="o">=</span> <span class="n">line</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="n">prev</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+        <span class="n">fcoeffs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span>
+            <span class="n">fname</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">cols</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">fcoeffs</span></div>
+
+
+
+<div class="viewcode-block" id="Forces">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.forces.Forces">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Forces</span><span class="p">(</span><span class="n">FunctionObject</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The class retrives data from ``force.dat`` and ``moment.dat`` files</span>
+<span class="sd">    generated during a run and returns a single Pandas DataFrame containing the</span>
+<span class="sd">    following columns.</span>
+
+<span class="sd">    =======  =====================================</span>
+<span class="sd">    Column   Value</span>
+<span class="sd">    =======  =====================================</span>
+<span class="sd">    Fx       Total force (x-direction)</span>
+<span class="sd">    Fy       Total force (y-direction)</span>
+<span class="sd">    Fz       Total force (z-direction)</span>
+<span class="sd">    Fpx      Pressure force (x-direction)</span>
+<span class="sd">    Fpy      Pressure force (y-direction)</span>
+<span class="sd">    Fpz      Pressure force (z-direction)</span>
+<span class="sd">    Fvx      Viscous force (x-direction)</span>
+<span class="sd">    Fvy      Viscous force (y-direction)</span>
+<span class="sd">    Fvz      Viscous force (z-direction)</span>
+<span class="sd">    Mx       Total moment (x-direction)</span>
+<span class="sd">    My       Total moment (y-direction)</span>
+<span class="sd">    Mz       Total moment (z-direction)</span>
+<span class="sd">    Mpx      Pressure moment (x-direction)</span>
+<span class="sd">    Mpy      Pressure moment (y-direction)</span>
+<span class="sd">    Mpz      Pressure moment (z-direction)</span>
+<span class="sd">    Mvx      Viscous moment (x-direction)</span>
+<span class="sd">    Mvy      Viscous moment (y-direction)</span>
+<span class="sd">    Mvz      Viscous moment (z-direction)</span>
+<span class="sd">    =======  =====================================</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">      &gt;&gt;&gt; post = PostProcessing()   # Get the post processing instance</span>
+<span class="sd">      &gt;&gt;&gt; forces = post[&#39;forces1&#39;]  # Retrieve force coefficients object</span>
+<span class="sd">      &gt;&gt;&gt; df = forces()             # Dataframe for latest time instance</span>
+<span class="sd">      &gt;&gt;&gt; print(df.columns)         # Examine columns</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_funcobj_type</span> <span class="o">=</span> <span class="s2">&quot;forces&quot;</span>
+    <span class="n">_funcobj_libs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the file and return a dataframe&quot;&quot;&quot;</span>
+        <span class="n">rexp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\(\)]&#39;</span><span class="p">)</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+
+        <span class="c1"># Remove parenthesis from rows</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">rexp</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span>
+        <span class="n">buf</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Load as a dataframe</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">cols</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_col_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get column names&quot;&quot;&quot;</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="s2">&quot;x y z px py pz vx vy vz&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;Time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">tx</span> <span class="k">for</span> <span class="n">tx</span> <span class="ow">in</span> <span class="n">types</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the forces/moments file and return a dataframe.</span>
+
+<span class="sd">        If ``time`` is provided, the force coefficients are retrieved from the</span>
+<span class="sd">        corresponding time directory. Otherwise, the data from the latest</span>
+<span class="sd">        timestep is retrieved.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            time (str): Name of the time directory.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: DataFrame corresponding to ``force.dat``</span>
+<span class="sd">            and ``moment.dat``</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FileNotFoundError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dtime</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="k">if</span> <span class="n">time</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">latest_time</span>
+        <span class="n">dpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="n">dtime</span>
+
+        <span class="n">forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_file</span><span class="p">(</span><span class="n">dpath</span> <span class="o">/</span> <span class="s2">&quot;force.dat&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_col_names</span><span class="p">(</span><span class="s1">&#39;F&#39;</span><span class="p">))</span>
+        <span class="n">moments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_file</span><span class="p">(</span><span class="n">dpath</span> <span class="o">/</span> <span class="s2">&quot;moment.dat&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_col_names</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">))</span>
+        <span class="n">moments</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Time&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">forces</span><span class="p">,</span> <span class="n">moments</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="LiftDrag">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LiftDrag</span><span class="p">(</span><span class="n">FunctionObject</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A variation of ForceCoeffs that calculates lift/drag for specific use case.&quot;&quot;&quot;</span>
+
+    <span class="n">_funcobj_type</span> <span class="o">=</span> <span class="s2">&quot;liftDrag&quot;</span>
+    <span class="n">_funcobj_libs</span> <span class="o">=</span> <span class="s2">&quot;forces&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;patches&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;liftDirection&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;dragDirection&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;pitchAxis&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;Uinf&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;rhoInfo&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;referenceArea&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;referenceLength&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;nAveragingSteps&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;maxCp&#39;</span><span class="p">,</span> <span class="mf">1.0e14</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;minCp&#39;</span><span class="p">,</span> <span class="mf">1.0e14</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;wheelbase&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;runOnLastIterOnly&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;porosity&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;outputRegionData&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;writeFields&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the liftDrag file and return as pandas DataFrame.&quot;&quot;&quot;</span>
+        <span class="n">dtime</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="k">if</span> <span class="n">time</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">latest_time</span>
+        <span class="n">dpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">/</span> <span class="n">dtime</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">dpath</span> <span class="o">/</span> <span class="s2">&quot;liftDrag.dat&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fname</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lift-drag output not found: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_col_names</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_col_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the column names for the dataset&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;total_lift&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;front_lift&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;rear_lift&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;drag&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;side_force&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;x_moment&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;y_moment&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;z_moment&quot;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.funcobj.forces</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

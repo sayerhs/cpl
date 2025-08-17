@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>caelus – Common CPL actions &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="caelus_sim – Parametric Run CLI" href="caelus_sim.html" />
+    <link rel="prev" title="Command-line Applications" href="../cli_apps.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../index.html">
+<!--      <img src="../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus_sim.html" title="caelus_sim – Parametric Run CLI"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../cli_apps.html" title="Command-line Applications"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../cli_apps.html" accesskey="U">Command-line Applications</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">caelus</span></code> – Common CPL actions</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">caelus</span></code> – Common CPL actions</a><ul>
+<li><a class="reference internal" href="#caelus-cfg-print-cpl-configuration">caelus cfg – Print CPL configuration</a></li>
+<li><a class="reference internal" href="#caelus-clone-clone-a-case-directory">caelus clone – Clone a case directory</a></li>
+<li><a class="reference internal" href="#caelus-tasks-run-tasks-from-a-file">caelus tasks – run tasks from a file</a></li>
+<li><a class="reference internal" href="#caelus-run-run-an-executable-in-the-appropriate-environment">caelus run – run an executable in the appropriate environment</a></li>
+<li><a class="reference internal" href="#caelus-runpy-run-a-custom-python-script">caelus runpy – Run a custom python script</a></li>
+<li><a class="reference internal" href="#caelus-logs-process-a-solver-log-file-from-a-run">caelus logs – process a solver log file from a run</a></li>
+<li><a class="reference internal" href="#caelus-clean-clean-a-case-directory">caelus clean – clean a case directory</a></li>
+<li><a class="reference internal" href="#caelus-build-compile-openfoam-or-cml-sources">caelus build – Compile OpenFOAM or CML sources</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../cli_apps.html"
+                          title="previous chapter">Command-line Applications</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="caelus_sim.html"
+                          title="next chapter"><code class="docutils literal notranslate"><span class="pre">caelus_sim</span></code> – Parametric Run CLI</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/user/cli_apps/caelus.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="caelus-common-cpl-actions">
+<span id="cli-apps-caelus"></span><h1><code class="docutils literal notranslate"><span class="pre">caelus</span></code> – Common CPL actions<a class="headerlink" href="#caelus-common-cpl-actions" title="Link to this heading">¶</a></h1>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.0.2.</span></p>
+</div>
+<p>The <cite>caelus</cite> command provides various sub-commands that can be used to perform
+common tasks using the CPL library. Currently the following sub-commands (or
+actions) are available through the <strong class="program">caelus</strong> script.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Action</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cfg</span></code></p></td>
+<td><p>Print CPL configuration to stdout or file</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">clone</span></code></p></td>
+<td><p>Clone a case directory</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tasks</span></code></p></td>
+<td><p>Automatic execution of workflow from a YAML file</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">run</span></code></p></td>
+<td><p>Run a CML executable in the appropriate environment</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">runpy</span></code></p></td>
+<td><p>Run a python script in the appropriate environment</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">logs</span></code></p></td>
+<td><p>Parse a solver log file and extract data for analysis</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">clean</span></code></p></td>
+<td><p>Clean a case directory after execution</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">build</span></code></p></td>
+<td><p>Compile OpenFOAM or CML sources</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The script also supports the <a class="reference internal" href="../cli_apps.html#cmdoption-cpl-h"><code class="xref std std-option docutils literal notranslate"><span class="pre">common</span> <span class="pre">options</span></code></a> documented in
+the previous section. Care must be take to include the common options before
+the subcommand, i.e.,</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Correct<span class="w"> </span>usage
+<span class="go">caelus -vvv cfg -f caelus.yaml</span>
+
+<span class="gp"># </span>The<span class="w"> </span>following<span class="w"> </span>will<span class="w"> </span>generate<span class="w"> </span>an<span class="w"> </span>error
+<span class="gp"># </span>caelus<span class="w"> </span>cfg<span class="w"> </span>-vvv<span class="w"> </span><span class="c1"># ERROR</span>
+</pre></div>
+</div>
+</div>
+<section id="caelus-cfg-print-cpl-configuration">
+<h2>caelus cfg – Print CPL configuration<a class="headerlink" href="#caelus-cfg-print-cpl-configuration" title="Link to this heading">¶</a></h2>
+<p>Print out the configuration dictionary currently in use by CPL. This will be a
+combination of all the options loaded from the configuration files described in
+<a class="reference internal" href="../configuration.html#configuration"><span class="std std-ref">configuration</span></a> section. By default, the command prints
+the YAML-formatted dictionary to the standard output. The output can be
+redirected to a file by using the <a class="reference internal" href="#cmdoption-caelus-cfg-f"><code class="xref std std-option docutils literal notranslate"><span class="pre">caelus</span> <span class="pre">cfg</span> <span class="pre">-f</span></code></a> option. This is useful
+for debugging.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>caelus<span class="w"> </span>cfg<span class="w"> </span>-h
+<span class="go">usage: caelus cfg [-h] [-f CONFIG_FILE] [-b]</span>
+
+<span class="go">Dump CPL configuration</span>
+
+<span class="go">optional arguments:</span>
+<span class="go">  -h, --help            show this help message and exit</span>
+<span class="go">  -f CONFIG_FILE, --config-file CONFIG_FILE</span>
+<span class="go">                        Write to file instead of standard output</span>
+<span class="go">  -b, --no-backup       Overwrite existing config without saving a backup</span>
+</pre></div>
+</div>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-cfg-f">
+<span id="cmdoption-caelus-cfg-config-file"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"> <span class="pre">output_file</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--config-file</span></span><span class="sig-prename descclassname"> <span class="pre">output_file</span></span><a class="headerlink" href="#cmdoption-caelus-cfg-f" title="Link to this definition">¶</a></dt>
+<dd><p>Save the current CPL configuration to the <code class="docutils literal notranslate"><span class="pre">output_file</span></code> instead of printing
+to standard output.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-cfg-b">
+<span id="cmdoption-caelus-cfg-no-backup"></span><span class="sig-name descname"><span class="pre">-b</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-backup</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-cfg-b" title="Link to this definition">¶</a></dt>
+<dd><p>By default, when using the <a class="reference internal" href="#cmdoption-caelus-cfg-f"><code class="xref std std-option docutils literal notranslate"><span class="pre">caelus</span> <span class="pre">cfg</span> <span class="pre">-f</span></code></a> CPL will create a backup
+of any existing configuration file before writing a new file. This option
+overrides the behavior and will not create backups of existing configurations
+before overwriting the file.</p>
+</dd></dl>
+
+</section>
+<section id="caelus-clone-clone-a-case-directory">
+<h2>caelus clone – Clone a case directory<a class="headerlink" href="#caelus-clone-clone-a-case-directory" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">caelus</span> <span class="pre">clone</span></code> takes two mandatory parameters, the source template case
+directory, and name of the new case that is created. By default, the new case
+directory is created in the current working directory and must not already
+exist. CPL will not attempt to overwrite existing directories during clone.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>caelus<span class="w"> </span>clone<span class="w"> </span>-h
+<span class="go">usage: caelus clone [-h] [-m] [-z] [-s] [-e EXTRA_PATTERNS] [-d BASE_DIR]</span>
+<span class="go">                    template_dir case_name</span>
+
+<span class="go">Clone a case directory into a new folder.</span>
+
+<span class="go">positional arguments:</span>
+<span class="go">  template_dir          Valid Caelus case directory to clone.</span>
+<span class="go">  case_name             Name of the new case directory.</span>
+
+<span class="go">optional arguments:</span>
+<span class="go">  -h, --help            show this help message and exit</span>
+<span class="go">  -m, --skip-mesh       skip mesh directory while cloning</span>
+<span class="go">  -z, --skip-zero       skip 0 directory while cloning</span>
+<span class="go">  -s, --skip-scripts    skip scripts while cloning</span>
+<span class="go">  -e EXTRA_PATTERNS, --extra-patterns EXTRA_PATTERNS</span>
+<span class="go">                        shell wildcard patterns matching additional files to</span>
+<span class="go">                        ignore</span>
+<span class="go">  -d BASE_DIR, --base-dir BASE_DIR</span>
+<span class="go">                        directory where the new case directory is created</span>
+</pre></div>
+</div>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-clone-m">
+<span id="cmdoption-caelus-clone-skip-mesh"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--skip-mesh</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-clone-m" title="Link to this definition">¶</a></dt>
+<dd><p>Do not copy the <code class="file docutils literal notranslate"><span class="pre">constant/polyMesh</span></code> directory when cloning. The default
+behavior is to copy the mesh along with the case directory.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-clone-z">
+<span id="cmdoption-caelus-clone-skip-zero"></span><span class="sig-name descname"><span class="pre">-z</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--skip-zero</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-clone-z" title="Link to this definition">¶</a></dt>
+<dd><p>Do not copy the <code class="file docutils literal notranslate"><span class="pre">0</span></code> directory during clone. The default behavior copies
+time <code class="docutils literal notranslate"><span class="pre">t=0</span></code> directory.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-clone-s">
+<span id="cmdoption-caelus-clone-skip-scripts"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--skip-scripts</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-clone-s" title="Link to this definition">¶</a></dt>
+<dd><p>Do not copy any python or YAML scripts during clone.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-clone-e">
+<span id="cmdoption-caelus-clone-extra-patterns"></span><span class="sig-name descname"><span class="pre">-e</span></span><span class="sig-prename descclassname"> <span class="pre">pattern</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--extra-patterns</span></span><span class="sig-prename descclassname"> <span class="pre">pattern</span></span><a class="headerlink" href="#cmdoption-caelus-clone-e" title="Link to this definition">¶</a></dt>
+<dd><p>A shell-wildcard pattern used to skip additional files that might exist in
+the source directory that must be skipped while cloning the case directory.
+This option can be repeated multiple times to provide more than one pattern.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Skip<span class="w"> </span>all<span class="w"> </span>bash<span class="w"> </span>files<span class="w"> </span>and<span class="w"> </span>text<span class="w"> </span>files<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span><span class="nb">source</span><span class="w"> </span>directory
+<span class="go">caelus clone -e &quot;*.sh&quot; -e &quot;*.txt&quot; old_case_dir new_case_dir</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-clone-d">
+<span id="cmdoption-caelus-clone-base-dir"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"> <span class="pre">basedir</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--base-dir</span></span><span class="sig-prename descclassname"> <span class="pre">basedir</span></span><a class="headerlink" href="#cmdoption-caelus-clone-d" title="Link to this definition">¶</a></dt>
+<dd><p>By default, the new case directory is created in the current working
+directory. This option allows the user to modify the behavior and create the
+new case in a different location. Useful for use within scripts.</p>
+</dd></dl>
+
+</section>
+<section id="caelus-tasks-run-tasks-from-a-file">
+<span id="cli-apps-caelus-tasks"></span><h2>caelus tasks – run tasks from a file<a class="headerlink" href="#caelus-tasks-run-tasks-from-a-file" title="Link to this heading">¶</a></h2>
+<p>Read and execute tasks from a YAML-formatted file. Task files could be considered
+recipes or workflows. By default, it reads <code class="docutils literal notranslate"><span class="pre">caelus_tasks.yaml</span></code> from the current
+directory. The behavior can be modified to read other file names and locations.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>caelus<span class="w"> </span>tasks<span class="w"> </span>-h
+<span class="go">usage: caelus tasks [-h] [-f FILE]</span>
+
+<span class="go">Run pre-defined tasks within a case directory read from a YAML-formatted file.</span>
+
+<span class="go">optional arguments:</span>
+<span class="go">  -h, --help            show this help message and exit</span>
+<span class="go">  -f FILE, --file FILE  file containing tasks to execute (caelus_tasks.yaml)</span>
+</pre></div>
+</div>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-tasks-f">
+<span id="cmdoption-caelus-tasks-file"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"> <span class="pre">task_file</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--file</span></span><span class="sig-prename descclassname"> <span class="pre">task_file</span></span><a class="headerlink" href="#cmdoption-caelus-tasks-f" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the task file named <code class="docutils literal notranslate"><span class="pre">task_file</span></code> instead of caelus_tasks.yaml in current
+working directory</p>
+</dd></dl>
+
+</section>
+<section id="caelus-run-run-an-executable-in-the-appropriate-environment">
+<h2>caelus run – run an executable in the appropriate environment<a class="headerlink" href="#caelus-run-run-an-executable-in-the-appropriate-environment" title="Link to this heading">¶</a></h2>
+<p>Run a single application. The application name is the one mandatory argument.
+Additional command arguments can be specified. The behavior can be
+modified to enble parallel execution of the application. By default, the
+application runs from the current directory. This behavior can be modified to
+specify the case directory.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When passing <code class="docutils literal notranslate"><span class="pre">cmd_args</span></code>, <code class="docutils literal notranslate"><span class="pre">--</span></code> is required between <code class="docutils literal notranslate"><span class="pre">run</span></code> and
+<code class="docutils literal notranslate"><span class="pre">cmd_name</span></code> so the cmd_args are parsed correctly. E.g. <code class="docutils literal notranslate"><span class="pre">caelus</span> <span class="pre">run</span> <span class="pre">--</span>
+<span class="pre">renumberMesh</span> <span class="pre">&quot;-overwrite&quot;</span></code>. This ensures that the arguments meant for the
+CML executable are not parsed as arguments to the <code class="docutils literal notranslate"><span class="pre">caelus</span></code> executable
+during the run.</p>
+</div>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>caelus<span class="w"> </span>run<span class="w"> </span>-h
+<span class="go">usage: caelus run [-h] [-p] [-l LOG_FILE] [-d CASE_DIR] [-m MACHINEFILE]</span>
+<span class="go">                  cmd_name [cmd_args [cmd_args ...]]</span>
+
+<span class="go">Run an executable in the correct environment</span>
+
+<span class="go">positional arguments:</span>
+<span class="go">  cmd_name              name of the executable</span>
+<span class="go">  cmd_args              additional arguments passed to command</span>
+
+<span class="go">optional arguments:</span>
+<span class="go">  -h, --help            show this help message and exit</span>
+<span class="go">  -p, --parallel        run in parallel</span>
+<span class="go">  -l LOG_FILE, --log-file LOG_FILE</span>
+<span class="go">                        filename to redirect command output</span>
+<span class="go">  -d CASE_DIR, --case-dir CASE_DIR</span>
+<span class="go">                        path to the case directory</span>
+<span class="go">  -m MACHINEFILE, --machinefile MACHINEFILE</span>
+<span class="go">                        machine file for distributed runs (local_mpi only)</span>
+</pre></div>
+</div>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-run-p">
+<span id="cmdoption-caelus-run-parallel"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--parallel</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-run-p" title="Link to this definition">¶</a></dt>
+<dd><p>Run the executable in parallel</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-run-m">
+<span id="cmdoption-caelus-run-machinefile"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--machinefile</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-run-m" title="Link to this definition">¶</a></dt>
+<dd><p>File containing nodes used for a distributed MPI run. This option is ignored
+if <code class="xref std std-confval docutils literal notranslate"><span class="pre">job_scheduler</span></code> is not
+<code class="docutils literal notranslate"><span class="pre">local_mpi</span></code>. This option has no effect if the <a class="reference internal" href="#cmdoption-caelus-run-p"><code class="xref std std-option docutils literal notranslate"><span class="pre">parallel</span> <span class="pre">option</span></code></a> is not used.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-run-l">
+<span id="cmdoption-caelus-run-log-file"></span><span class="sig-name descname"><span class="pre">-l</span></span><span class="sig-prename descclassname"> <span class="pre">log_file</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--log-file</span></span><span class="sig-prename descclassname"> <span class="pre">log_file</span></span><a class="headerlink" href="#cmdoption-caelus-run-l" title="Link to this definition">¶</a></dt>
+<dd><p>By default, a log file named <code class="docutils literal notranslate"><span class="pre">&lt;application&gt;.log</span></code> is created. This option
+allows the user to modify the behavior and create a differently named log
+file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-run-d">
+<span id="cmdoption-caelus-run-case-dir"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"> <span class="pre">casedir</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--case-dir</span></span><span class="sig-prename descclassname"> <span class="pre">casedir</span></span><a class="headerlink" href="#cmdoption-caelus-run-d" title="Link to this definition">¶</a></dt>
+<dd><p>By default, executables run from the current working directory. This option
+allows the user to modify the behavior and specify the path to the case
+directory.</p>
+</dd></dl>
+
+</section>
+<section id="caelus-runpy-run-a-custom-python-script">
+<h2>caelus runpy – Run a custom python script<a class="headerlink" href="#caelus-runpy-run-a-custom-python-script" title="Link to this heading">¶</a></h2>
+<p>Runs a user-provided python script in the case directory. CPL ensures that the
+correct version of OpenFOAM or CML and python environment are setup prior to the
+invocation of the python script. Like <strong class="program">caelus run</strong>, it is recommended
+that the arguments meant for the user script be separated from :program:
+<cite>caelus runpy</cite> arguments with <code class="docutils literal notranslate"><span class="pre">--</span></code>.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>caelus<span class="w"> </span>runpy<span class="w"> </span>-h
+<span class="go">usage: caelus runpy [-h] [-l LOG_FILE] [-d CASE_DIR]</span>
+<span class="go">                    script [script_args [script_args ...]]</span>
+
+<span class="go">Run a custom python script with OpenFOAM or CML and CPL environment</span>
+
+<span class="go">positional arguments:</span>
+<span class="go">  script                path to the python script</span>
+<span class="go">  script_args           additional arguments passed to command</span>
+
+<span class="go">optional arguments:</span>
+<span class="go">  -h, --help            show this help message and exit</span>
+<span class="go">  -l LOG_FILE, --log-file LOG_FILE</span>
+<span class="go">                        filename to redirect command output</span>
+<span class="go">  -d CASE_DIR, --case-dir CASE_DIR</span>
+<span class="go">                        path to the case directory</span>
+</pre></div>
+</div>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-runpy-l">
+<span id="cmdoption-caelus-runpy-log-file"></span><span class="sig-name descname"><span class="pre">-l</span></span><span class="sig-prename descclassname"> <span class="pre">log_file</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--log-file</span></span><span class="sig-prename descclassname"> <span class="pre">log_file</span></span><a class="headerlink" href="#cmdoption-caelus-runpy-l" title="Link to this definition">¶</a></dt>
+<dd><p>By default, a log file named <code class="docutils literal notranslate"><span class="pre">&lt;application&gt;.log</span></code> is created. This option
+allows the user to modify the behavior and create a differently named log
+file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-runpy-d">
+<span id="cmdoption-caelus-runpy-case-dir"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"> <span class="pre">casedir</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--case-dir</span></span><span class="sig-prename descclassname"> <span class="pre">casedir</span></span><a class="headerlink" href="#cmdoption-caelus-runpy-d" title="Link to this definition">¶</a></dt>
+<dd><p>By default, executables run from the current working directory. This option
+allows the user to modify the behavior and specify the path to the case
+directory.</p>
+</dd></dl>
+
+</section>
+<section id="caelus-logs-process-a-solver-log-file-from-a-run">
+<h2>caelus logs – process a solver log file from a run<a class="headerlink" href="#caelus-logs-process-a-solver-log-file-from-a-run" title="Link to this heading">¶</a></h2>
+<p>Process a single solver log. The log file name is the one mandatory
+argument. Additional command arguments can be specified. By default, the log
+file is found in the current directory and the output is written to <code class="docutils literal notranslate"><span class="pre">logs</span></code>
+directory. The behavior can be modified to specify the case directory and output
+directory.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>caelus<span class="w"> </span>logs<span class="w"> </span>-h
+<span class="go">usage: caelus logs [-h] [-l LOGS_DIR] [-d CASE_DIR] [-p] [-f PLOT_FILE] [-w]</span>
+<span class="go">               [-i INCLUDE_FIELDS | -e EXCLUDE_FIELDS]</span>
+<span class="go">               log_file</span>
+
+<span class="go">Process logfiles for an OpenFOAM or Caelus run</span>
+
+<span class="go">positional arguments:</span>
+<span class="go">log_file               log file (e.g., simpleSolver.log)</span>
+
+<span class="go">optional arguments:</span>
+<span class="go">-h, --help             show this help message and exit</span>
+<span class="go">-l LOGS_DIR, --logs-dir LOGS_DIR</span>
+<span class="go">                       directory where logs are output (default: logs)</span>
+<span class="go">-d CASE_DIR, --case-dir CASE_DIR</span>
+<span class="go">                       path to the case directory</span>
+<span class="go">-p, --plot-residuals   generate residual time-history plots</span>
+<span class="go">-f PLOT_FILE, --plot-file PLOT_FILE</span>
+<span class="go">                       file where plot is saved</span>
+<span class="go">-w, --watch            Monitor residuals during a run</span>
+<span class="go">-i INCLUDE_FIELDS, --include-fields INCLUDE_FIELDS</span>
+<span class="go">                       plot residuals for given fields</span>
+<span class="go">-e EXCLUDE_FIELDS, --exclude-fields EXCLUDE_FIELDS</span>
+</pre></div>
+</div>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-logs-l">
+<span id="cmdoption-caelus-logs-logs-dir"></span><span class="sig-name descname"><span class="pre">-l</span></span><span class="sig-prename descclassname"> <span class="pre">logs_dir</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--logs-dir</span></span><span class="sig-prename descclassname"> <span class="pre">logs_dir</span></span><a class="headerlink" href="#cmdoption-caelus-logs-l" title="Link to this definition">¶</a></dt>
+<dd><p>By default, the log files are output to <code class="docutils literal notranslate"><span class="pre">logs</span></code>. This option allows
+the user to modify the behavior and create a differently named log file
+output directory.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-logs-d">
+<span id="cmdoption-caelus-logs-arg-case_dir"></span><span id="cmdoption-caelus-logs-case-dir"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">case_dir</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--case-dir</span></span><span class="sig-prename descclassname"> <span class="pre">case_dir</span></span><a class="headerlink" href="#cmdoption-caelus-logs-d" title="Link to this definition">¶</a></dt>
+<dd><p>By default, the log file is found in the current working directory. This
+option allows the user to specify the path to the case directory where the
+log file exists.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-logs-p">
+<span id="cmdoption-caelus-logs-plot-residuals"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--plot-residuals</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-logs-p" title="Link to this definition">¶</a></dt>
+<dd><p>This option allows the user to plot and save the residuals to an image file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-logs-f">
+<span id="cmdoption-caelus-logs-plot-file"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"> <span class="pre">plot_file</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--plot-file</span></span><span class="sig-prename descclassname"> <span class="pre">plot_file</span></span><a class="headerlink" href="#cmdoption-caelus-logs-f" title="Link to this definition">¶</a></dt>
+<dd><p>By default, plots are saved to <code class="docutils literal notranslate"><span class="pre">residuals.png</span></code> in the current
+working directory. This option allows the user to modify the behavior
+and specify a differently named plot file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-logs-w">
+<span id="cmdoption-caelus-logs-watch"></span><span class="sig-name descname"><span class="pre">-w</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--watch</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-logs-w" title="Link to this definition">¶</a></dt>
+<dd><p>This option allows the user to dynamically monitor residuals for a log file
+from an ongoing run. To exit before the completion of the run, hit
+<code class="docutils literal notranslate"><span class="pre">Ctrl+C</span></code>.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-logs-i">
+<span id="cmdoption-caelus-logs-include-fields"></span><span class="sig-name descname"><span class="pre">-i</span></span><span class="sig-prename descclassname"> <span class="pre">include_fields</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--include-fields</span></span><span class="sig-prename descclassname"> <span class="pre">include_fields</span></span><a class="headerlink" href="#cmdoption-caelus-logs-i" title="Link to this definition">¶</a></dt>
+<dd><p>By default, all field equation residuals are plotted. This option can be
+used to only include specific fields in residual plot. Multiple fields
+can be provided to this option. For example,</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Plot<span class="w"> </span>pressure<span class="w"> </span>and<span class="w"> </span>momentum<span class="w"> </span>residuals<span class="w"> </span>from<span class="w"> </span>simpleSolver<span class="w"> </span><span class="k">case</span><span class="w"> </span>log
+<span class="go">caelus logs -p -i &quot;p Ux Uy Uz&quot; simpleSolver.log</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-logs-e">
+<span id="cmdoption-caelus-logs-exclude-patterns"></span><span class="sig-name descname"><span class="pre">-e</span></span><span class="sig-prename descclassname"> <span class="pre">exclude_fields</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--exclude-patterns</span></span><span class="sig-prename descclassname"> <span class="pre">exclude</span> <span class="pre">fields</span></span><a class="headerlink" href="#cmdoption-caelus-logs-e" title="Link to this definition">¶</a></dt>
+<dd><p>By default, all field equation residuals are plotted. This option can be
+used to exclude specific fields in residual plot. Multiple fields
+be provided to this option. For example,</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Exclude<span class="w"> </span>TKE<span class="w"> </span>and<span class="w"> </span>omega<span class="w"> </span>residuals<span class="w"> </span>from<span class="w"> </span>simpleSolver<span class="w"> </span><span class="k">case</span><span class="w"> </span>log
+<span class="go">caelus logs -p -e &quot;k epsilon&quot; simpleSolver.log</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="caelus-clean-clean-a-case-directory">
+<h2>caelus clean – clean a case directory<a class="headerlink" href="#caelus-clean-clean-a-case-directory" title="Link to this heading">¶</a></h2>
+<p>Cleans files generated by a run. By default, this function will always
+preserve <code class="docutils literal notranslate"><span class="pre">system</span></code>, <code class="docutils literal notranslate"><span class="pre">constant</span></code>, and <code class="docutils literal notranslate"><span class="pre">0</span></code> directories as well as any
+YAML or python files. The behavior can be modified to presevere
+additional files and directories.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>caelus<span class="w"> </span>clean<span class="w"> </span>-h
+<span class="go">usage: caelus clean [-h] [-d CASE_DIR] [-m] [-z] [-t] [-P] [-p PRESERVE]</span>
+
+<span class="go">Clean a case directory</span>
+
+<span class="go">optional arguments:</span>
+<span class="go">  -h, --help            show this help message and exit</span>
+<span class="go">  -d CASE_DIR, --case-dir CASE_DIR</span>
+<span class="go">                        path to the case directory</span>
+<span class="go">  -m, --clean-mesh      remove polyMesh directory (default: no)</span>
+<span class="go">  -z, --clean-zero      remove 0 directory (default: no)</span>
+<span class="go">  -t, --clean-time-dirs</span>
+<span class="go">                        remove time directories (default: no)</span>
+<span class="go">  -P, --clean-processors</span>
+<span class="go">                        clean processor directories (default: no)</span>
+<span class="go">  -p PRESERVE, --preserve PRESERVE</span>
+<span class="go">                        shell wildcard patterns of extra files to preserve</span>
+</pre></div>
+</div>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-clean-d">
+<span id="cmdoption-caelus-clean-arg-case_dir"></span><span id="cmdoption-caelus-clean-case-dir"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">case_dir</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--case-dir</span></span><span class="sig-prename descclassname"> <span class="pre">case_dir</span></span><a class="headerlink" href="#cmdoption-caelus-clean-d" title="Link to this definition">¶</a></dt>
+<dd><p>By default, the case directory is the current working directory. This
+option allows the user to specify the path to the case directory.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-clean-m">
+<span id="cmdoption-caelus-clean-clean-mesh"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--clean-mesh</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-clean-m" title="Link to this definition">¶</a></dt>
+<dd><p>By default, the <code class="docutils literal notranslate"><span class="pre">polyMesh</span></code> directory is not removed. This option allows
+the user to modify the behavior and remove the <code class="docutils literal notranslate"><span class="pre">polyMesh</span></code> directory.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-clean-z">
+<span id="cmdoption-caelus-clean-clean-zero"></span><span class="sig-name descname"><span class="pre">-z</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--clean-zero</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-clean-z" title="Link to this definition">¶</a></dt>
+<dd><p>By default, the <code class="docutils literal notranslate"><span class="pre">0</span></code> files are not cleaned. This option allows
+the user to modify the behavior and remove the <code class="docutils literal notranslate"><span class="pre">0</span></code> directory.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-clean-t">
+<span id="cmdoption-caelus-clean-clean-time-dirs"></span><span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--clean-time-dirs</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-clean-t" title="Link to this definition">¶</a></dt>
+<dd><p>Remove time directories from the case directory. Note, this only removes the
+reconstructed time directories and not the decomposed directores that exist
+within <code class="docutils literal notranslate"><span class="pre">processor*</span></code> directories.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-clean-P">
+<span id="cmdoption-caelus-clean-clean-processors"></span><span class="sig-name descname"><span class="pre">-P</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--clean-processors</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-clean-P" title="Link to this definition">¶</a></dt>
+<dd><p>Remove decomposed <code class="docutils literal notranslate"><span class="pre">processor*</span></code> directories from the case directory.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-clean-p">
+<span id="cmdoption-caelus-clean-preserve"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"> <span class="pre">preserve_pattern</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--preserve</span></span><span class="sig-prename descclassname"> <span class="pre">preserve_pattern</span></span><a class="headerlink" href="#cmdoption-caelus-clean-p" title="Link to this definition">¶</a></dt>
+<dd><p>A shell-wildcard patterns of files or directories that will not
+be cleaned.</p>
+</dd></dl>
+
+</section>
+<section id="caelus-build-compile-openfoam-or-cml-sources">
+<h2>caelus build – Compile OpenFOAM or CML sources<a class="headerlink" href="#caelus-build-compile-openfoam-or-cml-sources" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">caelus</span> <span class="pre">build</span></code> is a wrapper that can be used to build executables for
+OpenFOAM or CML project and user directories. The command can be executed
+from any directory when building project or user directories. For CML, It
+determines the actual paths to the project and user directories based on the
+<a class="reference internal" href="../configuration.html#configuration"><span class="std std-ref">user configuration</span></a> files, and the SCons configuration
+within those projects. For OpenFOAM, it assumes an <code class="docutils literal notranslate"><span class="pre">Allwmake</span></code> script exists
+in the target source directory. For either package, the user can override the
+default project and user directories by specifying the :option:
+<cite>–cml-version &lt;cpl –cml-version&gt;</cite> flag when invoking this command.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When using CPL with Python 3.x versions, you will need a recent version of
+CML to invoke <code class="docutils literal notranslate"><span class="pre">caelus</span> <span class="pre">build</span></code>. This is because the SCons versions shipped
+with CML versions <code class="docutils literal notranslate"><span class="pre">v8.04</span></code> and older can only run on Python 2.x.</p>
+</div>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>caelus<span class="w"> </span>build<span class="w"> </span>-h
+<span class="go">usage: caelus build [-h] [-l LOG_FILE] [-c] [-j JOBS]</span>
+<span class="go">                    [-a | -p | -u | -d SOURCE_DIR]</span>
+<span class="go">                    [scons_args [scons_args ...]]</span>
+
+<span class="go">Compile OpenFOAM or Caelus CML</span>
+
+<span class="go">positional arguments:</span>
+<span class="go">  scons_args            additional arguments passed to SCons</span>
+
+<span class="go">optional arguments:</span>
+<span class="go">  -h, --help            show this help message and exit</span>
+<span class="go">  -l LOG_FILE, --log-file LOG_FILE</span>
+<span class="go">                       filename to redirect build output</span>
+<span class="go">  -c, --clean           clean CML build</span>
+<span class="go">  -j JOBS, --jobs JOBS  number of parallel jobs</span>
+<span class="go">  -a, --all             Build both project and user directories (default: no)</span>
+<span class="go">  -p, --project         Build Caelus CML project (default: no)</span>
+<span class="go">  -u, --user            Build user project (default: no)</span>
+<span class="go">  -d SOURCE_DIR, --source-dir SOURCE_DIR</span>
+<span class="go">                        Build sources in path (default: CWD)</span>
+</pre></div>
+</div>
+<p>The positional arguments are passed directly to SCons providing user with full
+control over how the SCons build must be handled. It is recommended that the
+user separate the <em>optional arguments</em> to <code class="docutils literal notranslate"><span class="pre">caelus</span> <span class="pre">build</span></code> command from the
+arguments that must be passed to SCons using double dashes (<code class="docutils literal notranslate"><span class="pre">--</span></code>).</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-build-d">
+<span id="cmdoption-caelus-build-source-dir"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--source-dir</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-build-d" title="Link to this definition">¶</a></dt>
+<dd><p>Build sources in the current working directory. This is the default option.
+If the user is in the top-level directory containing the <code class="file docutils literal notranslate"><span class="pre">SConstruct</span></code>
+file, then it builds the entire project. If the user is in a sub-directory
+containing a <code class="file docutils literal notranslate"><span class="pre">SConscript</span></code> file, then it just builds the libraries and
+executables defined in that directory and sub-directories. An example would
+be to recompile just the turbulence model libraries during development phase.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-build-p">
+<span id="cmdoption-caelus-build-project"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--project</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-build-p" title="Link to this definition">¶</a></dt>
+<dd><p>Build the sources in project directory only.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-build-u">
+<span id="cmdoption-caelus-build-user"></span><span class="sig-name descname"><span class="pre">-u</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--user</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-build-u" title="Link to this definition">¶</a></dt>
+<dd><p>Build the sources in user directory only.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-build-a">
+<span id="cmdoption-caelus-build-all"></span><span class="sig-name descname"><span class="pre">-a</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--all</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-build-a" title="Link to this definition">¶</a></dt>
+<dd><p>Build both the project and the user directories. The command will abort
+compilation if the compilation of the project files fail and will not attempt
+to build the sources in user directory.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-build-j">
+<span id="cmdoption-caelus-build-jobs"></span><span class="sig-name descname"><span class="pre">-j</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--jobs</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-build-j" title="Link to this definition">¶</a></dt>
+<dd><p>The number of concurrent compilation jobs that must be launched with SCons.
+The default value is determined by the number of CPU cores available on the
+user’s system.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-caelus-build-c">
+<span id="cmdoption-caelus-build-clean"></span><span class="sig-name descname"><span class="pre">-c</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--clean</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-caelus-build-c" title="Link to this definition">¶</a></dt>
+<dd><p>Instead of recompiling the sources, execute the <code class="docutils literal notranslate"><span class="pre">clean</span></code> command through
+SCons.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus_sim.html" title="caelus_sim – Parametric Run CLI"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../cli_apps.html" title="Command-line Applications"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../cli_apps.html" >Command-line Applications</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">caelus</span></code> – Common CPL actions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

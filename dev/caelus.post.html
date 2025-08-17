@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>caelus.post – Post-processing utilities &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="caelus.io – CML Input File Manipulation" href="caelus.io.html" />
+    <link rel="prev" title="caelus.run – CML Execution Utilities" href="caelus.run.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../index.html">
+<!--      <img src="../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus.io.html" title="caelus.io – CML Input File Manipulation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="caelus.run.html" title="caelus.run – CML Execution Utilities"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="caelus.html" accesskey="U">Caelus Python API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post – Post-processing utilities</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">caelus.post – Post-processing utilities</a><ul>
+<li><a class="reference internal" href="#post-processing-interface">Post-processing interface</a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.functions.PostProcessing"><code class="docutils literal notranslate"><span class="pre">PostProcessing</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.funcobj.functions.PostProcessing.filter"><code class="docutils literal notranslate"><span class="pre">PostProcessing.filter()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.functions.PostProcessing.keys"><code class="docutils literal notranslate"><span class="pre">PostProcessing.keys()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.functions.PostProcessing.casedir"><code class="docutils literal notranslate"><span class="pre">PostProcessing.casedir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.functions.PostProcessing.data"><code class="docutils literal notranslate"><span class="pre">PostProcessing.data</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.functions.PostProcessing.root"><code class="docutils literal notranslate"><span class="pre">PostProcessing.root</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#core-function-object-utilities">Core function object utilities</a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.DictMeta"><code class="docutils literal notranslate"><span class="pre">DictMeta</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.DictMeta.process_properties"><code class="docutils literal notranslate"><span class="pre">DictMeta.process_properties()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.DictMeta.process_property"><code class="docutils literal notranslate"><span class="pre">DictMeta.process_property()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FuncObjMeta"><code class="docutils literal notranslate"><span class="pre">FuncObjMeta</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject"><code class="docutils literal notranslate"><span class="pre">FunctionObject</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.create"><code class="docutils literal notranslate"><span class="pre">FunctionObject.create()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.funcobj_type"><code class="docutils literal notranslate"><span class="pre">FunctionObject.funcobj_type()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.enabled"><code class="docutils literal notranslate"><span class="pre">FunctionObject.enabled</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.executeControl"><code class="docutils literal notranslate"><span class="pre">FunctionObject.executeControl</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.executeInterval"><code class="docutils literal notranslate"><span class="pre">FunctionObject.executeInterval</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.latest_time"><code class="docutils literal notranslate"><span class="pre">FunctionObject.latest_time</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.libs"><code class="docutils literal notranslate"><span class="pre">FunctionObject.libs</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.log"><code class="docutils literal notranslate"><span class="pre">FunctionObject.log</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.region"><code class="docutils literal notranslate"><span class="pre">FunctionObject.region</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.root"><code class="docutils literal notranslate"><span class="pre">FunctionObject.root</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.timeEnd"><code class="docutils literal notranslate"><span class="pre">FunctionObject.timeEnd</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.timeStart"><code class="docutils literal notranslate"><span class="pre">FunctionObject.timeStart</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.times"><code class="docutils literal notranslate"><span class="pre">FunctionObject.times</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.writeControl"><code class="docutils literal notranslate"><span class="pre">FunctionObject.writeControl</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject.writeInterval"><code class="docutils literal notranslate"><span class="pre">FunctionObject.writeInterval</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sets-and-surfaces-sampling">Sets and surfaces sampling</a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledData"><code class="docutils literal notranslate"><span class="pre">SampledData</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledData.data"><code class="docutils literal notranslate"><span class="pre">SampledData.data</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledData.fields"><code class="docutils literal notranslate"><span class="pre">SampledData.fields</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledData.name"><code class="docutils literal notranslate"><span class="pre">SampledData.name</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledData.parent"><code class="docutils literal notranslate"><span class="pre">SampledData.parent</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSet"><code class="docutils literal notranslate"><span class="pre">SampledSet</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSet.axis"><code class="docutils literal notranslate"><span class="pre">SampledSet.axis</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSet.coord_cols"><code class="docutils literal notranslate"><span class="pre">SampledSet.coord_cols</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSet.num_coord_cols"><code class="docutils literal notranslate"><span class="pre">SampledSet.num_coord_cols</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSet.points"><code class="docutils literal notranslate"><span class="pre">SampledSet.points</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSet.type"><code class="docutils literal notranslate"><span class="pre">SampledSet.type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSets"><code class="docutils literal notranslate"><span class="pre">SampledSets</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSets.setFormat"><code class="docutils literal notranslate"><span class="pre">SampledSets.setFormat</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSurface"><code class="docutils literal notranslate"><span class="pre">SampledSurface</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSurface.type"><code class="docutils literal notranslate"><span class="pre">SampledSurface.type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSurfaces"><code class="docutils literal notranslate"><span class="pre">SampledSurfaces</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSurfaces.surfaceFormat"><code class="docutils literal notranslate"><span class="pre">SampledSurfaces.surfaceFormat</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.Sampling"><code class="docutils literal notranslate"><span class="pre">Sampling</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.Sampling.keys"><code class="docutils literal notranslate"><span class="pre">Sampling.keys()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.Sampling.fields"><code class="docutils literal notranslate"><span class="pre">Sampling.fields</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.Sampling.interpolationScheme"><code class="docutils literal notranslate"><span class="pre">Sampling.interpolationScheme</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.sampling.Sampling.samples"><code class="docutils literal notranslate"><span class="pre">Sampling.samples</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#force-and-force-coefficients-interface">Force and Force coefficients interface</a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.ForceCoeffs"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.ForceCoeffs.Aref"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.Aref</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.ForceCoeffs.dragDir"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.dragDir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.ForceCoeffs.lRef"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.lRef</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.ForceCoeffs.liftDir"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.liftDir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.ForceCoeffs.magUInf"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.magUInf</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.ForceCoeffs.patches"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.patches</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.ForceCoeffs.pitchAxis"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.pitchAxis</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.Forces"><code class="docutils literal notranslate"><span class="pre">Forces</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag"><code class="docutils literal notranslate"><span class="pre">LiftDrag</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.Uinf"><code class="docutils literal notranslate"><span class="pre">LiftDrag.Uinf</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.dragDirection"><code class="docutils literal notranslate"><span class="pre">LiftDrag.dragDirection</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.liftDirection"><code class="docutils literal notranslate"><span class="pre">LiftDrag.liftDirection</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.maxCp"><code class="docutils literal notranslate"><span class="pre">LiftDrag.maxCp</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.minCp"><code class="docutils literal notranslate"><span class="pre">LiftDrag.minCp</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.nAveragingSteps"><code class="docutils literal notranslate"><span class="pre">LiftDrag.nAveragingSteps</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.outputRegionData"><code class="docutils literal notranslate"><span class="pre">LiftDrag.outputRegionData</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.patches"><code class="docutils literal notranslate"><span class="pre">LiftDrag.patches</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.pitchAxis"><code class="docutils literal notranslate"><span class="pre">LiftDrag.pitchAxis</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.porosity"><code class="docutils literal notranslate"><span class="pre">LiftDrag.porosity</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.referenceArea"><code class="docutils literal notranslate"><span class="pre">LiftDrag.referenceArea</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.referenceLength"><code class="docutils literal notranslate"><span class="pre">LiftDrag.referenceLength</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.rhoInfo"><code class="docutils literal notranslate"><span class="pre">LiftDrag.rhoInfo</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.runOnLastIterOnly"><code class="docutils literal notranslate"><span class="pre">LiftDrag.runOnLastIterOnly</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.wheelbase"><code class="docutils literal notranslate"><span class="pre">LiftDrag.wheelbase</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.funcobj.forces.LiftDrag.writeFields"><code class="docutils literal notranslate"><span class="pre">LiftDrag.writeFields</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus-log-analyzer">Caelus Log Analyzer</a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor"><code class="docutils literal notranslate"><span class="pre">LogProcessor</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.add_rule"><code class="docutils literal notranslate"><span class="pre">LogProcessor.add_rule()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.bounding_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.bounding_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.completion_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.completion_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.continuity_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.continuity_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.convergence_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.convergence_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.courant_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.courant_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.exec_time_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.exec_time_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.exiting_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.exiting_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.extend_rule"><code class="docutils literal notranslate"><span class="pre">LogProcessor.extend_rule()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.fatal_error_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.fatal_error_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.residual_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.residual_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.time_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.time_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.watch_file"><code class="docutils literal notranslate"><span class="pre">LogProcessor.watch_file()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.bound_files"><code class="docutils literal notranslate"><span class="pre">LogProcessor.bound_files</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.case_dir"><code class="docutils literal notranslate"><span class="pre">LogProcessor.case_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.converged"><code class="docutils literal notranslate"><span class="pre">LogProcessor.converged</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.converged_time"><code class="docutils literal notranslate"><span class="pre">LogProcessor.converged_time</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.current_state"><code class="docutils literal notranslate"><span class="pre">LogProcessor.current_state</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.failed"><code class="docutils literal notranslate"><span class="pre">LogProcessor.failed</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.logfile"><code class="docutils literal notranslate"><span class="pre">LogProcessor.logfile</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.logs_dir"><code class="docutils literal notranslate"><span class="pre">LogProcessor.logs_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.res_files"><code class="docutils literal notranslate"><span class="pre">LogProcessor.res_files</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.solve_completed"><code class="docutils literal notranslate"><span class="pre">LogProcessor.solve_completed</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.subiter_map"><code class="docutils literal notranslate"><span class="pre">LogProcessor.subiter_map</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.time"><code class="docutils literal notranslate"><span class="pre">LogProcessor.time</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.LogProcessor.time_str"><code class="docutils literal notranslate"><span class="pre">LogProcessor.time_str</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.post.logs.SolverLog"><code class="docutils literal notranslate"><span class="pre">SolverLog</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.logs.SolverLog.bounding_var"><code class="docutils literal notranslate"><span class="pre">SolverLog.bounding_var()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.SolverLog.clock_time"><code class="docutils literal notranslate"><span class="pre">SolverLog.clock_time()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.SolverLog.continuity_errors"><code class="docutils literal notranslate"><span class="pre">SolverLog.continuity_errors()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.logs.SolverLog.residual"><code class="docutils literal notranslate"><span class="pre">SolverLog.residual()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus-plotting-utilities">Caelus Plotting Utilities</a></li>
+<li><a class="reference internal" href="#caelus.post.plots.CaelusPlot"><code class="docutils literal notranslate"><span class="pre">CaelusPlot</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.plots.CaelusPlot.plot_force_coeffs_hist"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.plot_force_coeffs_hist()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.CaelusPlot.plot_forces_hist"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.plot_forces_hist()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.CaelusPlot.plot_residuals_hist"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.plot_residuals_hist()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.CaelusPlot.casedir"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.casedir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.CaelusPlot.plot_continuity_errors"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.plot_continuity_errors</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.CaelusPlot.plotdir"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.plotdir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.CaelusPlot.solver_log"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.solver_log</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.post.plots.LogWatcher"><code class="docutils literal notranslate"><span class="pre">LogWatcher</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.post.plots.LogWatcher.continuity_processor"><code class="docutils literal notranslate"><span class="pre">LogWatcher.continuity_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.LogWatcher.plot_residuals"><code class="docutils literal notranslate"><span class="pre">LogWatcher.plot_residuals()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.LogWatcher.residual_processor"><code class="docutils literal notranslate"><span class="pre">LogWatcher.residual_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.LogWatcher.skip_field"><code class="docutils literal notranslate"><span class="pre">LogWatcher.skip_field()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.LogWatcher.time_processor"><code class="docutils literal notranslate"><span class="pre">LogWatcher.time_processor()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.LogWatcher.plot_fields"><code class="docutils literal notranslate"><span class="pre">LogWatcher.plot_fields</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.LogWatcher.skip_fields"><code class="docutils literal notranslate"><span class="pre">LogWatcher.skip_fields</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.LogWatcher.time_array"><code class="docutils literal notranslate"><span class="pre">LogWatcher.time_array</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.post.plots.PlotsMeta"><code class="docutils literal notranslate"><span class="pre">PlotsMeta</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.make_plot_method"><code class="docutils literal notranslate"><span class="pre">make_plot_method()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.post.plots.mpl_settings"><code class="docutils literal notranslate"><span class="pre">mpl_settings()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="caelus.run.html"
+                          title="previous chapter">caelus.run – CML Execution Utilities</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="caelus.io.html"
+                          title="next chapter">caelus.io – CML Input File Manipulation</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/dev/caelus.post.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-caelus.post">
+<span id="caelus-post-post-processing-utilities"></span><h1>caelus.post – Post-processing utilities<a class="headerlink" href="#module-caelus.post" title="Link to this heading">¶</a></h1>
+<p>Provides log analysis and plotting utilities</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#caelus.post.funcobj.functions.PostProcessing" title="caelus.post.funcobj.functions.PostProcessing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PostProcessing</span></code></a></p></td>
+<td><p>Main entry point for accessing OpenFOAM <code class="docutils literal notranslate"><span class="pre">postProcessing</span></code> data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#caelus.post.logs.SolverLog" title="caelus.post.logs.SolverLog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SolverLog</span></code></a></p></td>
+<td><p>Caelus solver log file interface.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#caelus.post.plots.CaelusPlot" title="caelus.post.plots.CaelusPlot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CaelusPlot</span></code></a></p></td>
+<td><p>Caelus Data Plotting Interface</p></td>
+</tr>
+</tbody>
+</table>
+<section id="post-processing-interface">
+<span id="module-caelus.post.funcobj.functions"></span><h2>Post-processing interface<a class="headerlink" href="#post-processing-interface" title="Link to this heading">¶</a></h2>
+<p>This module contains the implementation of <a class="reference internal" href="#caelus.post.funcobj.functions.PostProcessing" title="caelus.post.funcobj.functions.PostProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">PostProcessing</span></code></a> the main
+entry point for accessing OpenFOAM’s <code class="docutils literal notranslate"><span class="pre">postProcessing</span></code> outputs.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">post</span> <span class="o">=</span> <span class="n">PostProcessing</span><span class="p">()</span> <span class="c1"># In case directory</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Available objects: &quot;</span><span class="p">,</span> <span class="n">post</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="go">Available objects:  [&#39;samples&#39;, &#39;samplePlanes&#39;, &#39;forceCoeffs1&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fcoeffs</span> <span class="o">=</span> <span class="n">post</span><span class="p">[</span><span class="s1">&#39;forceCoeffs1&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">#print details</span>
+<span class="gp">... </span><span class="nb">print</span><span class="p">(</span><span class="n">fcoeffs</span><span class="o">.</span><span class="n">magUInf</span><span class="p">,</span> <span class="n">fcoeffs</span><span class="o">.</span><span class="n">liftDir</span><span class="p">,</span> <span class="n">fcoeffs</span><span class="o">.</span><span class="n">dragDir</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">20 [0 0 1] [1 0 0]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get dataframe corresponding to `coefficient.dat`</span>
+<span class="gp">... </span><span class="n">df</span> <span class="o">=</span> <span class="n">fcoeffs</span><span class="p">()</span>
+<span class="gp">... </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;Cl&#39;</span><span class="p">,</span> <span class="s1">&#39;Cd&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="gp">...</span>
+<span class="go">         Cl        Cd</span>
+<span class="go">0  0.031805  0.003195</span>
+<span class="go">1  0.078845  0.001883</span>
+<span class="go">2  0.106916  0.001444</span>
+<span class="go">3  0.106786  0.001842</span>
+<span class="go">4  0.079757  0.002850</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="c1"># show available columns</span>
+<span class="go">Index([&#39;Time&#39;, &#39;Cd&#39;, &#39;Cs&#39;, &#39;Cl&#39;, &#39;CmRoll&#39;, &#39;CmPitch&#39;, &#39;CmYaw&#39;, &#39;Cd(f)&#39;,</span>
+<span class="go">       &#39;Cd(r)&#39;, &#39;Cs(f)&#39;, &#39;Cs(r)&#39;, &#39;Cl(f)&#39;, &#39;Cl(r)&#39;],</span>
+<span class="go">      dtype=&#39;object&#39;)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.functions.PostProcessing">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.functions.</span></span><span class="sig-name descname"><span class="pre">PostProcessing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">casedir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_on_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/functions.html#PostProcessing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.functions.PostProcessing" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Main entry point for accessing OpenFOAM <code class="docutils literal notranslate"><span class="pre">postProcessing</span></code> data.</p>
+<p>If the function object dictionary is not provided as an argument, the
+class will attempt to infer the functions activated in <code class="docutils literal notranslate"><span class="pre">controlDict</span></code>
+file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory (default: cwd)</p></li>
+<li><p><strong>func_dict</strong> (<a class="reference internal" href="caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – Function objects dictionary</p></li>
+<li><p><strong>raise_on_error</strong> (<em>bool</em>) – Raise exception if some objects fail to process</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.funcobj.functions.PostProcessing.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/functions.html#PostProcessing.filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.functions.PostProcessing.filter" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve function obects of a particular type.</p>
+<p>The filter method is used to select function objects of a certain
+<code class="docutils literal notranslate"><span class="pre">type</span></code>. This is useful when the custom user-defined names might not
+correspond to the exact type of object.</p>
+<p>Currently supported: <code class="docutils literal notranslate"><span class="pre">sets</span></code>, <code class="docutils literal notranslate"><span class="pre">surfaces</span></code>, <code class="docutils literal notranslate"><span class="pre">forces</span></code>,
+<code class="docutils literal notranslate"><span class="pre">forceCoeffs</span></code>.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">fcoeff</span> <span class="ow">in</span> <span class="n">post</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;forceCoeffs&#39;</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="n">df</span> <span class="o">=</span> <span class="n">fcoeff</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">)</span>
+<span class="gp">... </span>   <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Time&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Cl&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func_type</strong> (<em>str</em>) – Type of function object</p>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>FunctionObject</em> – Function object instances</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.funcobj.functions.PostProcessing.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/functions.html#PostProcessing.keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.functions.PostProcessing.keys" title="Link to this definition">¶</a></dt>
+<dd><p>Return the names of the function objects</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.funcobj.functions.PostProcessing.casedir">
+<span class="sig-name descname"><span class="pre">casedir</span></span><a class="headerlink" href="#caelus.post.funcobj.functions.PostProcessing.casedir" title="Link to this definition">¶</a></dt>
+<dd><p>Absolute path to the case directory</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.funcobj.functions.PostProcessing.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#caelus.post.funcobj.functions.PostProcessing.data" title="Link to this definition">¶</a></dt>
+<dd><p>Input dictionary for this function object</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.functions.PostProcessing.root">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">root</span></span><a class="headerlink" href="#caelus.post.funcobj.functions.PostProcessing.root" title="Link to this definition">¶</a></dt>
+<dd><p>Return path to the postProcessing directory.</p>
+</dd></dl>
+
+</dd></dl>
+
+<section id="core-function-object-utilities">
+<span id="module-caelus.post.funcobj.funcobj"></span><h2>Core function object utilities<a class="headerlink" href="#core-function-object-utilities" title="Link to this heading">¶</a></h2>
+<p>Implements the base classes upon with the concrete function object interfaces
+are built on. <a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject" title="caelus.post.funcobj.funcobj.FunctionObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionObject</span></code></a> implements common methods used by all the
+subclasses.</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.DictMeta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.funcobj.</span></span><span class="sig-name descname"><span class="pre">DictMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/funcobj.html#DictMeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.funcobj.DictMeta" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABCMeta</span></code></p>
+<p>Create property methods and add validation for properties.</p>
+<p>This metaclass implements the boilerplate code necessary to add
+getter/setters for various entries found in a Caelus input file. It expects
+a class variable <code class="docutils literal notranslate"><span class="pre">_dict_properties</span></code> that contains tuples for the various
+entries in the input file. The tuple can be of two forms:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>(name, default_value)</p></li>
+<li><p>(name, default_value, valid_values)</p></li>
+</ul>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.DictMeta.process_properties">
+<span class="sig-name descname"><span class="pre">process_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proplist</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/funcobj.html#DictMeta.process_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.funcobj.DictMeta.process_properties" title="Link to this definition">¶</a></dt>
+<dd><p>Create getters/setters for properties</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.DictMeta.process_property">
+<span class="sig-name descname"><span class="pre">process_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plist</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/funcobj.html#DictMeta.process_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.funcobj.DictMeta.process_property" title="Link to this definition">¶</a></dt>
+<dd><p>Process a property</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FuncObjMeta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.funcobj.</span></span><span class="sig-name descname"><span class="pre">FuncObjMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/funcobj.html#FuncObjMeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.funcobj.FuncObjMeta" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.post.funcobj.funcobj.DictMeta" title="caelus.post.funcobj.funcobj.DictMeta"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictMeta</span></code></a></p>
+<p>Specialization for Function objects</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.funcobj.</span></span><span class="sig-name descname"><span class="pre">FunctionObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/funcobj.html#FunctionObject"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class representing an OpenFOAM function object</p>
+<p>Initialize object from input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – User-defined name for this object (in functions)</p></li>
+<li><p><strong>obj_dict</strong> (<a class="reference internal" href="caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – Input dictionary for this functionObject</p></li>
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory (default: cwd)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.create">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">casedir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/funcobj.html#FunctionObject.create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.create" title="Link to this definition">¶</a></dt>
+<dd><p>Create a function object from scratch</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.funcobj_type">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">funcobj_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/funcobj.html#FunctionObject.funcobj_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.funcobj_type" title="Link to this definition">¶</a></dt>
+<dd><p>Return the string representing this functionObject type.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.enabled">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">enabled</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.enabled" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.executeControl">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">executeControl</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.executeControl" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.executeInterval">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">executeInterval</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.executeInterval" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.latest_time">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">latest_time</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.latest_time" title="Link to this definition">¶</a></dt>
+<dd><p>Return the latest time available</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.libs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">libs</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.libs" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.log">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">log</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.log" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.region">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">region</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.region" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.root">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">root</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.root" title="Link to this definition">¶</a></dt>
+<dd><p>Root path to the function object in postProcessing</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.timeEnd">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeEnd</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.timeEnd" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.timeStart">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeStart</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.timeStart" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.times">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">times</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.times" title="Link to this definition">¶</a></dt>
+<dd><p>Return the list of time directories available</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.writeControl">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">writeControl</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.writeControl" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.funcobj.FunctionObject.writeInterval">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">writeInterval</span></span><a class="headerlink" href="#caelus.post.funcobj.funcobj.FunctionObject.writeInterval" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<section id="sets-and-surfaces-sampling">
+<span id="module-caelus.post.funcobj.sampling"></span><h2>Sets and surfaces sampling<a class="headerlink" href="#sets-and-surfaces-sampling" title="Link to this heading">¶</a></h2>
+<p>This module implements the python interface to OpenFOAM’s <code class="docutils literal notranslate"><span class="pre">sets</span></code> and
+<code class="docutils literal notranslate"><span class="pre">surfaces</span></code> sampling objects.</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSets" title="caelus.post.funcobj.sampling.SampledSets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SampledSets</span></code></a></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">sets</span></code> functionObjects entry.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSurfaces" title="caelus.post.funcobj.sampling.SampledSurfaces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SampledSurfaces</span></code></a></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">surfaces</span></code> functionObjects entry.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSet" title="caelus.post.funcobj.sampling.SampledSet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SampledSet</span></code></a></p></td>
+<td><p>A concrete <code class="docutils literal notranslate"><span class="pre">set</span></code> instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSurface" title="caelus.post.funcobj.sampling.SampledSurface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SampledSurface</span></code></a></p></td>
+<td><p>A concrete <code class="docutils literal notranslate"><span class="pre">surface</span></code> instance.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The different classes are illustrated using this example functionObject entry
+in <code class="docutils literal notranslate"><span class="pre">motorBike</span></code> tutorial example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cuttingPlane</span>
+<span class="p">{</span>
+    <span class="nb">type</span>            <span class="n">surfaces</span><span class="p">;</span>
+    <span class="n">libs</span>            <span class="p">(</span><span class="n">sampling</span><span class="p">);</span>
+    <span class="n">writeControl</span>    <span class="n">writeTime</span><span class="p">;</span>
+
+    <span class="n">surfaceFormat</span>   <span class="n">vtk</span><span class="p">;</span>
+    <span class="n">fields</span>          <span class="p">(</span> <span class="n">p</span> <span class="n">U</span> <span class="p">);</span>
+
+    <span class="n">interpolationScheme</span> <span class="n">cellPoint</span><span class="p">;</span>
+
+    <span class="n">surfaces</span>
+    <span class="p">{</span>
+        <span class="n">yNormal</span>
+        <span class="p">{</span>
+            <span class="nb">type</span>            <span class="n">cuttingPlane</span><span class="p">;</span>
+            <span class="n">planeType</span>       <span class="n">pointAndNormal</span><span class="p">;</span>
+            <span class="n">pointAndNormalDict</span>
+            <span class="p">{</span>
+                <span class="n">point</span>   <span class="p">(</span><span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">);</span>
+                <span class="n">normal</span>  <span class="p">(</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">0</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="n">interpolate</span>     <span class="n">true</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>When the above object is accessed via
+<a class="reference internal" href="#caelus.post.funcobj.functions.PostProcessing" title="caelus.post.funcobj.functions.PostProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">PostProcessing</span></code></a> class, the
+<code class="docutils literal notranslate"><span class="pre">cuttingPlane</span></code> object is represented by <a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSurfaces" title="caelus.post.funcobj.sampling.SampledSurfaces"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampledSurfaces</span></code></a>, and the
+<code class="docutils literal notranslate"><span class="pre">yNormal</span></code> object is represented by <a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSurface" title="caelus.post.funcobj.sampling.SampledSurface"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampledSurface</span></code></a> instance. Similar
+relationship exists between <a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSets" title="caelus.post.funcobj.sampling.SampledSets"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampledSets</span></code></a> and <a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSet" title="caelus.post.funcobj.sampling.SampledSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampledSet</span></code></a>.</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.sampling.</span></span><span class="sig-name descname"><span class="pre">SampledData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fobj_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/sampling.html#SampledData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledData" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for a single sampling object.</p>
+<p>Initialize data from input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – User-defined name for this sampling instance</p></li>
+<li><p><strong>fobj_dict</strong> (<a class="reference internal" href="caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – Input parameter dictionary</p></li>
+<li><p><strong>parent</strong> (<a class="reference internal" href="#caelus.post.funcobj.sampling.Sampling" title="caelus.post.funcobj.sampling.Sampling"><em>Sampling</em></a>) – Parent collection instance</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledData.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledData.data" title="Link to this definition">¶</a></dt>
+<dd><p>Input dictionary containing data for this instance</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledData.fields">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fields</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledData.fields" title="Link to this definition">¶</a></dt>
+<dd><p>Return the names of fields requested by user</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledData.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledData.name" title="Link to this definition">¶</a></dt>
+<dd><p>User-defined name for this sampling instance</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledData.parent">
+<span class="sig-name descname"><span class="pre">parent</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledData.parent" title="Link to this definition">¶</a></dt>
+<dd><p>The parent sets/surfaces group instance</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.sampling.</span></span><span class="sig-name descname"><span class="pre">SampledSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fobj_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/sampling.html#SampledSet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSet" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.post.funcobj.sampling.SampledData" title="caelus.post.funcobj.sampling.SampledData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampledData</span></code></a></p>
+<p>A concrete <code class="docutils literal notranslate"><span class="pre">set</span></code> instance.</p>
+<p>Currently only <code class="docutils literal notranslate"><span class="pre">raw</span></code>, <code class="docutils literal notranslate"><span class="pre">vtk</span></code>, and <code class="docutils literal notranslate"><span class="pre">csv</span></code> formats are supported for
+<code class="docutils literal notranslate"><span class="pre">setFormat</span></code> if the user intends to load the dataset through this class.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">post</span> <span class="o">=</span> <span class="n">PostProcessing</span><span class="p">()</span>      <span class="c1"># Access post-processing instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sets</span> <span class="o">=</span> <span class="n">post</span><span class="p">[</span><span class="s1">&#39;sampledSets1&#39;</span><span class="p">]</span>  <span class="c1"># Get the sets group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">probes</span> <span class="o">=</span> <span class="n">sets</span><span class="p">[</span><span class="s1">&#39;probe1&#39;</span><span class="p">]</span>      <span class="c1"># Access line probe data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">probes</span><span class="p">()</span>                <span class="c1"># Get dataframe for latest time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">probes</span><span class="p">(</span><span class="s1">&#39;10&#39;</span><span class="p">)</span>           <span class="c1"># Get dataframe for different time</span>
+</pre></div>
+</div>
+<p>Initialize data from input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – User-defined name for this sampling instance</p></li>
+<li><p><strong>fobj_dict</strong> (<a class="reference internal" href="caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – Input parameter dictionary</p></li>
+<li><p><strong>parent</strong> (<a class="reference internal" href="#caelus.post.funcobj.sampling.Sampling" title="caelus.post.funcobj.sampling.Sampling"><em>Sampling</em></a>) – Parent collection instance</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSet.axis">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">axis</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSet.axis" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSet.coord_cols">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">coord_cols</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSet.coord_cols" title="Link to this definition">¶</a></dt>
+<dd><p>Return names of the coordinates column.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">axis</span> <span class="pre">==</span> <span class="pre">&quot;xyz&quot;</span></code> then returns a list of 3 columns, else returns the
+column name defined by axis.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSet.num_coord_cols">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_coord_cols</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSet.num_coord_cols" title="Link to this definition">¶</a></dt>
+<dd><p>Return the number of expected columns for coordinates.</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">axis</span></code> is <code class="docutils literal notranslate"><span class="pre">xyz</span></code> then returns 3, else returns 1 for all other
+axis options.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSet.points">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">points</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSet.points" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSet.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSet.type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSets">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.sampling.</span></span><span class="sig-name descname"><span class="pre">SampledSets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/sampling.html#SampledSets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSets" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.post.funcobj.sampling.Sampling" title="caelus.post.funcobj.sampling.Sampling"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sampling</span></code></a></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">sets</span></code> functionObjects entry.</p>
+<p>This class provides an interface to a group of sampled set instances. The
+instances are of type <a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSet" title="caelus.post.funcobj.sampling.SampledSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampledSet</span></code></a>.</p>
+<p>Initialize object from input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – User-defined name for this object (in functions)</p></li>
+<li><p><strong>obj_dict</strong> (<a class="reference internal" href="caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – Input dictionary for this functionObject</p></li>
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory (default: cwd)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSets.setFormat">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setFormat</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSets.setFormat" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSurface">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.sampling.</span></span><span class="sig-name descname"><span class="pre">SampledSurface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fobj_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/sampling.html#SampledSurface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSurface" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.post.funcobj.sampling.SampledData" title="caelus.post.funcobj.sampling.SampledData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampledData</span></code></a></p>
+<p>A concrete <code class="docutils literal notranslate"><span class="pre">surface</span></code> instance.</p>
+<p>Currently only <code class="docutils literal notranslate"><span class="pre">vtk</span></code> output format is supported for reading data. A
+<code class="docutils literal notranslate"><span class="pre">pyvista.Mesh</span></code> instance is returned and can be interacted using
+<code class="docutils literal notranslate"><span class="pre">vtk.vtkPolyData</span></code> methods.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">post</span> <span class="o">=</span> <span class="n">PostProcessing</span><span class="p">()</span>          <span class="c1"># Access post-processing instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">surfaces</span> <span class="o">=</span> <span class="n">post</span><span class="p">[</span><span class="s1">&#39;cuttingPlane&#39;</span><span class="p">]</span>  <span class="c1"># Get the surfaces group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plane</span> <span class="o">=</span> <span class="n">surfaces</span><span class="p">[</span><span class="s1">&#39;yNormal&#39;</span><span class="p">]</span>      <span class="c1"># Access plane data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">patch</span> <span class="o">=</span> <span class="n">plane</span><span class="p">()</span>                  <span class="c1"># Get dataframe for latest time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">patch1</span> <span class="o">=</span> <span class="n">plane</span><span class="p">(</span><span class="s1">&#39;10&#39;</span><span class="p">)</span>             <span class="c1"># Get dataframe for different time</span>
+</pre></div>
+</div>
+<p>Initialize data from input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – User-defined name for this sampling instance</p></li>
+<li><p><strong>fobj_dict</strong> (<a class="reference internal" href="caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – Input parameter dictionary</p></li>
+<li><p><strong>parent</strong> (<a class="reference internal" href="#caelus.post.funcobj.sampling.Sampling" title="caelus.post.funcobj.sampling.Sampling"><em>Sampling</em></a>) – Parent collection instance</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSurface.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSurface.type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSurfaces">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.sampling.</span></span><span class="sig-name descname"><span class="pre">SampledSurfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/sampling.html#SampledSurfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSurfaces" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.post.funcobj.sampling.Sampling" title="caelus.post.funcobj.sampling.Sampling"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sampling</span></code></a></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">surfaces</span></code> functionObjects entry.</p>
+<p>This class provides an interface to a group of sampled surface (planes or
+patches) instances. The instances are of type <a class="reference internal" href="#caelus.post.funcobj.sampling.SampledSurface" title="caelus.post.funcobj.sampling.SampledSurface"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampledSurface</span></code></a>.</p>
+<p>Initialize object from input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – User-defined name for this object (in functions)</p></li>
+<li><p><strong>obj_dict</strong> (<a class="reference internal" href="caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – Input dictionary for this functionObject</p></li>
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory (default: cwd)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.SampledSurfaces.surfaceFormat">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">surfaceFormat</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.SampledSurfaces.surfaceFormat" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.Sampling">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.sampling.</span></span><span class="sig-name descname"><span class="pre">Sampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/sampling.html#Sampling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.sampling.Sampling" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject" title="caelus.post.funcobj.funcobj.FunctionObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionObject</span></code></a></p>
+<p>Base class for sets and surfaces sampling groups.</p>
+<p>Initialize object from input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – User-defined name for this object (in functions)</p></li>
+<li><p><strong>obj_dict</strong> (<a class="reference internal" href="caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – Input dictionary for this functionObject</p></li>
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory (default: cwd)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.Sampling.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/sampling.html#Sampling.keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.sampling.Sampling.keys" title="Link to this definition">¶</a></dt>
+<dd><p>Return the names of the sampling entries</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.Sampling.fields">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fields</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.Sampling.fields" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.Sampling.interpolationScheme">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interpolationScheme</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.Sampling.interpolationScheme" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.funcobj.sampling.Sampling.samples">
+<span class="sig-name descname"><span class="pre">samples</span></span><a class="headerlink" href="#caelus.post.funcobj.sampling.Sampling.samples" title="Link to this definition">¶</a></dt>
+<dd><p>Mapping of sampling instances to their names.</p>
+</dd></dl>
+
+</dd></dl>
+
+<section id="force-and-force-coefficients-interface">
+<span id="module-caelus.post.funcobj.forces"></span><h2>Force and Force coefficients interface<a class="headerlink" href="#force-and-force-coefficients-interface" title="Link to this heading">¶</a></h2>
+<p>Provides pythonic interface to OpenFOAM’s <a class="reference external" href="https://www.openfoam.com/documentation/guides/latest/doc/guide-function-objects-forces.html">Forces</a>
+function objects.</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.ForceCoeffs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.forces.</span></span><span class="sig-name descname"><span class="pre">ForceCoeffs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/forces.html#ForceCoeffs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.forces.ForceCoeffs" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject" title="caelus.post.funcobj.funcobj.FunctionObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionObject</span></code></a></p>
+<p>The class retrieves data from <code class="docutils literal notranslate"><span class="pre">coefficient.dat</span></code> file generated during a
+run.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">post</span> <span class="o">=</span> <span class="n">PostProcessing</span><span class="p">()</span>         <span class="c1"># Get the post processing instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fcoeffs</span> <span class="o">=</span> <span class="n">post</span><span class="p">[</span><span class="s1">&#39;forceCoeffs1&#39;</span><span class="p">]</span>  <span class="c1"># Retrieve force coefficients object</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">fcoeffs</span><span class="p">()</span>                  <span class="c1"># Dataframe for latest time instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>               <span class="c1"># Examine columns</span>
+</pre></div>
+</div>
+<p>Initialize object from input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – User-defined name for this object (in functions)</p></li>
+<li><p><strong>obj_dict</strong> (<a class="reference internal" href="caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – Input dictionary for this functionObject</p></li>
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory (default: cwd)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.ForceCoeffs.Aref">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Aref</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.ForceCoeffs.Aref" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.ForceCoeffs.dragDir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dragDir</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.ForceCoeffs.dragDir" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.ForceCoeffs.lRef">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lRef</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.ForceCoeffs.lRef" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.ForceCoeffs.liftDir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">liftDir</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.ForceCoeffs.liftDir" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.ForceCoeffs.magUInf">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">magUInf</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.ForceCoeffs.magUInf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.ForceCoeffs.patches">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">patches</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.ForceCoeffs.patches" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.ForceCoeffs.pitchAxis">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pitchAxis</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.ForceCoeffs.pitchAxis" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.Forces">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.forces.</span></span><span class="sig-name descname"><span class="pre">Forces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/forces.html#Forces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.forces.Forces" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject" title="caelus.post.funcobj.funcobj.FunctionObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionObject</span></code></a></p>
+<p>The class retrives data from <code class="docutils literal notranslate"><span class="pre">force.dat</span></code> and <code class="docutils literal notranslate"><span class="pre">moment.dat</span></code> files
+generated during a run and returns a single Pandas DataFrame containing the
+following columns.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Fx</p></td>
+<td><p>Total force (x-direction)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Fy</p></td>
+<td><p>Total force (y-direction)</p></td>
+</tr>
+<tr class="row-even"><td><p>Fz</p></td>
+<td><p>Total force (z-direction)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Fpx</p></td>
+<td><p>Pressure force (x-direction)</p></td>
+</tr>
+<tr class="row-even"><td><p>Fpy</p></td>
+<td><p>Pressure force (y-direction)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Fpz</p></td>
+<td><p>Pressure force (z-direction)</p></td>
+</tr>
+<tr class="row-even"><td><p>Fvx</p></td>
+<td><p>Viscous force (x-direction)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Fvy</p></td>
+<td><p>Viscous force (y-direction)</p></td>
+</tr>
+<tr class="row-even"><td><p>Fvz</p></td>
+<td><p>Viscous force (z-direction)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mx</p></td>
+<td><p>Total moment (x-direction)</p></td>
+</tr>
+<tr class="row-even"><td><p>My</p></td>
+<td><p>Total moment (y-direction)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mz</p></td>
+<td><p>Total moment (z-direction)</p></td>
+</tr>
+<tr class="row-even"><td><p>Mpx</p></td>
+<td><p>Pressure moment (x-direction)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mpy</p></td>
+<td><p>Pressure moment (y-direction)</p></td>
+</tr>
+<tr class="row-even"><td><p>Mpz</p></td>
+<td><p>Pressure moment (z-direction)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mvx</p></td>
+<td><p>Viscous moment (x-direction)</p></td>
+</tr>
+<tr class="row-even"><td><p>Mvy</p></td>
+<td><p>Viscous moment (y-direction)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mvz</p></td>
+<td><p>Viscous moment (z-direction)</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">post</span> <span class="o">=</span> <span class="n">PostProcessing</span><span class="p">()</span>   <span class="c1"># Get the post processing instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">forces</span> <span class="o">=</span> <span class="n">post</span><span class="p">[</span><span class="s1">&#39;forces1&#39;</span><span class="p">]</span>  <span class="c1"># Retrieve force coefficients object</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">forces</span><span class="p">()</span>             <span class="c1"># Dataframe for latest time instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>         <span class="c1"># Examine columns</span>
+</pre></div>
+</div>
+<p>Initialize object from input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – User-defined name for this object (in functions)</p></li>
+<li><p><strong>obj_dict</strong> (<a class="reference internal" href="caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – Input dictionary for this functionObject</p></li>
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory (default: cwd)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.funcobj.forces.</span></span><span class="sig-name descname"><span class="pre">LiftDrag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/funcobj/forces.html#LiftDrag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.post.funcobj.funcobj.FunctionObject" title="caelus.post.funcobj.funcobj.FunctionObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionObject</span></code></a></p>
+<p>A variation of ForceCoeffs that calculates lift/drag for specific use case.</p>
+<p>Initialize object from input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – User-defined name for this object (in functions)</p></li>
+<li><p><strong>obj_dict</strong> (<a class="reference internal" href="caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><em>CaelusDict</em></a>) – Input dictionary for this functionObject</p></li>
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory (default: cwd)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.Uinf">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Uinf</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.Uinf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.dragDirection">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dragDirection</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.dragDirection" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.liftDirection">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">liftDirection</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.liftDirection" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.maxCp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">maxCp</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.maxCp" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.minCp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">minCp</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.minCp" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.nAveragingSteps">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nAveragingSteps</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.nAveragingSteps" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.outputRegionData">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outputRegionData</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.outputRegionData" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.patches">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">patches</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.patches" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.pitchAxis">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pitchAxis</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.pitchAxis" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.porosity">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">porosity</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.porosity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.referenceArea">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">referenceArea</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.referenceArea" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.referenceLength">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">referenceLength</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.referenceLength" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.rhoInfo">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rhoInfo</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.rhoInfo" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.runOnLastIterOnly">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">runOnLastIterOnly</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.runOnLastIterOnly" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.wheelbase">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wheelbase</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.wheelbase" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.funcobj.forces.LiftDrag.writeFields">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">writeFields</span></span><a class="headerlink" href="#caelus.post.funcobj.forces.LiftDrag.writeFields" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<section id="caelus-log-analyzer">
+<span id="module-caelus.post.logs"></span><h2>Caelus Log Analyzer<a class="headerlink" href="#caelus-log-analyzer" title="Link to this heading">¶</a></h2>
+<p>This module provides utilities to parse and extract information from solver
+outputs (log files) that can be used to monitor and analyze the convergence of
+runs. It implements the <a class="reference internal" href="#caelus.post.logs.SolverLog" title="caelus.post.logs.SolverLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverLog</span></code></a> class that can be used to access
+time histories of residuals for various fields of interest.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">logs</span> <span class="o">=</span> <span class="n">SolverLog</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Available fields: &quot;</span><span class="p">,</span> <span class="n">logs</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ux_residuals</span> <span class="o">=</span> <span class="n">logs</span><span class="o">.</span><span class="n">residual</span><span class="p">(</span><span class="s2">&quot;Ux&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The actual extraction of the logs is performed by <a class="reference internal" href="#caelus.post.logs.LogProcessor" title="caelus.post.logs.LogProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogProcessor</span></code></a> which
+uses regular expressions to match lines of interest and convert them into
+tabular files suitable for loading with <code class="docutils literal notranslate"><span class="pre">numpy.loadtxt</span></code> or
+<code class="docutils literal notranslate"><span class="pre">pandas.read_table</span></code>.</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.logs.</span></span><span class="sig-name descname"><span class="pre">LogProcessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'logs'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Process the log file and extract information for analysis.</p>
+<p>This is a low-level utility to parse log files and extract information
+using regular expressions from the log file. Users should interact with
+solver output using the <a class="reference internal" href="#caelus.post.logs.SolverLog" title="caelus.post.logs.SolverLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverLog</span></code></a> class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logfile</strong> (<em>str</em>) – Name of the Caelus log file</p></li>
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory (default: cwd)</p></li>
+<li><p><strong>logs_dir</strong> (<em>path</em>) – Relative path to the directory where logs
+are written</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.add_rule">
+<span class="sig-name descname"><span class="pre">add_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">regexp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.add_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.add_rule" title="Link to this definition">¶</a></dt>
+<dd><p>Add a user-defined rule for processing</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>regexp</strong> (<em>str</em>) – A string that can be compiled into a regexp</p></li>
+<li><p><strong>action</strong> (<em>func</em>) – A coroutine that can consume matching patterns</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.bounding_processor">
+<span class="sig-name descname"><span class="pre">bounding_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.bounding_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.bounding_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Process the bounding lines</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.completion_processor">
+<span class="sig-name descname"><span class="pre">completion_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.completion_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.completion_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Process End line indicating solver completion</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.continuity_processor">
+<span class="sig-name descname"><span class="pre">continuity_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.continuity_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.continuity_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Process continuity error lines from log file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.convergence_processor">
+<span class="sig-name descname"><span class="pre">convergence_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.convergence_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.convergence_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Process convergence information (steady solvers only)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.courant_processor">
+<span class="sig-name descname"><span class="pre">courant_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.courant_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.courant_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Process Courant Number lines</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.exec_time_processor">
+<span class="sig-name descname"><span class="pre">exec_time_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.exec_time_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.exec_time_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Process execution/clock time lines</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.exiting_processor">
+<span class="sig-name descname"><span class="pre">exiting_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.exiting_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.exiting_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Process exiting option</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.extend_rule">
+<span class="sig-name descname"><span class="pre">extend_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.extend_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.extend_rule" title="Link to this definition">¶</a></dt>
+<dd><p>Extend a pre-defined regexp with extra functions</p>
+<p>The default action for LogProcessor is to output processed lines into
+files. Additional actions on pre-defined lines (e.g., “time”) can be
+hooked via this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line_type</strong> (<em>str</em>) – Pre-defined line type</p></li>
+<li><p><strong>actions</strong> (<em>list</em>) – A list of coroutines that receive the matching lines</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.fatal_error_processor">
+<span class="sig-name descname"><span class="pre">fatal_error_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.fatal_error_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.fatal_error_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Process CAELUS FATAL ERROR line</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.residual_processor">
+<span class="sig-name descname"><span class="pre">residual_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.residual_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.residual_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Process a residual line and output data to the relevant file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.time_processor">
+<span class="sig-name descname"><span class="pre">time_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.time_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.time_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Processor for the Time line in log files</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.watch_file">
+<span class="sig-name descname"><span class="pre">watch_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#LogProcessor.watch_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.LogProcessor.watch_file" title="Link to this definition">¶</a></dt>
+<dd><p>Process a log file for an in-progress run.</p>
+<p>This method takes one parameter, <code class="docutils literal notranslate"><span class="pre">target</span></code>, a coroutine that is called
+at the end of every timestep. See
+<a class="reference internal" href="#caelus.post.plots.LogWatcher" title="caelus.post.plots.LogWatcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogWatcher</span></code></a> for an example of using target
+to plot residuals for monitoring the run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>coroutine</em>) – A consumer acting on the data</p></li>
+<li><p><strong>wait_time</strong> (<em>seconds</em>) – Wait time between checking the log file for
+updates</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.bound_files">
+<span class="sig-name descname"><span class="pre">bound_files</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.bound_files" title="Link to this definition">¶</a></dt>
+<dd><p>Open file handles for bounding outputs</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.case_dir">
+<span class="sig-name descname"><span class="pre">case_dir</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.case_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Absolute path to the case directory</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.converged">
+<span class="sig-name descname"><span class="pre">converged</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.converged" title="Link to this definition">¶</a></dt>
+<dd><p>Flag indicating convergence message in logs</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.converged_time">
+<span class="sig-name descname"><span class="pre">converged_time</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.converged_time" title="Link to this definition">¶</a></dt>
+<dd><p>Timestep when the steady state solver converged</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.current_state">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_state</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.current_state" title="Link to this definition">¶</a></dt>
+<dd><p>Return the current state of the logs processor</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.failed">
+<span class="sig-name descname"><span class="pre">failed</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.failed" title="Link to this definition">¶</a></dt>
+<dd><p>Flag indicating whether the solver failed</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.logfile">
+<span class="sig-name descname"><span class="pre">logfile</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.logfile" title="Link to this definition">¶</a></dt>
+<dd><p>User-supplied log file (relative to case directory)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.logs_dir">
+<span class="sig-name descname"><span class="pre">logs_dir</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.logs_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Absolute path to the directory containing processed logs</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.res_files">
+<span class="sig-name descname"><span class="pre">res_files</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.res_files" title="Link to this definition">¶</a></dt>
+<dd><p>Open file handles for the residual outputs</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.solve_completed">
+<span class="sig-name descname"><span class="pre">solve_completed</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.solve_completed" title="Link to this definition">¶</a></dt>
+<dd><p>Flag indicating solver completion in logs (if End is found)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.subiter_map">
+<span class="sig-name descname"><span class="pre">subiter_map</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.subiter_map" title="Link to this definition">¶</a></dt>
+<dd><p>(variable, subIteration) pairs tracking the number of predictor
+subIterations for each flow variable</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.time">
+<span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.time" title="Link to this definition">¶</a></dt>
+<dd><p>Track the latest time that was processed by the utility</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.logs.LogProcessor.time_str">
+<span class="sig-name descname"><span class="pre">time_str</span></span><a class="headerlink" href="#caelus.post.logs.LogProcessor.time_str" title="Link to this definition">¶</a></dt>
+<dd><p>Time as a string (for output)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.logs.SolverLog">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.logs.</span></span><span class="sig-name descname"><span class="pre">SolverLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'logs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_reload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#SolverLog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.SolverLog" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Caelus solver log file interface.</p>
+<p><a class="reference internal" href="#caelus.post.logs.SolverLog" title="caelus.post.logs.SolverLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverLog</span></code></a> extracts information from solver outputs and allows
+interaction with the log data as <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> or <code class="docutils literal notranslate"><span class="pre">pandas.Dataframe</span></code>
+objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>case_dir</strong> (<em>path</em>) – Absolute path to case directory</p></li>
+<li><p><strong>logs_dir</strong> (<em>path</em>) – Path to logs directory relative to case_dir</p></li>
+<li><p><strong>force_reload</strong> (<em>bool</em>) – If True, force reread of the log file even if
+the logs were processed previously.</p></li>
+<li><p><strong>logfile</strong> (<em>file</em>) – If force_reload, then log file to process</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – An error is raised if no logs directory is available
+    and the user has not provided a logfile that can be processed
+    on the fly during initialization.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.SolverLog.bounding_var">
+<span class="sig-name descname"><span class="pre">bounding_var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#SolverLog.bounding_var"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.SolverLog.bounding_var" title="Link to this definition">¶</a></dt>
+<dd><p>Return the bounding information for a field</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.SolverLog.clock_time">
+<span class="sig-name descname"><span class="pre">clock_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#SolverLog.clock_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.SolverLog.clock_time" title="Link to this definition">¶</a></dt>
+<dd><p>Return the clock time table</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.SolverLog.continuity_errors">
+<span class="sig-name descname"><span class="pre">continuity_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#SolverLog.continuity_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.SolverLog.continuity_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Return the time history of continuity errors</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.logs.SolverLog.residual">
+<span class="sig-name descname"><span class="pre">residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/logs.html#SolverLog.residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.logs.SolverLog.residual" title="Link to this definition">¶</a></dt>
+<dd><p>Return the residual time-history for a field</p>
+</dd></dl>
+
+</dd></dl>
+
+<section id="caelus-plotting-utilities">
+<span id="module-caelus.post.plots"></span><h2>Caelus Plotting Utilities<a class="headerlink" href="#caelus-plotting-utilities" title="Link to this heading">¶</a></h2>
+<p>This module provides the capability to plot various quantities of interest
+using matplotlib through <a class="reference internal" href="#caelus.post.plots.CaelusPlot" title="caelus.post.plots.CaelusPlot"><code class="xref py py-class docutils literal notranslate"><span class="pre">CaelusPlot</span></code></a>.</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.plots.CaelusPlot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.plots.</span></span><span class="sig-name descname"><span class="pre">CaelusPlot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">casedir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'results'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/plots.html#CaelusPlot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.plots.CaelusPlot" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Caelus Data Plotting Interface</p>
+<dl class="simple">
+<dt>Currently implemented:</dt><dd><ul class="simple">
+<li><p>Plot residual time history</p></li>
+<li><p>Plot convergence of forces and force coeffcients</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory</p></li>
+<li><p><strong>plotdir</strong> (<em>path</em>) – Directory where figures are saved</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.plots.CaelusPlot.plot_force_coeffs_hist">
+<span class="sig-name descname"><span class="pre">plot_force_coeffs_hist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#caelus.post.plots.CaelusPlot.plot_force_coeffs_hist" title="Link to this definition">¶</a></dt>
+<dd><p>Plot force coefficients</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func_object</strong> (<em>str</em>) – The function object used in controlDict</p>
+</dd>
+</dl>
+<p>plotfile: File to save plot (e.g., residuals.png)
+dpi: Resolution for saving plots (default=300)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.plots.CaelusPlot.plot_forces_hist">
+<span class="sig-name descname"><span class="pre">plot_forces_hist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#caelus.post.plots.CaelusPlot.plot_forces_hist" title="Link to this definition">¶</a></dt>
+<dd><p>Plot forces</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func_object</strong> (<em>str</em>) – The function object used in controlDict</p>
+</dd>
+</dl>
+<p>plotfile: File to save plot (e.g., residuals.png)
+dpi: Resolution for saving plots (default=300)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.plots.CaelusPlot.plot_residuals_hist">
+<span class="sig-name descname"><span class="pre">plot_residuals_hist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#caelus.post.plots.CaelusPlot.plot_residuals_hist" title="Link to this definition">¶</a></dt>
+<dd><p>Plot time-history of residuals for a Caelus run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fields</strong> (<em>list</em>) – Plot residuals only for the fields in this list</p>
+</dd>
+</dl>
+<p>plotfile: File to save plot (e.g., residuals.png)
+dpi: Resolution for saving plots (default=300)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.plots.CaelusPlot.casedir">
+<span class="sig-name descname"><span class="pre">casedir</span></span><a class="headerlink" href="#caelus.post.plots.CaelusPlot.casedir" title="Link to this definition">¶</a></dt>
+<dd><p>Path to the case directory</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.plots.CaelusPlot.plot_continuity_errors">
+<span class="sig-name descname"><span class="pre">plot_continuity_errors</span></span><a class="headerlink" href="#caelus.post.plots.CaelusPlot.plot_continuity_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Flag indicating whether continuity errors are plotted along with
+residuals</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.plots.CaelusPlot.plotdir">
+<span class="sig-name descname"><span class="pre">plotdir</span></span><a class="headerlink" href="#caelus.post.plots.CaelusPlot.plotdir" title="Link to this definition">¶</a></dt>
+<dd><p>Path to plots output directory</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.plots.CaelusPlot.solver_log">
+<span class="sig-name descname"><span class="pre">solver_log</span></span><a class="headerlink" href="#caelus.post.plots.CaelusPlot.solver_log" title="Link to this definition">¶</a></dt>
+<dd><p>Instance of <a class="reference internal" href="#caelus.post.logs.SolverLog" title="caelus.post.logs.SolverLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverLog</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.plots.LogWatcher">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.plots.</span></span><span class="sig-name descname"><span class="pre">LogWatcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/plots.html#LogWatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.plots.LogWatcher" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Real-time log monitoring utility</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logfile</strong> (<em>str</em>) – Name of the Caelus log file</p></li>
+<li><p><strong>casedir</strong> (<em>path</em>) – Path to the case directory (default: cwd)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.plots.LogWatcher.continuity_processor">
+<span class="sig-name descname"><span class="pre">continuity_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/plots.html#LogWatcher.continuity_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.plots.LogWatcher.continuity_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Capture continuity errors for plot updates</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.plots.LogWatcher.plot_residuals">
+<span class="sig-name descname"><span class="pre">plot_residuals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/plots.html#LogWatcher.plot_residuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.plots.LogWatcher.plot_residuals" title="Link to this definition">¶</a></dt>
+<dd><p>Update plot for residuals</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.plots.LogWatcher.residual_processor">
+<span class="sig-name descname"><span class="pre">residual_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/plots.html#LogWatcher.residual_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.plots.LogWatcher.residual_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Capture residuals for plot updates</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.plots.LogWatcher.skip_field">
+<span class="sig-name descname"><span class="pre">skip_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/plots.html#LogWatcher.skip_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.plots.LogWatcher.skip_field" title="Link to this definition">¶</a></dt>
+<dd><p>Helper function to determine if field must be processed</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.post.plots.LogWatcher.time_processor">
+<span class="sig-name descname"><span class="pre">time_processor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/plots.html#LogWatcher.time_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.plots.LogWatcher.time_processor" title="Link to this definition">¶</a></dt>
+<dd><p>Capture time array</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.plots.LogWatcher.plot_fields">
+<span class="sig-name descname"><span class="pre">plot_fields</span></span><a class="headerlink" href="#caelus.post.plots.LogWatcher.plot_fields" title="Link to this definition">¶</a></dt>
+<dd><p>List of fields to plot. If None, plots all available fields</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.plots.LogWatcher.skip_fields">
+<span class="sig-name descname"><span class="pre">skip_fields</span></span><a class="headerlink" href="#caelus.post.plots.LogWatcher.skip_fields" title="Link to this definition">¶</a></dt>
+<dd><p>List of fields to skip. If None, plots all available fields</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.post.plots.LogWatcher.time_array">
+<span class="sig-name descname"><span class="pre">time_array</span></span><a class="headerlink" href="#caelus.post.plots.LogWatcher.time_array" title="Link to this definition">¶</a></dt>
+<dd><p>Time array used for plotting data</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.post.plots.PlotsMeta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.post.plots.</span></span><span class="sig-name descname"><span class="pre">PlotsMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/plots.html#PlotsMeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.plots.PlotsMeta" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></p>
+<p>Provide interactive and non-interactive versions of plot methods.</p>
+<p>This metaclass automatically wraps methods starting with <code class="docutils literal notranslate"><span class="pre">_plot</span></code> such
+that these methods can be used in both interactive and non-interactive
+modes. Non-interactive modes are automatically enabled if the user provides
+a file name to save the resulting figure.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.post.plots.make_plot_method">
+<span class="sig-prename descclassname"><span class="pre">caelus.post.plots.</span></span><span class="sig-name descname"><span class="pre">make_plot_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/plots.html#make_plot_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.plots.make_plot_method" title="Link to this definition">¶</a></dt>
+<dd><p>Make a wrapper plot method</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.post.plots.mpl_settings">
+<span class="sig-prename descclassname"><span class="pre">caelus.post.plots.</span></span><span class="sig-name descname"><span class="pre">mpl_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'agg'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/post/plots.html#mpl_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.post.plots.mpl_settings" title="Link to this definition">¶</a></dt>
+<dd><p>Temporarily switch matplotlib settings for a plot</p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus.io.html" title="caelus.io – CML Input File Manipulation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="caelus.run.html" title="caelus.run – CML Execution Utilities"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="caelus.html" >Caelus Python API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post – Post-processing utilities</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

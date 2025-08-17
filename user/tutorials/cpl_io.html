@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Mainpulating input files with CPL &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Custom scripts using CPL" href="cpl_script.html" />
+    <link rel="prev" title="Parametric runs using CPL" href="caelus_sim.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../index.html">
+<!--      <img src="../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cpl_script.html" title="Custom scripts using CPL"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="caelus_sim.html" title="Parametric runs using CPL"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../tuts.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Mainpulating input files with CPL</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Mainpulating input files with CPL</a><ul>
+<li><a class="reference internal" href="#specialized-cpl-classes-for-cml-input-files">Specialized CPL classes for CML input files</a></li>
+<li><a class="reference internal" href="#accessing-keywords-with-special-characters">Accessing keywords with special characters</a></li>
+<li><a class="reference internal" href="#input-files-for-turbulence-models">Input files for turbulence models</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="caelus_sim.html"
+                          title="previous chapter">Parametric runs using CPL</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cpl_script.html"
+                          title="next chapter">Custom scripts using CPL</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/user/tutorials/cpl_io.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="mainpulating-input-files-with-cpl">
+<span id="tuts-cpl-io-user"></span><h1>Mainpulating input files with CPL<a class="headerlink" href="#mainpulating-input-files-with-cpl" title="Link to this heading">¶</a></h1>
+<p>CPL provides a pythonic interface to read, create, modify, and write out input
+files necessary for running simulations using OpenFOAM or CML executables within
+a case directory. Users can interact with input files as python objects and use
+python data structures and functions to manipulate them. The modified objects
+can then be written out to files and CPL will pretty-print the files in the
+apporpriate locations in the case directory. Most OpenFOAM/CML objects have a
+one-to-one correspondence with python data structures within CPL. For example,
+OpenFOAM dictionaries are accessed as Python dictionaries, specifically an
+instance of <a class="reference internal" href="../../dev/caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">CaelusDict</span></code></a> which provides both
+attribute and dictionary-style access to entries. FOAM <code class="docutils literal notranslate"><span class="pre">List&lt;Scalar&gt;</span></code> data
+types are accessible as NumPy arrays, whereas generic lists containing mixed
+datatype entries (e.g., the <cite>blocks</cite> entry in <code class="file docutils literal notranslate"><span class="pre">blockMeshDict</span></code>) are
+represented as lists.</p>
+<p>This tutorial provides a walkthrough of using <code class="xref py py-mod docutils literal notranslate"><span class="pre">caelus.io</span></code> module to read,
+manipulate, and write out input files in a case directory. The code snippets
+shown in this tutorial will use the <code class="docutils literal notranslate"><span class="pre">ACCM_airFoil2D</span></code> tutorial in the
+<code class="file docutils literal notranslate"><span class="pre">$</span><em><span class="pre">PROJECT_DIR</span></em><span class="pre">/tutorials/incompressible/simpleSolver/ras/ACCM_airFoil2D</span></code>
+directory. To execute the example code snippets shown in this tutorial, it is
+recommended that execute them from this case directory and have the following
+modules loaded in your script or interactive shell</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">caelus.io</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cio</span>
+</pre></div>
+</div>
+<p>The most general interface to an input file is through the
+<a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a> class. It provides three ways of creating
+an input file object that can be manipulated using CPL in python scripts. Using
+the constructor creates a default file object that can be populated by the
+user. In most situations, however, the user would load a template file using
+<a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.DictFile.read_if_present" title="caelus.io.dictfile.DictFile.read_if_present"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_if_present()</span></code></a> or <a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.DictFile.load" title="caelus.io.dictfile.DictFile.load"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load()</span></code></a> functions. The
+former as the name indicates will load the file if present in the case
+directory, whereas the latter will generate an error if the file doesn’t exist.
+The first example will use <code class="file docutils literal notranslate"><span class="pre">system/controlDict</span></code> file to show how the user
+can load, examine, and manipulate the contents of a simple input file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the controlDict file from the case directory</span>
+<span class="n">cdict</span> <span class="o">=</span> <span class="n">cio</span><span class="o">.</span><span class="n">DictFile</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;system/controlDict&quot;</span><span class="p">)</span>
+
+<span class="c1"># Show the keywords present in the controlDict file</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cdict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+<span class="c1"># Change the variable &#39;startFrom&#39; to &#39;latestTime&#39;</span>
+<span class="n">cdict</span><span class="p">[</span><span class="s1">&#39;startFrom&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;latestTime&#39;</span>
+
+<span class="c1"># Change &#39;writeFormat&#39; to &#39;binary</span>
+<span class="n">cdict</span><span class="p">[</span><span class="s1">&#39;writeFormat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;binary&#39;</span>
+
+<span class="c1"># Show the current state of the controlDict contents</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cdict</span><span class="p">)</span>
+
+<span class="c1"># Save the updated controlDict file to the case directory</span>
+<span class="n">cdict</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The next example uses the <a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a> to modify the <code class="file docutils literal notranslate"><span class="pre">0/U</span></code>. For the
+purposes of this demonstration, we will change the inflow conditions from
+<span class="math notranslate nohighlight">\(\alpha = 0^\circ\)</span> angle of attack to a flow at <span class="math notranslate nohighlight">\(\alpha = 6^\circ\)</span>
+angle of attack.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the U field file</span>
+<span class="n">ufile</span> <span class="o">=</span> <span class="n">cio</span><span class="o">.</span><span class="n">DictFile</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;0/U&quot;</span><span class="p">)</span>
+
+<span class="c1"># Access the internalField variable</span>
+<span class="n">internal</span> <span class="o">=</span> <span class="n">ufile</span><span class="p">[</span><span class="s1">&#39;internalField&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>If you print out <cite>ufile[‘internalField’]</cite> you will notice that it is an instance
+of <a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dtypes.Field" title="caelus.io.dtypes.Field"><code class="xref py py-class docutils literal notranslate"><span class="pre">Field</span></code></a> that contains two attributes: <code class="docutils literal notranslate"><span class="pre">ftype</span></code>
+representing the field type (<code class="docutils literal notranslate"><span class="pre">uniform</span></code> or <code class="docutils literal notranslate"><span class="pre">nonuniform</span></code>), and <code class="docutils literal notranslate"><span class="pre">value</span></code> that
+contains the value of the field. In this the present example, we will access the
+uniform velocity field value and update it with the u and v velocities
+corresponding to <span class="math notranslate nohighlight">\(\alpha = 6^\circ\)</span>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Access the wind speed</span>
+<span class="n">wspd</span> <span class="o">=</span> <span class="n">internal</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Compute u and v components</span>
+<span class="n">aoa_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mf">6.0</span><span class="p">)</span>
+<span class="n">uvel</span> <span class="o">=</span> <span class="n">wspd</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">aoa_rad</span><span class="p">)</span>
+<span class="n">vvel</span> <span class="o">=</span> <span class="n">wspd</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">aoa_rad</span><span class="p">)</span>
+
+<span class="c1"># Update the velocity field</span>
+<span class="n">internal</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">uvel</span>
+<span class="n">internal</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">vvel</span>
+
+<span class="c1"># Update the inlet value also (note attribute-style access)</span>
+<span class="n">inlet</span> <span class="o">=</span> <span class="n">ufile</span><span class="p">[</span><span class="s1">&#39;boundaryField&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">inlet</span>
+<span class="n">inlet</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">internal</span><span class="o">.</span><span class="n">value</span>
+
+<span class="c1"># Check the current state of the 0/U file</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ufile</span><span class="p">)</span>
+
+<span class="c1"># Write the updated 0/U file</span>
+<span class="n">ufile</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="specialized-cpl-classes-for-cml-input-files">
+<h2>Specialized CPL classes for CML input files<a class="headerlink" href="#specialized-cpl-classes-for-cml-input-files" title="Link to this heading">¶</a></h2>
+<p>While <a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a> provides a generic interface to all input files, CPL
+also defines specialized classes that provide additional functionality for those
+specific input files. The available classes that provide customized
+functionality are listed below</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.ControlDict" title="caelus.io.dictfile.ControlDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ControlDict</span></code></a></p></td>
+<td><p>system/controlDict interface</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.FvSchemes" title="caelus.io.dictfile.FvSchemes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FvSchemes</span></code></a></p></td>
+<td><p>system/fvSchemes interface</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.FvSolution" title="caelus.io.dictfile.FvSolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FvSolution</span></code></a></p></td>
+<td><p>system/fvSolution interface</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.DecomposeParDict" title="caelus.io.dictfile.DecomposeParDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DecomposeParDict</span></code></a></p></td>
+<td><p>system/decomposeParDict interface</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.TransportProperties" title="caelus.io.dictfile.TransportProperties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransportProperties</span></code></a></p></td>
+<td><p>constant/transportProperties interface</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.TurbulenceProperties" title="caelus.io.dictfile.TurbulenceProperties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TurbulenceProperties</span></code></a></p></td>
+<td><p>constant/turbulenceProperties interface</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.RASProperties" title="caelus.io.dictfile.RASProperties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RASProperties</span></code></a></p></td>
+<td><p>constant/RASProperties interface</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.LESProperties" title="caelus.io.dictfile.LESProperties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LESProperties</span></code></a></p></td>
+<td><p>constant/LESProperties interface</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.BlockMeshDict" title="caelus.io.dictfile.BlockMeshDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlockMeshDict</span></code></a></p></td>
+<td><p>constant/polyMesh/blockMeshDict interface</p></td>
+</tr>
+</tbody>
+</table>
+<p>The specialized classes provide the ability to create default entries as well as
+provide a limited amount of syntax checking to ensure that the keywords contain
+acceptable values. It also allows attribute style access (in addition to
+dictionary style access) for the keywords present in the input file. The
+<a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.DictFile.read_if_present" title="caelus.io.dictfile.DictFile.read_if_present"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_if_present()</span></code></a> method is really useful with the specialized
+classes, as the user does not have to provide the file name, as shown below</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load files from system directory</span>
+<span class="n">cdict</span> <span class="o">=</span> <span class="n">cio</span><span class="o">.</span><span class="n">ControlDict</span><span class="o">.</span><span class="n">read_if_present</span><span class="p">()</span>
+<span class="n">fvsol</span> <span class="o">=</span> <span class="n">cio</span><span class="o">.</span><span class="n">FvSolution</span><span class="o">.</span><span class="n">read_if_present</span><span class="p">()</span>
+<span class="n">fvsch</span> <span class="o">=</span> <span class="n">cio</span><span class="o">.</span><span class="n">FvSchemes</span><span class="o">.</span><span class="n">read_if_present</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>For example, when using the <a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.DictFile" title="caelus.io.dictfile.DictFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DictFile</span></code></a> interface with
+<code class="file docutils literal notranslate"><span class="pre">system/controlDict</span></code> file, the user could assign any arbitrary value to
+<code class="docutils literal notranslate"><span class="pre">startFrom</span></code>. However, when using the <a class="reference internal" href="../../dev/caelus.io.html#caelus.io.dictfile.ControlDict" title="caelus.io.dictfile.ControlDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">ControlDict</span></code></a>, CPL will raise an
+error if the user provides invalid value</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Attempt to pass invalid value will raise a ValueError as shown below</span>
+<span class="n">cdict</span><span class="o">.</span><span class="n">startFrom</span> <span class="o">=</span> <span class="s2">&quot;bananas&quot;</span>
+<span class="c1"># ValueError: ControlDict: Invalid option for &#39;startFrom&#39;. Valid options are:</span>
+<span class="c1">#    (&#39;firstTime&#39;, &#39;startTime&#39;, &#39;latestTime&#39;)</span>
+
+<span class="c1"># The keywords in file can be accessed either as attributes or keys</span>
+<span class="nb">print</span> <span class="p">(</span> <span class="n">cdict</span><span class="o">.</span><span class="n">stopAt</span><span class="p">,</span> <span class="n">cdict</span><span class="p">[</span><span class="s1">&#39;stopAt&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="accessing-keywords-with-special-characters">
+<h2>Accessing keywords with special characters<a class="headerlink" href="#accessing-keywords-with-special-characters" title="Link to this heading">¶</a></h2>
+<p>While most keywords can be accessed as attributes, certain OpenFOAM/CML keywords
+contain invalid characters and therefore must be accessed as dictionary keys
+only. The <code class="file docutils literal notranslate"><span class="pre">fvSolution</span></code> and <code class="file docutils literal notranslate"><span class="pre">fvSchemes</span></code> provide good examples of
+such keywords.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Accessing the divSchemes for specific equation must use dictionary style</span>
+<span class="c1"># access</span>
+<span class="n">divU</span> <span class="o">=</span> <span class="n">fvsch</span><span class="o">.</span><span class="n">divSchemes</span><span class="p">[</span><span class="s2">&quot;div(phi,U)&quot;</span><span class="p">]</span>
+
+<span class="c1"># Accessing the &quot;(k|omega|nuTilda)&quot; solver in fvSolution</span>
+<span class="n">turbSolver</span> <span class="o">=</span> <span class="n">fvsol</span><span class="o">.</span><span class="n">solvers</span><span class="p">[</span><span class="s1">&#39;&quot;(k|omega|nuTilda)&quot;&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Note the nested quotation marks for the <code class="docutils literal notranslate"><span class="pre">&quot;(k|omega|nuTilda)&quot;</span></code> keyword.
+OpenFOAM/CML requires the double quotes because keyword starts with a
+non-alphabetical character. Wrapping the entire thing in single quotes protects
+the double quotes within Python.</p>
+</section>
+<section id="input-files-for-turbulence-models">
+<h2>Input files for turbulence models<a class="headerlink" href="#input-files-for-turbulence-models" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the TurbulenceProperties file</span>
+<span class="n">tprops</span> <span class="o">=</span> <span class="n">cio</span><span class="o">.</span><span class="n">TurbulenceProperties</span><span class="o">.</span><span class="n">read_if_present</span><span class="p">()</span>
+
+<span class="c1"># Examine the type of turbulence model being used</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tprops</span><span class="o">.</span><span class="n">simulationType</span><span class="p">)</span>
+
+<span class="c1"># Get an instance of the model input file (returns None if laminar)</span>
+<span class="n">rans</span> <span class="o">=</span> <span class="n">tprops</span><span class="o">.</span><span class="n">get_turb_file</span><span class="p">()</span>
+
+<span class="c1"># Show the model and coeffs</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rans</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rans</span><span class="o">.</span><span class="n">coeffs</span><span class="p">)</span>
+
+<span class="c1"># Options common to both RASProperties and LESProperties</span>
+<span class="n">rans</span><span class="o">.</span><span class="n">turbulence</span>   <span class="c1"># Flag indicating if turbulence is active</span>
+<span class="n">rans</span><span class="o">.</span><span class="n">printCoeffs</span>  <span class="c1"># Flag indicating whether coeffs are printed</span>
+
+<span class="c1"># Switch to k-omega SST model</span>
+<span class="n">rans</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;kOmegaSST&quot;</span>
+<span class="c1"># Note that coeffs has switched to &#39;kOmegaSSTCoeffs&#39; present in input file</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rans</span><span class="o">.</span><span class="n">coeffs</span><span class="p">)</span>
+
+<span class="c1"># Turn curvature correction on (this updates kOmegaSSTCoeffs now)</span>
+<span class="n">rans</span><span class="o">.</span><span class="n">coeffs</span><span class="o">.</span><span class="n">curvatureCorrection</span> <span class="o">=</span> <span class="s2">&quot;on&quot;</span>
+
+<span class="c1"># Note, we can still access SpalartAllmarasCoeffs manually</span>
+<span class="c1"># However, need to use dictionary style access</span>
+<span class="n">sacoeffs</span> <span class="o">=</span> <span class="n">rans</span><span class="p">[</span><span class="s1">&#39;SpalartAllmarasCoeffs&#39;</span><span class="p">]</span>
+
+<span class="c1"># Can still change S-A coeffs if necessary</span>
+<span class="n">sacoeffs</span><span class="o">.</span><span class="n">curvatureCorrection</span> <span class="o">=</span> <span class="s1">&#39;off&#39;</span>
+
+<span class="c1"># Save updated RASProperties file</span>
+<span class="n">rans</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In the next example, we will change the turbulence model from RANS to LES and
+let CPL generate a default LESProperties file for us.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the TurbulenceProperties file</span>
+<span class="n">tprops</span> <span class="o">=</span> <span class="n">cio</span><span class="o">.</span><span class="n">TurbulenceProperties</span><span class="o">.</span><span class="n">read_if_present</span><span class="p">()</span>
+
+<span class="c1"># Switch to LES model</span>
+<span class="n">tprops</span><span class="o">.</span><span class="n">simulationType</span> <span class="o">=</span> <span class="s2">&quot;LESModel&quot;</span>
+
+<span class="c1"># Get the default LESProperties file generated by CPL</span>
+<span class="n">les</span> <span class="o">=</span> <span class="n">tprops</span><span class="o">.</span><span class="n">get_turb_file</span><span class="p">()</span>
+
+<span class="c1"># Show default values created by CPL</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">les</span><span class="p">)</span>
+
+<span class="c1"># Set up the appropriate coefficients for Smagorinsky</span>
+<span class="n">coeffs</span> <span class="o">=</span> <span class="n">les</span><span class="o">.</span><span class="n">coeffs</span>
+<span class="n">coeffs</span><span class="o">.</span><span class="n">ce</span> <span class="o">=</span> <span class="mf">1.05</span>
+<span class="n">coeffs</span><span class="o">.</span><span class="n">ck</span> <span class="o">=</span> <span class="mf">0.07</span>
+
+<span class="c1"># Write out the updated files</span>
+<span class="n">les</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+<span class="n">tprops</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cpl_script.html" title="Custom scripts using CPL"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="caelus_sim.html" title="Parametric runs using CPL"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../tuts.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Mainpulating input files with CPL</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

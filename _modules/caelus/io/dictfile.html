@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.io.dictfile &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../index.html">
+<!--      <img src="../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.io.dictfile</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.io.dictfile</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Caelus/OpenFOAM Input File Interface</span>
+<span class="sd">-------------------------------------</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">six</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">osutils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">caelusdict</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">printer</span>
+
+<span class="n">_lgr</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DictMeta">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictMeta">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DictMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create property methods and add validation for properties.</span>
+
+<span class="sd">    This metaclass implements the boilerplate code necessary to add</span>
+<span class="sd">    getter/setters for various entries found in a Caelus input file. It expects</span>
+<span class="sd">    a class variable ``_dict_properties`` that contains tuples for the various</span>
+<span class="sd">    entries in the input file. The tuple can be of two forms:</span>
+
+<span class="sd">      - (name, default_value)</span>
+<span class="sd">      - (name, default_value, valid_values)</span>
+
+<span class="sd">    If the default_value is not None, then this value will be used to</span>
+<span class="sd">    automatically initialize the particular entry by</span>
+<span class="sd">    :meth:`~caelus.io.dictfile.DictFile.create_default_entries` method. If</span>
+<span class="sd">    ``valid_values`` are provided, any attempt to set/modify this value will be</span>
+<span class="sd">    checked to ensure that only the allowed values are used.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=no-value-for-parameter</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">cdict</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DictMeta</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">cdict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;_dict_properties&quot;</span> <span class="ow">in</span> <span class="n">cdict</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">process_properties</span><span class="p">(</span><span class="n">cdict</span><span class="p">[</span><span class="s2">&quot;_dict_properties&quot;</span><span class="p">])</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">process_defaults</span><span class="p">(</span><span class="n">cdict</span><span class="p">[</span><span class="s2">&quot;_dict_properties&quot;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="DictMeta.process_defaults">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictMeta.process_defaults">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_defaults</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">proplist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process default entries&quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">create_default_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Create defaults from property list&quot;&quot;&quot;</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+            <span class="k">for</span> <span class="n">plist</span> <span class="ow">in</span> <span class="n">proplist</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">plist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">plist</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;create_default_entries&quot;</span><span class="p">,</span> <span class="n">create_default_entries</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DictMeta.process_properties">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictMeta.process_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_properties</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">proplist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create getters/setters for properties&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">plist</span> <span class="ow">in</span> <span class="n">proplist</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">process_property</span><span class="p">(</span><span class="n">plist</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DictMeta.process_property">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictMeta.process_property">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_property</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">plist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process a property&quot;&quot;&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">plist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">plist</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">plist</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">getter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Getter&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">options</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">setter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Setter&quot;&quot;&quot;</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: Invalid option for &#39;</span><span class="si">%s</span><span class="s2">&#39;. &quot;</span>
+                        <span class="s2">&quot;Valid options are:</span><span class="se">\n\t</span><span class="si">%s</span><span class="s2">&quot;</span>
+                        <span class="o">%</span> <span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">setter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                <span class="s2">&quot;Setter&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">property</span><span class="p">(</span><span class="n">getter</span><span class="p">,</span> <span class="n">setter</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">doc</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DictFile">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictFile">[docs]</a>
+<span class="nd">@six</span><span class="o">.</span><span class="n">add_metaclass</span><span class="p">(</span><span class="n">DictMeta</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DictFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Caelus/OpenFOAM input file reader/writer</span>
+
+<span class="sd">    The default constructor does not read a file, but instead creates a new</span>
+<span class="sd">    input file object. If a property list is provided, this is used to</span>
+<span class="sd">    initialize the default entries. To read an existing file, the use of</span>
+<span class="sd">    :meth:`DictFile.read_if_present` method is recommended.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Default filename for the file type (to be overriden by subclasses)</span>
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;dictionary&quot;</span>
+    <span class="c1">#: File sizes to limit parsing to (to avoid parsing large field files)</span>
+    <span class="n">_size_limit</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">20</span><span class="p">)</span>
+
+    <span class="n">_default_header</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="s2">&quot;2.0&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;format&quot;</span><span class="p">,</span> <span class="s2">&quot;ascii&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;class&quot;</span><span class="p">,</span> <span class="s2">&quot;dictionary&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">populate_defaults</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            filename (path): Path to the input file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#: File to read/write data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_filename</span>
+        <span class="c1">#: Contents of the FoamFile sub-dictionary in the file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_header</span><span class="p">()</span>
+        <span class="c1">#: Contents of the file as a dictionary suitable for manipulation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">caelusdict</span><span class="o">.</span><span class="n">CaelusDict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">populate_defaults</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_default_entries</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DictFile.load">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictFile.load">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a Caelus input file from disk</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (path): Path to the input files</span>
+<span class="sd">            debug (bool): Turn on detailed errors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">filename</span> <span class="ow">or</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_default_filename</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="n">caelusdict</span><span class="o">.</span><span class="n">CaelusDict</span><span class="p">()</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">need_default_header</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Cannot find file: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_size_limit</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> size is &gt; 5MB, will only parse header&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cparse</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">CaelusParser</span><span class="p">()</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="n">txt</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="n">entries</span> <span class="o">=</span> <span class="n">cparse</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">txt</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">debuglevel</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="n">entries</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;FoamFile&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">need_default_header</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">header</span>
+        <span class="k">elif</span> <span class="n">need_default_header</span><span class="p">:</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">create_header</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">entries</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="DictFile.read_if_present">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictFile.read_if_present">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_if_present</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">populate_defaults</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the file if present, else create object with default values</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            casedir (path): Path to the case directory</span>
+<span class="sd">            filename (path): Filename to read</span>
+<span class="sd">            debug (bool): Turn on detailed errors</span>
+<span class="sd">            populate_defaults (bool): Populate the defaults</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cdir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">casedir</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">filename</span> <span class="ow">or</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_default_filename</span>
+        <span class="k">with</span> <span class="n">osutils</span><span class="o">.</span><span class="n">set_work_dir</span><span class="p">(</span><span class="n">cdir</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">debug</span><span class="p">)</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">casedir</span> <span class="o">=</span> <span class="n">cdir</span>
+                <span class="k">return</span> <span class="n">obj</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">create_header</span><span class="p">()</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">caelusdict</span><span class="o">.</span><span class="n">CaelusDict</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">populate_defaults</span><span class="p">:</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">create_default_entries</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="DictFile.create_default_entries">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictFile.create_default_entries">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_default_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create default entries for this file&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="DictFile.create_header">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictFile.create_header">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a default header&quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">location</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">default_header</span> <span class="o">=</span> <span class="n">caelusdict</span><span class="o">.</span><span class="n">CaelusDict</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="s2">&quot;2.0&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;format&quot;</span><span class="p">,</span> <span class="s2">&quot;ascii&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;class&quot;</span><span class="p">,</span> <span class="s2">&quot;dictionary&quot;</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">location</span><span class="p">:</span>
+            <span class="n">default_header</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">location</span>
+        <span class="n">default_header</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">obj</span>
+        <span class="k">return</span> <span class="n">default_header</span></div>
+
+
+<div class="viewcode-block" id="DictFile.write">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictFile.write">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">update_object</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">write_header</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write a formatted Caelus input file</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            casedir (path): Path to the case directory</span>
+<span class="sd">            filename (path): Filename to write</span>
+<span class="sd">            update_object (bool): Ensure object type is consistent</span>
+<span class="sd">            write_header (bool): Write header for the file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cdir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">casedir</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">with</span> <span class="n">osutils</span><span class="o">.</span><span class="n">set_work_dir</span><span class="p">(</span><span class="n">cdir</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">write_header</span><span class="p">:</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_header</span><span class="p">()</span> <span class="k">if</span> <span class="n">update_object</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing Caelus input file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">printer</span><span class="o">.</span><span class="n">foam_writer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">header</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="n">fh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DictFile.merge">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictFile.merge">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge entries from one dictionary to another&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">contents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Access entries within the Caelus CML dictionary&quot;&quot;&quot;</span>
+        <span class="c1"># return self.data</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_full_contents</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DictFile.get_full_contents">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictFile.get_full_contents">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_full_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the full dictionary after expanding includes&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_expanded_data_dict&quot;</span><span class="p">):</span>
+            <span class="n">cdir</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;casedir&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+            <span class="n">fdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">wdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cdir</span><span class="p">,</span> <span class="n">fdir</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">osutils</span><span class="o">.</span><span class="n">set_work_dir</span><span class="p">(</span><span class="n">wdir</span><span class="p">):</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_foam_expand_includes</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">_foam_expand_macros</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expanded_data_dict</span> <span class="o">=</span> <span class="n">out</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expanded_data_dict</span></div>
+
+
+<div class="viewcode-block" id="DictFile.keys">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DictFile.keys">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return list of variable names in the dictionary&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="s2">&quot;Dictionary style access to file entries&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No entry by name </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Dictionary style setter for file entries&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">strbuf</span> <span class="o">=</span> <span class="n">six</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+        <span class="n">pprint</span> <span class="o">=</span> <span class="n">printer</span><span class="o">.</span><span class="n">DictPrinter</span><span class="p">(</span><span class="n">strbuf</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">strbuf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ControlDict">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.ControlDict">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ControlDict</span><span class="p">(</span><span class="n">DictFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;system/controlDict interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;system/controlDict&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;application&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;startFrom&quot;</span><span class="p">,</span> <span class="s2">&quot;latestTime&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;firstTime&quot;</span><span class="p">,</span> <span class="s2">&quot;startTime&quot;</span><span class="p">,</span> <span class="s2">&quot;latestTime&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;startTime&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span>
+            <span class="s2">&quot;stopAt&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;endTime&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;endTime&quot;</span><span class="p">,</span> <span class="s2">&quot;writeNow&quot;</span><span class="p">,</span> <span class="s2">&quot;noWriteNow&quot;</span><span class="p">,</span> <span class="s2">&quot;nextWrite&quot;</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;endTime&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;deltaT&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span>
+            <span class="s2">&quot;writeControl&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;timeStep&quot;</span><span class="p">,</span>
+            <span class="p">(</span>
+                <span class="s2">&quot;timeStep&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;runTime&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;adjustableRunTime&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;cpuTime&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;clockTime&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;writeInterval&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;purgeWrite&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;writeFormat&quot;</span><span class="p">,</span> <span class="s2">&quot;ascii&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">,</span> <span class="s2">&quot;binary&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;writePrecision&quot;</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;writeCompression&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;timeFormat&quot;</span><span class="p">,</span> <span class="s2">&quot;general&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;fixed&quot;</span><span class="p">,</span> <span class="s2">&quot;scientific&quot;</span><span class="p">,</span> <span class="s2">&quot;general&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;timePrecision&quot;</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;graphFormat&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;adjustTimeStep&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;maxCo&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;runTimeModifiable&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;function object definitions in controlDict&quot;&quot;&quot;</span>
+        <span class="n">cdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents</span>
+        <span class="k">return</span> <span class="n">cdict</span><span class="o">.</span><span class="n">functions</span> <span class="k">if</span> <span class="s2">&quot;functions&quot;</span> <span class="ow">in</span> <span class="n">cdict</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="nd">@functions</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">functions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;functions must be a dictionary type&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;functions&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">functions</span> <span class="o">=</span> <span class="n">caelusdict</span><span class="o">.</span><span class="n">CaelusDict</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DecomposeParDict">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.DecomposeParDict">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DecomposeParDict</span><span class="p">(</span><span class="n">DictFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;system/decomposeParDict interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;system/decomposeParDict&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;numberOfSubdomains&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="p">(</span>
+            <span class="s2">&quot;method&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;scotch&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;scotch&quot;</span><span class="p">,</span> <span class="s2">&quot;metis&quot;</span><span class="p">,</span> <span class="s2">&quot;simple&quot;</span><span class="p">,</span> <span class="s2">&quot;hierarchical&quot;</span><span class="p">,</span> <span class="s2">&quot;manual&quot;</span><span class="p">),</span>
+        <span class="p">),</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="TransportProperties">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.TransportProperties">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TransportProperties</span><span class="p">(</span><span class="n">DictFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;constant/transportProperties interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;constant/transportProperties&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;transportModel&quot;</span><span class="p">,</span> <span class="s2">&quot;Newtonian&quot;</span><span class="p">),</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="TurbulenceProperties">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.TurbulenceProperties">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TurbulenceProperties</span><span class="p">(</span><span class="n">DictFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;constant/turbulenceProperties interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;constant/turbulenceProperties&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;simulationType&quot;</span><span class="p">,</span> <span class="s2">&quot;laminar&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;laminar&quot;</span><span class="p">,</span> <span class="s2">&quot;RASModel&quot;</span><span class="p">,</span> <span class="s2">&quot;LESModel&quot;</span><span class="p">)),</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="TurbulenceProperties.get_turb_file">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.TurbulenceProperties.get_turb_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_turb_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the appropriate RASProperties or LESProperties file&quot;&quot;&quot;</span>
+        <span class="n">sim_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulationType</span>
+
+        <span class="c1"># RANS</span>
+        <span class="k">if</span> <span class="n">sim_type</span> <span class="o">==</span> <span class="s2">&quot;RASModel&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">RASProperties</span><span class="o">.</span><span class="n">read_if_present</span><span class="p">()</span>
+        <span class="c1"># LES</span>
+        <span class="k">if</span> <span class="n">sim_type</span> <span class="o">==</span> <span class="s2">&quot;LESModel&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">LESProperties</span><span class="o">.</span><span class="n">read_if_present</span><span class="p">()</span>
+        <span class="c1"># Guard for laminar</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TurbModelProps">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.TurbModelProps">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TurbModelProps</span><span class="p">(</span><span class="n">DictFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Common interface for LES/RAS models&quot;&quot;&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;turbulence&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;off&quot;</span><span class="p">,</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;printCoeffs&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;off&quot;</span><span class="p">,</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)),</span>
+    <span class="p">]</span>
+
+    <span class="n">_model_name</span> <span class="o">=</span> <span class="s2">&quot;NONE&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Turbulence model</span>
+
+<span class="sd">        Depending on the type (RANS or LES), this is the entry RASModel or</span>
+<span class="sd">        LESModel respectively in the RASProperties and LESProperties file. To</span>
+<span class="sd">        simplify access, it is simply named model here.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@model</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="c1"># trigger generation of coeffs dictionary if not present</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Turbulence model coefficients</span>
+
+<span class="sd">        This represents the sub-dictionary (e.g., kOmegaSSTCoeffs,</span>
+<span class="sd">        SmagorinksyCoeffs) containing the additional parameters necessary for</span>
+<span class="sd">        the turbulence model. The accessor automatically populates the right</span>
+<span class="sd">        name when generating the dictionary depending on the turbulence model</span>
+<span class="sd">        selected.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_name</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;Coeffs&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">caelusdict</span><span class="o">.</span><span class="n">CaelusDict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="RASProperties">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.RASProperties">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RASProperties</span><span class="p">(</span><span class="n">TurbModelProps</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;constant/RASProperties interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;constant/RASProperties&quot;</span>
+    <span class="n">_model_name</span> <span class="o">=</span> <span class="s2">&quot;RASModel&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="LESProperties">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.LESProperties">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LESProperties</span><span class="p">(</span><span class="n">TurbModelProps</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;constant/LESProperties interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;constant/LESProperties&quot;</span>
+    <span class="n">_model_name</span> <span class="o">=</span> <span class="s2">&quot;LESModel&quot;</span>
+
+<div class="viewcode-block" id="LESProperties.create_default_entries">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.LESProperties.create_default_entries">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_default_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the default turbulence model entries</span>
+
+<span class="sd">        In addition to the default options specified in turbulence properties</span>
+<span class="sd">        class, this also triggers the default entries for delta.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LESProperties</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">create_default_entries</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;Smagorinsky&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="s2">&quot;cubeRootVol&quot;</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;LES delta&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">delta</span>
+
+    <span class="nd">@delta</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;LES delta&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">value</span> <span class="o">+</span> <span class="s2">&quot;Coeffs&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">coeffs</span> <span class="o">=</span> <span class="n">caelusdict</span><span class="o">.</span><span class="n">CaelusDict</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;cubeRootVol&quot;</span><span class="p">:</span>
+                <span class="n">coeffs</span><span class="o">.</span><span class="n">deltaCoeff</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">coeffs</span></div>
+
+
+
+<div class="viewcode-block" id="FvSchemes">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.FvSchemes">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FvSchemes</span><span class="p">(</span><span class="n">DictFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;system/fvSchemes interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;system/fvSchemes&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;ddtSchemes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;gradSchemes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;divSchemes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;laplacianSchemes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;interpolationSchemes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;snGradSchemes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;fluxRequired&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="FvSolution">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.FvSolution">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FvSolution</span><span class="p">(</span><span class="n">DictFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;system/fvSolution interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;system/fvSolution&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;solvers&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;SIMPLE&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;PIMPLE&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;PISO&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;potentialFlow&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;relaxationFactors&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="BlockMeshDict">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.BlockMeshDict">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BlockMeshDict</span><span class="p">(</span><span class="n">DictFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;constant/polyMesh/blockMeshDict interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;constant/polyMesh/blockMeshDict&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;convertToMeters&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;vertices&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;blocks&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;edges&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;boundary&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;mergePatchPairs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="PolyMeshBoundary">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.PolyMeshBoundary">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PolyMeshBoundary</span><span class="p">(</span><span class="n">DictFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;constant/polyMesh/boundary interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;constant/polyMesh/boundary&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ChangeDictionaryDict">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.ChangeDictionaryDict">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ChangeDictionaryDict</span><span class="p">(</span><span class="n">DictFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;system/changeDictionaryDict interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;system/changeDictionaryDict&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;dictionaryReplacement&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span></div>
+
+
+
+<div class="viewcode-block" id="CmlControls">
+<a class="viewcode-back" href="../../../dev/caelus.io.html#caelus.io.dictfile.CmlControls">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CmlControls</span><span class="p">(</span><span class="n">DictFile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;cmlControls interface&quot;&quot;&quot;</span>
+
+    <span class="n">_default_filename</span> <span class="o">=</span> <span class="s2">&quot;cmlControls&quot;</span></div>
+
+
+
+<span class="c1">#: Mapping of standard files known to exist in a case directory</span>
+<span class="n">cml_std_files</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">cmlControls</span><span class="o">=</span><span class="n">CmlControls</span><span class="p">,</span>
+    <span class="n">controlDict</span><span class="o">=</span><span class="n">ControlDict</span><span class="p">,</span>
+    <span class="n">fvSchemes</span><span class="o">=</span><span class="n">FvSchemes</span><span class="p">,</span>
+    <span class="n">fvSolution</span><span class="o">=</span><span class="n">FvSolution</span><span class="p">,</span>
+    <span class="n">decomposeParDict</span><span class="o">=</span><span class="n">DecomposeParDict</span><span class="p">,</span>
+    <span class="n">changeDictionaryDict</span><span class="o">=</span><span class="n">ChangeDictionaryDict</span><span class="p">,</span>
+    <span class="n">transportProperties</span><span class="o">=</span><span class="n">TransportProperties</span><span class="p">,</span>
+    <span class="n">turbulenceProperties</span><span class="o">=</span><span class="n">TurbulenceProperties</span><span class="p">,</span>
+    <span class="n">RASProperties</span><span class="o">=</span><span class="n">RASProperties</span><span class="p">,</span>
+    <span class="n">LESProperties</span><span class="o">=</span><span class="n">LESProperties</span><span class="p">,</span>
+    <span class="n">blockMeshDict</span><span class="o">=</span><span class="n">BlockMeshDict</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.io.dictfile</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

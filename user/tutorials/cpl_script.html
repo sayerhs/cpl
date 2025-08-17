@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Custom scripts using CPL &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Caelus Python API" href="../../dev/caelus.html" />
+    <link rel="prev" title="Mainpulating input files with CPL" href="cpl_io.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../index.html">
+<!--      <img src="../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../dev/caelus.html" title="Caelus Python API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cpl_io.html" title="Mainpulating input files with CPL"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../tuts.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Custom scripts using CPL</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="cpl_io.html"
+                          title="previous chapter">Mainpulating input files with CPL</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../../dev/caelus.html"
+                          title="next chapter">Caelus Python API</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/user/tutorials/cpl_script.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="custom-scripts-using-cpl">
+<span id="tuts-cpl-script"></span><h1>Custom scripts using CPL<a class="headerlink" href="#custom-scripts-using-cpl" title="Link to this heading">¶</a></h1>
+<p>CPL can be used to create custome CFD workflows that may fall outside the
+capabilities of the command-line applications. The classes used to build
+the command-line applications can likewise be use to create custom Python
+scripts, as shown with following example.</p>
+<p>This tutorial mimics the workflow of the task file used for the VOF
+mutliphase solver <cite>damBreak</cite> tutorial provided with Caelus. To follow along
+it is recommended that the user download the
+<a class="reference download internal" download="" href="../../_downloads/c4de47f7adbfabb70e48f8784e26584c/run_dambreak.py"><code class="xref download docutils literal notranslate"><span class="pre">custom</span> <span class="pre">CPL</span> <span class="pre">script</span></code></a>. It is
+assumed the user is executing the script from within the
+<code class="file docutils literal notranslate"><span class="pre">$CAELUS_PROJECT_DIR/tutorials/multiphase/vof/vofSolver/ras/damBreak</span></code>
+directory. To use CPL’s Python interface directly, the user needs to ensure
+is CPL installed, preferably in a conda or virtualenv environment (see:
+<a class="reference internal" href="../installation.html#installation"><span class="std std-ref">Installing Caelus Python Library (CPL)</span></a>). As a Python script, other non-CPL functionality can
+be used in coordination with CPL (e.g. <cite>matplotlib</cite>).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</pre></div>
+</div>
+<p>Several CPL classes and methods are required. Refer to the CPL Python API
+docs (<a class="reference internal" href="../../dev/caelus.html#module-caelus" title="caelus"><code class="xref py py-mod docutils literal notranslate"><span class="pre">caelus</span></code></a>) for a complete listing of modules and associated
+functionality.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">caelus.config.cmlenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">cml_get_version</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">caelus.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">DictFile</span><span class="p">,</span> <span class="n">DecomposeParDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">caelus.run.cmd</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaelusCmd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">caelus.run.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_mpi_size</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">caelus.post.logs</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogProcessor</span><span class="p">,</span> <span class="n">SolverLog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">caelus.post.plots</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaelusPlot</span>
+</pre></div>
+</div>
+<p>An environment specifies the particular OpenFOAM or CML version and
+installation location. This examples loads the default (no argument to
+<a class="reference internal" href="../../dev/caelus.config.html#caelus.config.cmlenv.cml_get_version" title="caelus.config.cmlenv.cml_get_version"><code class="xref py py-class docutils literal notranslate"><span class="pre">cml_get_version</span></code></a> returns the default).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Searching for default caelus version...&quot;</span><span class="p">)</span>
+<span class="n">cenv_default</span> <span class="o">=</span> <span class="n">cml_get_version</span><span class="p">()</span>
+
+<span class="n">cenv</span> <span class="o">=</span> <span class="n">cenv_default</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using Caelus version: &quot;</span> <span class="o">+</span> <span class="n">cenv</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Caelus path: &quot;</span> <span class="o">+</span> <span class="n">cenv</span><span class="o">.</span><span class="n">project_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Commands are run using <a class="reference internal" href="../../dev/caelus.run.html#caelus.run.cmd.CaelusCmd" title="caelus.run.cmd.CaelusCmd"><code class="xref py py-class docutils literal notranslate"><span class="pre">CaelusCmd</span></code></a>. The
+environment to the job manager object. The command is executed by
+calling the object and a boolean is returned to enable status checking.
+Here, the meshing application, <cite>blockMesh</cite>, is run.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">status</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Executing blockMesh... &quot;</span><span class="p">)</span>
+<span class="n">caelus_cmd</span> <span class="o">=</span> <span class="n">CaelusCmd</span><span class="p">(</span><span class="s2">&quot;blockMesh&quot;</span><span class="p">,</span> <span class="n">cml_env</span><span class="o">=</span><span class="n">cenv</span><span class="p">)</span>
+<span class="n">status</span> <span class="o">=</span> <span class="n">caelus_cmd</span><span class="p">()</span>
+<span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR generating blockMesh. Exiting!&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Use built-in Python modules for filesystem related tasks.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="s2">&quot;0/alpha1.org&quot;</span><span class="p">,</span> <span class="s2">&quot;0/alpha1&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The solution is initialized solution using <cite>setFields</cite> with
+the <a class="reference internal" href="../../dev/caelus.run.html#caelus.run.cmd.CaelusCmd" title="caelus.run.cmd.CaelusCmd"><code class="xref py py-class docutils literal notranslate"><span class="pre">CaelusCmd</span></code></a> as shown previously.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">status</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Executing setFields... &quot;</span><span class="p">)</span>
+<span class="n">caelus_cmd</span> <span class="o">=</span> <span class="n">CaelusCmd</span><span class="p">(</span><span class="s2">&quot;setFields&quot;</span><span class="p">,</span> <span class="n">cml_env</span><span class="o">=</span><span class="n">cenv</span><span class="p">)</span>
+<span class="n">caelus_cmd</span><span class="o">.</span><span class="n">cml_exe_args</span> <span class="o">=</span> <span class="s2">&quot;-latestTime&quot;</span>
+<span class="n">status</span> <span class="o">=</span> <span class="n">caelus_cmd</span><span class="p">()</span>
+<span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR running setFields. Exiting!&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>An automated way to detect and set up a parallel run is to check for a
+<code class="file docutils literal notranslate"><span class="pre">system/decomposeParDict</span></code> file, use the
+<a class="reference internal" href="../../dev/caelus.io.html#caelus.io.caelusdict.CaelusDict" title="caelus.io.caelusdict.CaelusDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">CaelusDict</span></code></a> class to retrieve the
+<cite>numberOfSubdomains</cite> parameter, and set the number of MPI ranks
+to run applications with.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">decomp_dict</span> <span class="o">=</span> <span class="n">DecomposeParDict</span><span class="o">.</span><span class="n">read_if_present</span><span class="p">()</span>
+
+<span class="n">parallel</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">decomp_dict</span><span class="p">[</span><span class="s1">&#39;numberOfSubDomains&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">False</span>
+
+<span class="n">status</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">solver_cmd</span> <span class="o">=</span> <span class="n">CaelusCmd</span><span class="p">(</span><span class="s2">&quot;vofSolver&quot;</span><span class="p">,</span> <span class="n">cml_env</span><span class="o">=</span><span class="n">cenv</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Executing decomposePar... &quot;</span><span class="p">)</span>
+    <span class="n">decomp_cmd</span> <span class="o">=</span> <span class="n">CaelusCmd</span><span class="p">(</span><span class="s2">&quot;decomposePar&quot;</span><span class="p">,</span> <span class="n">cml_env</span><span class="o">=</span><span class="n">cenv</span><span class="p">)</span>
+    <span class="n">decomp_cmd</span><span class="o">.</span><span class="n">cml_exe_args</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;-force&quot;</span><span class="p">)</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">decomp_cmd</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR running decomposePar. Exiting!&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">solver_cmd</span><span class="o">.</span><span class="n">num_mpi_ranks</span> <span class="o">=</span> <span class="n">decomp_dict</span><span class="p">[</span><span class="s1">&#39;numberOfSubdomains&#39;</span><span class="p">]</span>
+    <span class="n">solver_cmd</span><span class="o">.</span><span class="n">parallel</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Executing vofSolver in parallel on </span><span class="si">%d</span><span class="s2"> cores...&quot;</span><span class="o">%</span><span class="n">solver_cmd</span><span class="o">.</span><span class="n">num_mpi_ranks</span><span class="p">)</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Executing vofSolver...&quot;</span><span class="p">)</span>
+
+<span class="n">status</span> <span class="o">=</span> <span class="n">solver_cmd</span><span class="p">()</span>
+<span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR running vofSolver. Exiting!&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, the <a class="reference internal" href="../../dev/caelus.post.html#caelus.post.logs.SolverLog" title="caelus.post.logs.SolverLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverLog</span></code></a> class is invoked to parse the log file
+and generate a plot of the residuals.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing logs... &quot;</span><span class="p">)</span>
+<span class="n">clog</span> <span class="o">=</span> <span class="n">SolverLog</span><span class="p">(</span><span class="n">logfile</span><span class="o">=</span><span class="s2">&quot;vofSolver.log&quot;</span><span class="p">)</span>
+<span class="n">cplot</span> <span class="o">=</span> <span class="n">CaelusPlot</span><span class="p">(</span><span class="n">clog</span><span class="o">.</span><span class="n">casedir</span><span class="p">)</span>
+<span class="n">cplot</span><span class="o">.</span><span class="n">plot_continuity_errors</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">cplot</span><span class="o">.</span><span class="n">plot_residuals_hist</span><span class="p">(</span><span class="n">plotfile</span><span class="o">=</span><span class="s2">&quot;residuals.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../dev/caelus.html" title="Caelus Python API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cpl_io.html" title="Mainpulating input files with CPL"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../tuts.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Custom scripts using CPL</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

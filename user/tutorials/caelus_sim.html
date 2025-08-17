@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Parametric runs using CPL &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Mainpulating input files with CPL" href="cpl_io.html" />
+    <link rel="prev" title="Tutorials" href="../tuts.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../index.html">
+<!--      <img src="../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cpl_io.html" title="Mainpulating input files with CPL"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../tuts.html" title="Tutorials"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../tuts.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Parametric runs using CPL</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Parametric runs using CPL</a><ul>
+<li><a class="reference internal" href="#preliminaries">Preliminaries</a><ul>
+<li><a class="reference internal" href="#preparing-a-case-template-directory">Preparing a case template directory</a></li>
+<li><a class="reference internal" href="#inputs-for-setting-up-parametric-run">Inputs for setting up parametric run</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#setting-up-a-parametric-run">Setting up a parametric run</a></li>
+<li><a class="reference internal" href="#prep-solve-and-post">Prep, solve, and post</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../tuts.html"
+                          title="previous chapter">Tutorials</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cpl_io.html"
+                          title="next chapter">Mainpulating input files with CPL</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/user/tutorials/caelus_sim.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="parametric-runs-using-cpl">
+<span id="tuts-caelus-sim"></span><h1>Parametric runs using CPL<a class="headerlink" href="#parametric-runs-using-cpl" title="Link to this heading">¶</a></h1>
+<p>CPL provides two classes <a class="reference internal" href="../../dev/caelus.run.html#caelus.run.case.CMLSimulation" title="caelus.run.case.CMLSimulation"><code class="xref py py-class docutils literal notranslate"><span class="pre">CMLSimulation</span></code></a> and
+<a class="reference internal" href="../../dev/caelus.run.html#caelus.run.case.CMLSimCollection" title="caelus.run.case.CMLSimCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">CMLSimCollection</span></code></a> that can be used to create workflows
+that can automate the CFD analysis process. It also provides an implementation
+of <code class="xref py py-class docutils literal notranslate"><span class="pre">CMLSimCollection</span></code> called
+<a class="reference internal" href="../../dev/caelus.run.html#caelus.run.parametric.CMLParametricRun" title="caelus.run.parametric.CMLParametricRun"><code class="xref py py-class docutils literal notranslate"><span class="pre">CMLParametricRun</span></code></a> that can be used to automate
+running a parametric study over several variables and managing the analysis as a
+group. These classes serve as simple examples for the user to derive sub-classes
+from CPL to develop their own custom workflows.</p>
+<p>The parametric run capability is also accessible from the command-line via
+<strong class="program">caelus_sim</strong>. This tutorial provides a step-by-step walkthrough of
+exercising CPL’s parametric run capabilities through the command-line. This
+tutorial will demonstrate an example of generating airfoil polars for a range of
+angles of attack at different Reynolds numbers. In addition to varying, the
+angle of attack and Reynolds number, it will also show how to specify other flow
+parameters through CPL.</p>
+<section id="preliminaries">
+<h2>Preliminaries<a class="headerlink" href="#preliminaries" title="Link to this heading">¶</a></h2>
+<p>To use CPL’s parametric run interface, the user needs to provide a simulation
+configuration file (in YAML format), and a case template directory (similar to
+the one used with <strong class="program">caelus clone</strong> command).</p>
+<p>To follow along with this tutorial, we recommend that the user download the
+<a class="reference download internal" download="" href="../../_downloads/3ced09f443a13b2670f950d07e692c9e/caelus_sim.yaml"><code class="xref download docutils literal notranslate"><span class="pre">parametric</span> <span class="pre">run</span> <span class="pre">setup</span> <span class="pre">file</span></code></a> and a <a class="reference download internal" download="" href="../../_downloads/6bd52f4913e182133cc68246c1923ab8/airfoil_demo.zip"><code class="xref download docutils literal notranslate"><span class="pre">case</span> <span class="pre">template</span></code></a>. For the purposes of this
+tutorial we will assume that the user is executing the commands from within
+<code class="file docutils literal notranslate"><span class="pre">$HOME/run</span></code> directory. Once downloaded please unzip the zip file.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Files<span class="w"> </span>downloaded<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>tutorial<span class="w"> </span>walkthrough
+<span class="gp">bash:/tmp/run$ </span>ls
+<span class="go">airfoil_demo.zip caelus_sim.yaml</span>
+
+<span class="gp"># </span>Unzip<span class="w"> </span>the<span class="w"> </span>file
+<span class="gp">bash:/tmp/run$ </span>unzip<span class="w"> </span>airfoil_demo.zip
+<span class="go">Archive:  airfoil_demo.zip</span>
+<span class="go">   creating: airfoil_template/</span>
+<span class="go">   creating: airfoil_template/0.orig/</span>
+<span class="go">  inflating: airfoil_template/0.orig/k</span>
+<span class="go">  inflating: airfoil_template/0.orig/nut</span>
+<span class="go">  inflating: airfoil_template/0.orig/omega</span>
+<span class="go">  inflating: airfoil_template/0.orig/p</span>
+<span class="go">  inflating: airfoil_template/0.orig/U</span>
+<span class="go">  inflating: airfoil_template/cmlControls</span>
+<span class="go">   creating: airfoil_template/constant/</span>
+<span class="go">   creating: airfoil_template/constant/polyMesh/</span>
+<span class="go">  inflating: airfoil_template/constant/polyMesh/boundary</span>
+<span class="go">  inflating: airfoil_template/constant/polyMesh/faces.gz</span>
+<span class="go">  inflating: airfoil_template/constant/polyMesh/neighbour.gz</span>
+<span class="go">  inflating: airfoil_template/constant/polyMesh/owner.gz</span>
+<span class="go">  inflating: airfoil_template/constant/polyMesh/points.gz</span>
+<span class="go">  inflating: airfoil_template/constant/RASProperties</span>
+<span class="go">  inflating: airfoil_template/constant/transportProperties</span>
+<span class="go">  inflating: airfoil_template/constant/turbulenceProperties</span>
+<span class="go">   creating: airfoil_template/system/</span>
+<span class="go">  inflating: airfoil_template/system/controlDict</span>
+<span class="go">  inflating: airfoil_template/system/decomposeParDict</span>
+<span class="go">  inflating: airfoil_template/system/fvSchemes</span>
+<span class="go">  inflating: airfoil_template/system/fvSolution</span>
+</pre></div>
+</div>
+<section id="preparing-a-case-template-directory">
+<h3>Preparing a case template directory<a class="headerlink" href="#preparing-a-case-template-directory" title="Link to this heading">¶</a></h3>
+<p>In order to simplify the process of setting up parametric run, CPL assumes that
+all user-configurable entries are provided in <code class="file docutils literal notranslate"><span class="pre">cmlControls</span></code> within the
+case directory. Other files within the case directory use the <code class="docutils literal notranslate"><span class="pre">#include</span></code>
+option to include this file and use variable replacement macro syntax
+<code class="docutils literal notranslate"><span class="pre">$variable</span></code> to interface with the parametric run utility. In this airfoil
+demonstration example, a <code class="file docutils literal notranslate"><span class="pre">cmlControls</span></code> that will be used is shown below:</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">FoamFile</span>
+<span class="linenos"> 2</span><span class="p">{</span>
+<span class="linenos"> 3</span><span class="w">    </span><span class="n">version</span><span class="w">     </span><span class="mf">2.0</span><span class="p">;</span>
+<span class="linenos"> 4</span><span class="w">    </span><span class="n">format</span><span class="w">      </span><span class="n">ascii</span><span class="p">;</span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="k">class</span><span class="w">       </span><span class="nc">dictionary</span><span class="p">;</span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">object</span><span class="w">      </span><span class="s">&quot;cmlControls&quot;</span><span class="p">;</span>
+<span class="linenos"> 7</span><span class="p">}</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="c1">// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span><span class="n">density</span><span class="w">       </span><span class="mf">1.225</span><span class="p">;</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="n">Uinf</span><span class="w">          </span><span class="mf">15.0</span><span class="p">;</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span><span class="n">chord</span><span class="w">         </span><span class="mf">1.0</span><span class="p">;</span>
+<span class="linenos">16</span>
+<span class="linenos">17</span><span class="n">Re</span><span class="w">            </span><span class="mf">1000000.0</span><span class="p">;</span>
+<span class="linenos">18</span>
+<span class="linenos">19</span><span class="n">aoa</span><span class="w">           </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="linenos">20</span>
+<span class="linenos">21</span><span class="n">turbKe</span><span class="w">        </span><span class="mf">3.75e-07</span><span class="p">;</span>
+<span class="linenos">22</span>
+<span class="linenos">23</span><span class="n">velVector</span><span class="w">     </span><span class="p">(</span><span class="mf">15.0</span><span class="w"> </span><span class="mf">0.0</span><span class="w"> </span><span class="mf">0.0</span><span class="p">);</span>
+<span class="linenos">24</span>
+<span class="linenos">25</span><span class="n">nuValue</span><span class="w">       </span><span class="mf">1.0e7</span><span class="p">;</span>
+<span class="linenos">26</span>
+<span class="linenos">27</span><span class="n">turbulenceModel</span><span class="w"> </span><span class="n">kOmegaSST</span><span class="p">;</span>
+<span class="linenos">28</span>
+<span class="linenos">29</span><span class="c1">// ************************************************************************* //</span>
+</pre></div>
+</div>
+<p>An example of using this file to set the turbulence model in
+<code class="file docutils literal notranslate"><span class="pre">constant/RASProperties</span></code> is shown below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    &quot;constant&quot;;
+    object      RASProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include &quot;../cmlControls&quot;
+
+RASModel        $turbulenceModel;
+
+turbulence      on;
+
+printCoeffs     on;
+
+kMin            1.e-20;
+
+// ************************************************************************* //
+</pre></div>
+</div>
+<p>Notice how the <code class="file docutils literal notranslate"><span class="pre">cmlControls</span></code> file is included in line 11, and the property
+<code class="docutils literal notranslate"><span class="pre">RASModel</span></code> is set with <code class="docutils literal notranslate"><span class="pre">$turbulenceModel</span></code> (see line 27 in
+<code class="file docutils literal notranslate"><span class="pre">cmlControls</span></code> snippet above). The user is referred to
+<code class="file docutils literal notranslate"><span class="pre">constant/transportProperties</span></code>, <code class="file docutils literal notranslate"><span class="pre">0.orig/U</span></code>, <code class="file docutils literal notranslate"><span class="pre">0.orig/k</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">functions</span></code> section of <code class="file docutils literal notranslate"><span class="pre">system/controlDict</span></code> for further examples of how
+the inputs from <code class="file docutils literal notranslate"><span class="pre">cmlControls</span></code> is used to customize the case.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Currently, <code class="file docutils literal notranslate"><span class="pre">cmlControls</span></code> and CPL’s dictionary manipulation capabilities
+are restricted to text files only. If you want to customize binary files
+within <code class="file docutils literal notranslate"><span class="pre">0/</span></code> directory, then we recommend using <code class="file docutils literal notranslate"><span class="pre">cmlControls</span></code> to
+modify <code class="file docutils literal notranslate"><span class="pre">system/changeDictionaryDict</span></code> and execute CML’s
+<strong class="program">changeDictionary</strong> executable in the pre-processing phase to modify
+binary files.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>With newer versions of OpenFOAM, the RANS inputs must be part of the
+<code class="file docutils literal notranslate"><span class="pre">constant/turbulenceProperties</span></code> file.</p>
+</div>
+</section>
+<section id="inputs-for-setting-up-parametric-run">
+<h3>Inputs for setting up parametric run<a class="headerlink" href="#inputs-for-setting-up-parametric-run" title="Link to this heading">¶</a></h3>
+<p>The first step to creating a parametric analysis directory structure is to
+execute the <strong class="program">caelus_sim setup</strong> command. By default, this command will
+attempt to load the analysis configuration from the <code class="file docutils literal notranslate"><span class="pre">caelus_sim.yaml</span></code>. The
+user can, however, change this by providing an alternate file with the <code class="docutils literal notranslate"><span class="pre">-f</span></code>
+flag. The contents of the
+<a class="reference download internal" download="" href="../../_downloads/3ced09f443a13b2670f950d07e692c9e/caelus_sim.yaml"><code class="xref download docutils literal notranslate"><span class="pre">caelus_sim.yaml</span></code></a> used for
+this demo is shown below.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># -*- mode: yaml -*-</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="c1"># caelus_sim requires a simulation section in YAML file</span>
+<span class="linenos"> 4</span><span class="nt">simulation</span><span class="p">:</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="w">  </span><span class="c1"># Name of the parametric run top-level directory. Can also set using -n flag</span>
+<span class="linenos"> 7</span><span class="w">  </span><span class="c1"># at command line which takes precedence</span>
+<span class="linenos"> 8</span><span class="w">  </span><span class="nt">sim_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">airfoil_demo</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="w">  </span><span class="c1"># The template directory for creating case directories. Requires &#39;path&#39;</span>
+<span class="linenos">11</span><span class="w">  </span><span class="c1"># argument. Other optional variables can be provided to control clone behavior</span>
+<span class="linenos">12</span><span class="w">  </span><span class="nt">template</span><span class="p">:</span>
+<span class="linenos">13</span><span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;./airfoil_template&quot;</span>
+<span class="linenos">14</span><span class="w">    </span><span class="c1"># copy_polymesh: no</span>
+<span class="linenos">15</span><span class="w">    </span><span class="c1"># copy_zero: no</span>
+<span class="linenos">16</span><span class="w">    </span><span class="c1"># copy_scripts: no</span>
+<span class="linenos">17</span><span class="w">    </span><span class="c1"># extra_patterns: [&quot;*.py&quot;]</span>
+<span class="linenos">18</span>
+<span class="linenos">19</span><span class="w">  </span><span class="c1"># This section details the parametric run options</span>
+<span class="linenos">20</span><span class="w">  </span><span class="nt">simulation_setup</span><span class="p">:</span>
+<span class="linenos">21</span><span class="w">    </span><span class="c1"># User defined format for case directory names</span>
+<span class="linenos">22</span><span class="w">    </span><span class="nt">case_format</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Re_{Re:.1e}/aoa_{aoa:+06.2f}&quot;</span>
+<span class="linenos">23</span>
+<span class="linenos">24</span><span class="w">    </span><span class="c1"># The matrix of runs</span>
+<span class="linenos">25</span><span class="w">    </span><span class="nt">run_matrix</span><span class="p">:</span>
+<span class="linenos">26</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Re</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1.0e6</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">2.0e6</span><span class="p p-Indicator">]</span>
+<span class="linenos">27</span><span class="w">        </span><span class="nt">aoa</span><span class="p">:</span>
+<span class="linenos">28</span><span class="w">          </span><span class="nt">start</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0</span>
+<span class="linenos">29</span><span class="w">          </span><span class="nt">stop</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0</span>
+<span class="linenos">30</span><span class="w">          </span><span class="nt">step</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0</span>
+<span class="linenos">31</span>
+<span class="linenos">32</span><span class="w">      </span><span class="c1"># Only run one Re for the negative AOA</span>
+<span class="linenos">33</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Re</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1.0e6</span><span class="p p-Indicator">]</span>
+<span class="linenos">34</span><span class="w">        </span><span class="nt">aoa</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-4.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-2.0</span><span class="p p-Indicator">]</span>
+<span class="linenos">35</span>
+<span class="linenos">36</span><span class="w">    </span><span class="c1"># Other parameters that are passed to cmlControls file</span>
+<span class="linenos">37</span><span class="w">    </span><span class="nt">constant_parameters</span><span class="p">:</span>
+<span class="linenos">38</span><span class="w">      </span><span class="nt">density</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.225</span>
+<span class="linenos">39</span><span class="w">      </span><span class="nt">Uinf</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15.0</span>
+<span class="linenos">40</span><span class="w">      </span><span class="nt">chord</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="linenos">41</span><span class="w">      </span><span class="nt">turbKe</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3.75e-07</span>
+<span class="linenos">42</span><span class="w">      </span><span class="nt">turbulenceModel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kOmegaSST</span>
+<span class="linenos">43</span>
+<span class="linenos">44</span><span class="w">    </span><span class="c1"># User-defined transformations on the variables</span>
+<span class="linenos">45</span><span class="w">    </span><span class="nt">apply_transforms</span><span class="p">:</span>
+<span class="linenos">46</span><span class="w">      </span><span class="nt">transform_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">code</span>
+<span class="linenos">47</span><span class="w">      </span><span class="c1"># Only pass these variables to cmlControls</span>
+<span class="linenos">48</span><span class="w">      </span><span class="nt">extract_vars</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">velVector</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">Re</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">nuValue</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">liftVector</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">dragVector</span><span class="p p-Indicator">]</span>
+<span class="linenos">49</span><span class="w">      </span><span class="c1"># Python code that is executed before generating case parameters</span>
+<span class="linenos">50</span><span class="w">      </span><span class="nt">code</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="linenos">51</span><span class="w">        </span><span class="no">Re = float(Re)</span>
+<span class="linenos">52</span><span class="w">        </span><span class="no">aoaRad = np.radians(aoa)</span>
+<span class="linenos">53</span><span class="w">        </span><span class="no">Ux = Uinf * np.cos(aoaRad)</span>
+<span class="linenos">54</span><span class="w">        </span><span class="no">Uy = Uinf * np.sin(aoaRad)</span>
+<span class="linenos">55</span><span class="w">        </span><span class="no">velVector = np.array([Ux, Uy, 0.0])</span>
+<span class="linenos">56</span><span class="w">        </span><span class="no">nuValue = Uinf / Re</span>
+<span class="linenos">57</span><span class="w">        </span><span class="no">liftVector = np.array([-np.sin(aoaRad), np.cos(aoaRad), 0.0])</span>
+<span class="linenos">58</span><span class="w">        </span><span class="no">dragVector = np.array([np.cos(aoaRad), np.sin(aoaRad), 0.0])</span>
+<span class="linenos">59</span>
+<span class="linenos">60</span><span class="w">  </span><span class="c1"># Configuration for running each case within this analysis group</span>
+<span class="linenos">61</span><span class="w">  </span><span class="nt">run_configuration</span><span class="p">:</span>
+<span class="linenos">62</span><span class="w">    </span><span class="c1"># Number of MPI ranks for parallel runs</span>
+<span class="linenos">63</span><span class="w">    </span><span class="nt">num_ranks</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="linenos">64</span><span class="w">    </span><span class="c1"># Extra MPI arguments passed during parallel runs</span>
+<span class="linenos">65</span><span class="w">    </span><span class="c1"># mpi_extra_args: -machinefile mymachines</span>
+<span class="linenos">66</span>
+<span class="linenos">67</span><span class="w">    </span><span class="c1"># Should the case be reconstructed on successful run</span>
+<span class="linenos">68</span><span class="w">    </span><span class="nt">reconstruct</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">no</span>
+<span class="linenos">69</span>
+<span class="linenos">70</span><span class="w">    </span><span class="c1"># Modify the default template input files</span>
+<span class="linenos">71</span><span class="w">    </span><span class="nt">change_inputs</span><span class="p">:</span>
+<span class="linenos">72</span><span class="w">      </span><span class="nt">controlDict</span><span class="p">:</span>
+<span class="linenos">73</span><span class="w">        </span><span class="nt">endTime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="linenos">74</span><span class="w">        </span><span class="nt">writeFormat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">binary</span>
+<span class="linenos">75</span>
+<span class="linenos">76</span><span class="w">    </span><span class="c1"># Pre-processing actions to be performed before solve. The syntax is similar</span>
+<span class="linenos">77</span><span class="w">    </span><span class="c1"># to the Tasks YAML interface. Note, the case manager will automatically</span>
+<span class="linenos">78</span><span class="w">    </span><span class="c1"># perform decomposition and similar tasks. Users only need to provide</span>
+<span class="linenos">79</span><span class="w">    </span><span class="c1"># non-standard pre-processing actions (e.g., copy actions, changeDictionary,</span>
+<span class="linenos">80</span><span class="w">    </span><span class="c1"># or mesh generation) during the prep phase.</span>
+<span class="linenos">81</span><span class="w">    </span><span class="nt">prep</span><span class="p">:</span>
+<span class="linenos">82</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">copy_tree</span><span class="p">:</span>
+<span class="linenos">83</span><span class="w">          </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0.orig&quot;</span>
+<span class="linenos">84</span><span class="w">          </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0&quot;</span>
+<span class="linenos">85</span>
+<span class="linenos">86</span><span class="w">    </span><span class="c1"># Perform the solve</span>
+<span class="linenos">87</span><span class="w">    </span><span class="nt">solve</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">simpleSolver</span>
+<span class="linenos">88</span>
+<span class="linenos">89</span><span class="w">    </span><span class="c1"># solve:</span>
+<span class="linenos">90</span><span class="w">    </span><span class="c1">#   - solver: potentialSolver</span>
+<span class="linenos">91</span><span class="w">    </span><span class="c1">#     solver_args: &quot;-initializeUBCs -noFunctionObjects&quot;</span>
+<span class="linenos">92</span>
+<span class="linenos">93</span><span class="w">    </span><span class="c1">#   - solver: pimpleSolver</span>
+<span class="linenos">94</span>
+<span class="linenos">95</span><span class="w">    </span><span class="c1"># Similar to prep, perform post-processing actions</span>
+<span class="linenos">96</span><span class="w">    </span><span class="c1"># post:</span>
+<span class="linenos">97</span><span class="w">    </span><span class="c1">#   - run_command:</span>
+<span class="linenos">98</span><span class="w">    </span><span class="c1">#       cmd_name: &quot;python ./my_post_process.py&quot;</span>
+</pre></div>
+</div>
+<p>The input file must contain one section <code class="docutils literal notranslate"><span class="pre">simulation</span></code> that provides all the
+information necessary for setting up and executing the parametric run. The
+<code class="docutils literal notranslate"><span class="pre">simulation</span></code> dictionary contains the following major sections:</p>
+<p><code class="docutils literal notranslate"><span class="pre">sim_name</span></code></p>
+<blockquote>
+<div><p>The name of the parametric analysis group. The program creates
+a unique run directory with this name. This parameter can also be overridden
+from the command line.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">template</span></code></p>
+<blockquote>
+<div><p>Details of the case template that will be used to create the individual case
+directories. It must contain one mandatory entry: <code class="docutils literal notranslate"><span class="pre">path</span></code>, that is the path
+to the template case directory. In this demo we will use the
+<code class="docutils literal notranslate"><span class="pre">airfoil_template</span></code> that we unzipped from the <code class="file docutils literal notranslate"><span class="pre">airfoil_demo.zip</span></code>.
+Additional parameters are passed to control the cloning of the template
+directory and are similar to <strong class="program">caelus clone</strong> command.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">simulation_setup</span></code></p>
+<blockquote>
+<div><p>This section contains the details of the parametric run. <code class="docutils literal notranslate"><span class="pre">case_template</span></code> is
+a template suitable to be processed by <a class="reference external" href="https://docs.python.org/3/library/string.html#format-string-syntax">python str.format() method</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">run_matrix</span></code> contains the list of parametric combinations that will be run.
+In this example, we will run two angles of attack for each of the two Reynolds
+numbers specified. Each entry in the list generates all possible combinations
+of runs possible, and these are sub-groups of parametric runs. User can
+provide multiple entries in the list to generate additional custom
+combinations.</p>
+<p><code class="docutils literal notranslate"><span class="pre">constant_parameters</span></code>, if present, are variables that that will be populated
+in addition to the variable parameters (in <code class="docutils literal notranslate"><span class="pre">run_matrix</span></code>) when setting up the
+case.</p>
+<p>Finally, <code class="docutils literal notranslate"><span class="pre">apply_transforms</span></code> is an optional section, that uses valid python
+code snippets to perform user-defined transformations to the variables in
+<code class="docutils literal notranslate"><span class="pre">run_matrix</span></code> and <code class="docutils literal notranslate"><span class="pre">constant_parameters</span></code> to generate dependent variables or
+perform additional processing. After transformation, by default, all variables
+introduced by the python code is extracted and passed along with
+<code class="docutils literal notranslate"><span class="pre">constant_parameters</span></code> and variables in <code class="docutils literal notranslate"><span class="pre">run_matrix</span></code> to
+<code class="file docutils literal notranslate"><span class="pre">cmlControls</span></code>. However, if the user has imported modules or defined
+functions, this could lead to error. So it is recommended that the user
+manually specify the variables to extracted through the <code class="docutils literal notranslate"><span class="pre">extract_vars</span></code>
+option in <code class="docutils literal notranslate"><span class="pre">apply_transforms</span></code> section.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">run_configuration</span></code></p>
+<blockquote>
+<div><p>This section contains the details on how each case is executed after setup. It
+has a general section that has information regarding parallel run setup etc.</p>
+<p><code class="docutils literal notranslate"><span class="pre">change_inputs</span></code> lists changes to be performed to input files cloned from the
+template directory. This step is performed after setting up case directory,
+but before execution of any pre-processing or solve tasks.</p>
+<p><code class="docutils literal notranslate"><span class="pre">prep</span></code> contains tasks (see <a class="reference internal" href="../tasks.html#user-caelus-tasks"><span class="std std-ref">Caelus Tasks</span></a>) that must be executed
+before decomposing and executing the case. Note that the user need not specify
+the <code class="docutils literal notranslate"><span class="pre">decomposePar</span></code> task, as this is handled automatically by the parametric
+run interface.</p>
+<p><code class="docutils literal notranslate"><span class="pre">solve</span></code> indicates the name of the solver that is used to run these cases. It
+can also accept a list entry with multiple solvers (e.g., running
+<code class="docutils literal notranslate"><span class="pre">potentialSolver</span></code> before <code class="docutils literal notranslate"><span class="pre">simpleSolver</span></code>, etc.)</p>
+<p><code class="docutils literal notranslate"><span class="pre">post</span></code> is similar to <code class="docutils literal notranslate"><span class="pre">prep</span></code> but are tasks that are executed after a
+successful solver completion.</p>
+</div></blockquote>
+</section>
+</section>
+<section id="setting-up-a-parametric-run">
+<h2>Setting up a parametric run<a class="headerlink" href="#setting-up-a-parametric-run" title="Link to this heading">¶</a></h2>
+<p>Now that we have the requisite inputs for setting up a parametric run, we will
+use <strong class="program">caelus_sim setup</strong> command to setup a case (see
+<a class="reference internal" href="../cli_apps/caelus_sim.html#cli-apps-caelus-sim"><span class="std std-ref">caelus_sim – Parametric Run CLI</span></a> for more details).</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">bash:/tmp/run$ </span>caelus_sim<span class="w"> </span>setup
+<span class="go">INFO: Caelus Python Library (CPL) v0.1.1</span>
+<span class="gp">#</span>
+<span class="gp"># </span>Output<span class="w"> </span>deleted
+<span class="gp">#</span>
+<span class="go">INFO: Successfully setup simulation: airfoil_demo (6)</span>
+</pre></div>
+</div>
+<p>On successful execution, you should see a new directory <code class="file docutils literal notranslate"><span class="pre">airfoil_demo</span></code>
+that contains six Caelus case directories for the various combinations of
+Reynolds number and angles of attack. User can query the status of the analysis
+by executing the <code class="docutils literal notranslate"><span class="pre">status</span></code> sub-command.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">bash:/tmp/run/airfoil_demo$ </span>ls
+<span class="go">Re_1.0e+06      Re_2.0e+06      caelus_sim.yaml</span>
+<span class="gp">bash:/tmp/run/airfoil_demo$ </span>caelus_sim<span class="w"> </span>status
+<span class="go">INFO: Caelus Python Library (CPL) v0.1.1</span>
+
+<span class="go">Run status for: airfoil_demo</span>
+<span class="go">Directory: /private/tmp/run/airfoil_demo</span>
+<span class="go">===============================================</span>
+<span class="gp">#</span>.<span class="w"> </span>NAME<span class="w">                     </span>STATUS
+<span class="go">===============================================</span>
+<span class="go">1. Re_1.0e+06/aoa_+00.00    Setup</span>
+<span class="go">2. Re_1.0e+06/aoa_+02.00    Setup</span>
+<span class="go">3. Re_2.0e+06/aoa_+00.00    Setup</span>
+<span class="go">4. Re_2.0e+06/aoa_+02.00    Setup</span>
+<span class="go">5. Re_1.0e+06/aoa_-04.00    Setup</span>
+<span class="go">6. Re_1.0e+06/aoa_-02.00    Setup</span>
+<span class="go">===============================================</span>
+<span class="go">TOTAL = 6; SUCCESS = 0; FAILED = 0</span>
+<span class="go">===============================================</span>
+</pre></div>
+</div>
+<p>For a description of the various status tags, please consult <a class="reference internal" href="../cli_apps/caelus_sim.html#cli-caelus-sim-status"><span class="std std-ref">caelus_sim
+status</span></a> documentation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ol class="arabic simple">
+<li><p>If you are running from a directory outside of <code class="file docutils literal notranslate"><span class="pre">airfoil_demo</span></code> then
+provide the case path using the <code class="docutils literal notranslate"><span class="pre">-d</span></code> option to <strong class="program">caelus_sim
+status -d</strong>. You don’t need to provide this if you were, say, within
+<code class="file docutils literal notranslate"><span class="pre">airfoil_demo/Re_1.0e+06</span></code> directory or any of the subdirectories.</p></li>
+<li><p>Setup sub-command allows the user to immediately perform <code class="docutils literal notranslate"><span class="pre">prep</span></code> tasks or
+submit the <code class="docutils literal notranslate"><span class="pre">solve</span></code> jobs immediately upon setup using the <code class="docutils literal notranslate"><span class="pre">-p</span></code> or
+<code class="docutils literal notranslate"><span class="pre">-s</span></code> flags during the invocation of <code class="docutils literal notranslate"><span class="pre">setup</span></code>.</p></li>
+</ol>
+</div>
+</section>
+<section id="prep-solve-and-post">
+<h2>Prep, solve, and post<a class="headerlink" href="#prep-solve-and-post" title="Link to this heading">¶</a></h2>
+<p>Now that the cases as setup, the user can examine the auto-generated case
+directories to ensure everything is setup properly and can <em>run</em> the simulation
+by just invoking the <code class="docutils literal notranslate"><span class="pre">solve</span></code> sub-command. CPL will detect if pre-processing
+and case decomposition haven’t been performed and will perform these tasks. User
+also has the option to explicitly invoke the <code class="docutils literal notranslate"><span class="pre">prep</span></code> task separately from
+command line. Without any arguments, these sub-commands will choose all the
+cases within a parametric run for execution. User can, however, pass shell-style
+wildcard arguments to select a subset of cases where the command is executed. In
+this tutorial, we will demonstrate this behavior by executing <code class="docutils literal notranslate"><span class="pre">prep</span></code> only on
+the cases where <span class="math notranslate nohighlight">\(Re = 2\times 10^6\)</span>.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span>
+<span class="gp"># </span>Submit<span class="w"> </span>prep<span class="w"> </span>only<span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">Re</span><span class="o">=</span>2e6
+<span class="gp">#</span>
+<span class="gp">bash:/tmp/run/airfoil_demo$ </span>caelus_sim<span class="w"> </span>prep<span class="w"> </span><span class="s1">&#39;Re_2.0*/*&#39;</span>
+<span class="go">INFO: Caelus Python Library (CPL) v0.1.144-g41f57bc-dirty</span>
+<span class="go">INFO: Executing pre-processing tasks for case: Re_2.0e+06/aoa_+00.00</span>
+<span class="go">INFO: Writing Caelus input file: system/decomposeParDict</span>
+<span class="go">INFO: Decomposing case: Re_2.0e+06/aoa_+00.00</span>
+<span class="go">INFO: Executing pre-processing tasks for case: Re_2.0e+06/aoa_+02.00</span>
+<span class="go">INFO: Writing Caelus input file: system/decomposeParDict</span>
+<span class="go">INFO: Decomposing case: Re_2.0e+06/aoa_+02.00</span>
+
+<span class="gp">#</span>
+<span class="gp"># </span>Check<span class="w"> </span>status<span class="w"> </span>of<span class="w"> </span>simulation
+<span class="gp">#</span>
+<span class="gp">bash:/tmp/run/airfoil_demo$ </span>caelus_sim<span class="w"> </span>status
+<span class="go">INFO: Caelus Python Library (CPL) v0.1.1-44-g41f57bc-dirty</span>
+
+<span class="go">Run status for: airfoil_demo</span>
+<span class="go">Directory: /private/tmp/run/airfoil_demo</span>
+<span class="go">===============================================</span>
+<span class="gp">#</span>.<span class="w"> </span>NAME<span class="w">                     </span>STATUS
+<span class="go">===============================================</span>
+<span class="go">1. Re_1.0e+06/aoa_+00.00    Setup</span>
+<span class="go">2. Re_1.0e+06/aoa_+02.00    Setup</span>
+<span class="go">3. Re_2.0e+06/aoa_+00.00    Prepped</span>
+<span class="go">4. Re_2.0e+06/aoa_+02.00    Prepped</span>
+<span class="go">5. Re_1.0e+06/aoa_-04.00    Setup</span>
+<span class="go">6. Re_1.0e+06/aoa_-02.00    Setup</span>
+<span class="go">===============================================</span>
+<span class="go">TOTAL = 6; SUCCESS = 0; FAILED = 0</span>
+<span class="go">===============================================</span>
+</pre></div>
+</div>
+<p>Note the use of single quotes around the wildcard arguments to prevent expansion
+by the shell when parsing the command line.</p>
+<p>In the next step, we will directly invoke <code class="docutils literal notranslate"><span class="pre">solve</span></code> on the positive angle of
+attack cases for <span class="math notranslate nohighlight">\(Re = 1\times 10^6\)</span> to demonstrate the automatic
+invocation of <code class="docutils literal notranslate"><span class="pre">prep</span></code> if not already performed.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span>
+<span class="gp"># </span>Submit<span class="w"> </span>solve<span class="w"> </span>only<span class="w"> </span><span class="k">for</span><span class="w"> </span>positive<span class="w"> </span>aoa<span class="w"> </span>and<span class="w"> </span><span class="nv">Re</span><span class="o">=</span>1e6
+<span class="gp">#</span>
+<span class="gp">bash:/tmp/run/airfoil_demo$ </span>caelus_sim<span class="w"> </span>solve<span class="w"> </span><span class="s1">&#39;Re_1.0*/aoa_+*&#39;</span>
+<span class="go">INFO: Caelus Python Library (CPL) v0.1.1</span>
+<span class="go">INFO: Executing pre-processing tasks for case: Re_1.0e+06/aoa_+00.00</span>
+<span class="go">INFO: Submitting solver (simpleSolver) for case: Re_1.0e+06/aoa_+00.00</span>
+<span class="go">INFO: Executing pre-processing tasks for case: Re_1.0e+06/aoa_+02.00</span>
+<span class="go">INFO: Submitting solver (simpleSolver) for case: Re_1.0e+06/aoa_+02.00</span>
+
+<span class="gp">#</span>
+<span class="gp"># </span>Check<span class="w"> </span>status<span class="w"> </span>of<span class="w"> </span>simulation
+<span class="gp">#</span>
+<span class="gp">bash:/tmp/run/airfoil_demo$ </span>caelus_sim<span class="w"> </span>status
+<span class="go">INFO: Caelus Python Library (CPL) v0.1.1</span>
+
+<span class="go">Run status for: airfoil_demo</span>
+<span class="go">Directory: /private/tmp/run/airfoil_demo</span>
+<span class="go">===============================================</span>
+<span class="gp">#</span>.<span class="w"> </span>NAME<span class="w">                     </span>STATUS
+<span class="go">===============================================</span>
+<span class="go">1. Re_1.0e+06/aoa_+00.00    Solved</span>
+<span class="go">2. Re_1.0e+06/aoa_+02.00    FAILED</span>
+<span class="go">3. Re_2.0e+06/aoa_+00.00    Prepped</span>
+<span class="go">4. Re_2.0e+06/aoa_+02.00    Prepped</span>
+<span class="go">5. Re_1.0e+06/aoa_-04.00    Setup</span>
+<span class="go">6. Re_1.0e+06/aoa_-02.00    Setup</span>
+<span class="go">===============================================</span>
+<span class="go">TOTAL = 6; SUCCESS = 0; FAILED = 1</span>
+<span class="go">===============================================</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For the purposes of demonstration, the <code class="docutils literal notranslate"><span class="pre">endTime</span></code> is <code class="docutils literal notranslate"><span class="pre">controlDict</span></code> is set
+to one timestep. Also a deliberate error was introduced in solve step to
+demonstrate the <code class="docutils literal notranslate"><span class="pre">FAILED</span></code> status flag.</p>
+</div>
+<p>User can execute the <code class="docutils literal notranslate"><span class="pre">post</span></code> step and it will only execute post-processing
+actions on cases that have completed the solve.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span>
+<span class="gp"># </span>Execute<span class="w"> </span>post-processing<span class="w"> </span>actions
+<span class="gp">#</span>
+<span class="gp">bash:/tmp/run/airfoil_demo$ </span>caelus_sim<span class="w"> </span>post
+<span class="go">INFO: Caelus Python Library (CPL) v0.1.1</span>
+<span class="go">INFO: Executing post-processing tasks for case: Re_1.0e+06/aoa_+00.00</span>
+<span class="go">WARNING: Re_1.0e+06/aoa_+02.00: No previous solve detected, skipping post</span>
+<span class="go">WARNING: Re_2.0e+06/aoa_+00.00: No previous solve detected, skipping post</span>
+<span class="go">WARNING: Re_2.0e+06/aoa_+02.00: No previous solve detected, skipping post</span>
+<span class="go">WARNING: Re_1.0e+06/aoa_-04.00: No previous solve detected, skipping post</span>
+<span class="go">WARNING: Re_1.0e+06/aoa_-02.00: No previous solve detected, skipping post</span>
+
+<span class="gp">#</span>
+<span class="gp"># </span>Check<span class="w"> </span>status<span class="w"> </span>of<span class="w"> </span>simulation
+<span class="gp">#</span>
+<span class="gp">bash:/tmp/run/airfoil_demo$ </span>caelus_sim<span class="w"> </span>status
+<span class="go">INFO: Caelus Python Library (CPL) v0.1.1</span>
+
+<span class="go">Run status for: airfoil_demo</span>
+<span class="go">Directory: /private/tmp/run/airfoil_demo</span>
+<span class="go">===============================================</span>
+<span class="gp">#</span>.<span class="w"> </span>NAME<span class="w">                     </span>STATUS
+<span class="go">===============================================</span>
+<span class="go">1. Re_1.0e+06/aoa_+00.00    DONE</span>
+<span class="go">2. Re_1.0e+06/aoa_+02.00    FAILED</span>
+<span class="go">3. Re_2.0e+06/aoa_+00.00    Prepped</span>
+<span class="go">4. Re_2.0e+06/aoa_+02.00    Prepped</span>
+<span class="go">5. Re_1.0e+06/aoa_-04.00    Setup</span>
+<span class="go">6. Re_1.0e+06/aoa_-02.00    Setup</span>
+<span class="go">===============================================</span>
+<span class="go">TOTAL = 6; SUCCESS = 1; FAILED = 1</span>
+<span class="go">===============================================</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cpl_io.html" title="Mainpulating input files with CPL"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../tuts.html" title="Tutorials"
+             >previous</a> |</li>
+        <li><a href="../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../tuts.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Parametric runs using CPL</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

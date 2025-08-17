@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.config.config &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../index.html">
+<!--      <img src="../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.config.config</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.config.config</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Caelus Python Configuration</span>
+<span class="sd">~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">The :mod:`~caelus.config.config` module provides functions and classes for</span>
+<span class="sd">loading user configuration via YAML files and a central location to configure</span>
+<span class="sd">the behavior of the Caelus python library. The user configuration is stored in</span>
+<span class="sd">a dictionary format within the :class:`~caelus.config.config.CaelusCfg` and can</span>
+<span class="sd">be modified during runtime by user scripts. Access to the configuration object</span>
+<span class="sd">is by calling the :func:`get_config` method defined within this module which</span>
+<span class="sd">returns a fully populated instance of the configuration dictionary. This module</span>
+<span class="sd">also sets up logging (to both console as well as log files) during the</span>
+<span class="sd">initialization phase.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pth</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">logging.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">dictConfig</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">osutils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">Struct</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..version</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span>
+
+<span class="n">_rcfile_default</span> <span class="o">=</span> <span class="s2">&quot;caelus.yaml&quot;</span>
+<span class="n">_rcsys_var</span> <span class="o">=</span> <span class="s2">&quot;CAELUSRC_SYSTEM&quot;</span>
+<span class="n">_rcfile_var</span> <span class="o">=</span> <span class="s2">&quot;CAELUSRC&quot;</span>
+
+<span class="n">_config_banner</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2"># -*- mode: yaml -*-</span>
+<span class="s2">#</span>
+<span class="s2"># Caelus Python Library (CPL) </span><span class="si">%(version)s</span>
+<span class="s2">#</span>
+<span class="s2"># Auto-generated on: </span><span class="si">%(timestamp)s</span>
+<span class="s2">#</span>
+
+<span class="s2">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="get_caelus_root">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.config.get_caelus_root">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_caelus_root</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get Caelus root directory</span>
+
+<span class="sd">    In Unix-y systems this returns ``${HOME}/Caelus`` and on Windows it returns</span>
+<span class="sd">    ``C:\\Caelus``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        path: Path to Caelus root directory</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sysname</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">pth</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;C:\Caelus&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;windows&quot;</span> <span class="ow">in</span> <span class="n">sysname</span>
+        <span class="k">else</span> <span class="n">pth</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~/Caelus/&#39;</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_cpl_root">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.config.get_cpl_root">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_cpl_root</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the root path for CPL&quot;&quot;&quot;</span>
+    <span class="n">ostype</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ostype</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">ostype</span> <span class="o">==</span> <span class="s2">&quot;windows&quot;</span><span class="p">:</span>
+        <span class="n">appdir</span> <span class="o">=</span> <span class="n">get_appdata_dir</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">appdir</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">appdir</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">pth</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">appdir</span><span class="p">,</span> <span class="s2">&quot;caelus&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;~/.caelus/&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_appdata_dir">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.config.get_appdata_dir">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_appdata_dir</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the path to the Windows ``APPDATA`` directory&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;APPDATA&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pth</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;APPDATA&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="CaelusCfg">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.config.CaelusCfg">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CaelusCfg</span><span class="p">(</span><span class="n">Struct</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-ancestors</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Caelus Configuration Object</span>
+
+<span class="sd">    A (key, value) dictionary containing all the configuration data parsed from</span>
+<span class="sd">    the user configuration files. It is recommended that users obtain an</span>
+<span class="sd">    instance of this class via the :func:`get_config` function instead of</span>
+<span class="sd">    directly instantiating this class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CaelusCfg.write_config">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.config.CaelusCfg.write_config">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fh</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write configuration to file or standard output.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fh (handle): An open file handle</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="n">_config_banner</span>
+            <span class="o">%</span> <span class="p">{</span>
+                <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">osutils</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(),</span>
+                <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yaml</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="search_cfg_files">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.config.search_cfg_files">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">search_cfg_files</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search locations and return all possible configuration files.</span>
+
+<span class="sd">    The following locations are searched:</span>
+
+<span class="sd">      - The path pointed by :envvar:`CAELUSRC_SYSTEM`</span>
+
+<span class="sd">      - The user&#39;s home directory :file:`~/.caelus/caelus.yaml` on Unix-like</span>
+<span class="sd">        systems, and :file:`%APPDATA%/caelus/caelus.yaml` on Windows systems.</span>
+
+<span class="sd">      - The path pointed by :envvar:`CAELUSRC`, if defined.</span>
+
+<span class="sd">      - The file :file:`caelus.yaml` in the current working directory</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of configuration files available</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rcfiles</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">sys_rc</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_rcsys_var</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sys_rc</span> <span class="ow">and</span> <span class="n">pth</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">sys_rc</span><span class="p">):</span>
+        <span class="n">rcfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sys_rc</span><span class="p">)</span>
+
+    <span class="n">sysname</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">&quot;windows&quot;</span> <span class="ow">in</span> <span class="n">sysname</span><span class="p">:</span>
+        <span class="n">appdir</span> <span class="o">=</span> <span class="n">get_appdata_dir</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">appdir</span><span class="p">:</span>
+            <span class="n">rcfile</span> <span class="o">=</span> <span class="n">pth</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">appdir</span><span class="p">,</span> <span class="n">_rcfile_default</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pth</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">rcfile</span><span class="p">):</span>
+                <span class="n">rcfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rcfile</span><span class="p">)</span>
+
+    <span class="n">home</span> <span class="o">=</span> <span class="n">get_caelus_root</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">home</span><span class="p">:</span>
+        <span class="n">rcfile</span> <span class="o">=</span> <span class="n">pth</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">home</span><span class="p">,</span> <span class="n">_rcfile_default</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pth</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">rcfile</span><span class="p">):</span>
+            <span class="n">rcfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rcfile</span><span class="p">)</span>
+
+    <span class="n">home</span> <span class="o">=</span> <span class="n">get_cpl_root</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">home</span><span class="p">:</span>
+        <span class="n">rcfile</span> <span class="o">=</span> <span class="n">pth</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">home</span><span class="p">,</span> <span class="n">_rcfile_default</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pth</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">rcfile</span><span class="p">):</span>
+            <span class="n">rcfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rcfile</span><span class="p">)</span>
+
+    <span class="n">env_rc</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_rcfile_var</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">env_rc</span> <span class="ow">and</span> <span class="n">pth</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">env_rc</span><span class="p">):</span>
+        <span class="n">rcfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">env_rc</span><span class="p">)</span>
+
+    <span class="n">cwd_rc</span> <span class="o">=</span> <span class="n">pth</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">_rcfile_default</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pth</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cwd_rc</span><span class="p">):</span>
+        <span class="n">rcfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cwd_rc</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rcfiles</span></div>
+
+
+
+<div class="viewcode-block" id="configure_logging">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.config.configure_logging">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">configure_logging</span><span class="p">(</span><span class="n">log_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configure python logging.</span>
+
+<span class="sd">    If ``log_cfg`` is None, then the basic configuration of python logging</span>
+<span class="sd">    module is used.</span>
+
+<span class="sd">    See `Python Logging Documentation &lt;https://docs.python.org/3.6/library/logging.config.html#logging-config-dictschema&gt;`_ for more information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       log_cfg: Instance of :class:`~caelus.config.config.CaelusCfg`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_default_log_file</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up default logging file if none provided&quot;&quot;&quot;</span>
+        <span class="n">logs_dir</span> <span class="o">=</span> <span class="n">pth</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_cpl_root</span><span class="p">(),</span> <span class="s2">&quot;cpl_logs&quot;</span><span class="p">)</span>
+        <span class="n">logs_dir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ensure_directory</span><span class="p">(</span><span class="n">logs_dir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pth</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">logs_dir</span><span class="p">,</span> <span class="s2">&quot;cpl.log&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">log_cfg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log_to_file</span> <span class="o">=</span> <span class="n">log_cfg</span><span class="o">.</span><span class="n">log_to_file</span>
+        <span class="n">log_filename</span> <span class="o">=</span> <span class="n">log_cfg</span><span class="o">.</span><span class="n">log_file</span> <span class="ow">or</span> <span class="n">get_default_log_file</span><span class="p">()</span>
+        <span class="n">lggr_cfg</span> <span class="o">=</span> <span class="n">log_cfg</span><span class="o">.</span><span class="n">pylogger_options</span>
+
+        <span class="n">lggr_cfg</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">log_file</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">log_filename</span>
+        <span class="k">if</span> <span class="n">log_to_file</span><span class="p">:</span>
+            <span class="n">lggr_cfg</span><span class="o">.</span><span class="n">loggers</span><span class="o">.</span><span class="n">caelus</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;log_file&quot;</span><span class="p">)</span>
+        <span class="n">dictConfig</span><span class="p">(</span><span class="n">lggr_cfg</span><span class="p">)</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log_to_file</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Logging enabled to file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">log_filename</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_default_config">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.config.get_default_config">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_default_config</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a fresh instance of the default configuration</span>
+
+<span class="sd">    This function does not read the ``caelus.yaml`` files on the system, and</span>
+<span class="sd">    returns the configurations shipped with CPL.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        CaelusCfg: The default configuration</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cdir</span> <span class="o">=</span> <span class="n">pth</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+    <span class="n">default_yaml</span> <span class="o">=</span> <span class="n">pth</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cdir</span><span class="p">,</span> <span class="s2">&quot;default_config.yaml&quot;</span><span class="p">)</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">CaelusCfg</span><span class="o">.</span><span class="n">load_yaml</span><span class="p">(</span><span class="n">default_yaml</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cfg</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cfg_manager</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration manager</span>
+
+<span class="sd">    Creates an interface to initalize configuration and return the</span>
+<span class="sd">    configuration instance that can be updated by the user.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config_files</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_config</span><span class="p">(</span><span class="n">base_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init_logging</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize configuration</span>
+
+<span class="sd">        Loads the :func:`get_default_config` and then reads all the</span>
+<span class="sd">        configuration files available on the system (see</span>
+<span class="sd">        :func:`search_cfg_files`) and returns a fully populated configuration</span>
+<span class="sd">        object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base_cfg (CaelusCfg): A base configuration object that is updated</span>
+<span class="sd">            init_logging (bool): If True, initializes logging</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CaelusCfg: Configuration object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">base_cfg</span> <span class="ow">or</span> <span class="n">get_default_config</span><span class="p">()</span>
+
+        <span class="n">rcfiles</span> <span class="o">=</span> <span class="n">search_cfg_files</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">rcname</span> <span class="ow">in</span> <span class="n">rcfiles</span><span class="p">:</span>
+            <span class="n">ctmp</span> <span class="o">=</span> <span class="n">CaelusCfg</span><span class="o">.</span><span class="n">load_yaml</span><span class="p">(</span><span class="n">rcname</span><span class="p">)</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">ctmp</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">init_logging</span><span class="p">:</span>
+            <span class="n">log_cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">caelus</span><span class="o">.</span><span class="n">logging</span>
+            <span class="n">configure_logging</span><span class="p">(</span><span class="n">log_cfg</span><span class="p">)</span>
+            <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Loaded configuration from files = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">rcfiles</span>
+                <span class="k">if</span> <span class="n">rcfiles</span>
+                <span class="k">else</span> <span class="s2">&quot;No configuration found; using defaults.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">config_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">rcfiles</span>
+        <span class="k">return</span> <span class="n">cfg</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_config</span><span class="p">(</span><span class="n">base_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init_logging</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the configuration object</span>
+
+<span class="sd">        On the first call, initializes the configuration object by parsing all</span>
+<span class="sd">        available configuration files. Successive invocations return the same</span>
+<span class="sd">        object that can be mutated by the user. The config dictionary can be</span>
+<span class="sd">        reset by invoking :func:`~caelus.config.config.reload_config`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base_cfg (CaelusCfg): A base configuration object that is updated</span>
+<span class="sd">            init_logging (bool): If True, initializes logging</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CaelusCfg: The configuration dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">cfg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">_init_config</span><span class="p">(</span><span class="n">base_cfg</span><span class="p">,</span> <span class="n">init_logging</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cfg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reset_default_config</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset to default configuration</span>
+
+<span class="sd">        Resets to library default configuration. Unlike</span>
+<span class="sd">        :func:`~caelus.config.config.reload_config`, this function does not</span>
+<span class="sd">        load the configuration files.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CaelusCfg: The configuration dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cfg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_default_config</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cfg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reload_config</span><span class="p">(</span><span class="n">base_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the configuration object</span>
+
+<span class="sd">        Forces reloading of all the available configuration files and resets</span>
+<span class="sd">        the modifications made by user scripts.</span>
+
+<span class="sd">        See also: :func:`~caelus.config.config.reset_default_config`</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base_cfg: A CMLEnv object to use instead of default</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CaelusCfg: The configuration dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cfg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">_init_config</span><span class="p">(</span><span class="n">base_cfg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cfg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_rcfiles_loaded</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a list of the configuration files that were loaded&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">config_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">_get_config</span><span class="p">,</span> <span class="n">_reload_config</span><span class="p">,</span> <span class="n">_reset_default_config</span><span class="p">,</span> <span class="n">_rcfiles_loaded</span><span class="p">)</span>
+
+
+<span class="p">(</span>
+    <span class="n">get_config</span><span class="p">,</span>
+    <span class="n">reload_config</span><span class="p">,</span>
+    <span class="n">reset_default_config</span><span class="p">,</span>
+    <span class="n">rcfiles_loaded</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">=</span> <span class="n">_cfg_manager</span><span class="p">()</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.config.config</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

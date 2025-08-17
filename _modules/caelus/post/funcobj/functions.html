@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.post.funcobj.functions &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../../index.html">
+<!--      <img src="../../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.funcobj.functions</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.post.funcobj.functions</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Post-processing interface</span>
+<span class="sd">--------------------------</span>
+
+<span class="sd">This module contains the implementation of :class:`PostProcessing` the main</span>
+<span class="sd">entry point for accessing OpenFOAM&#39;s ``postProcessing`` outputs.</span>
+
+<span class="sd">Example:</span>
+<span class="sd">  &gt;&gt;&gt; post = PostProcessing() # In case directory</span>
+<span class="sd">  &gt;&gt;&gt; print(&quot;Available objects: &quot;, post.keys())</span>
+<span class="sd">  Available objects:  [&#39;samples&#39;, &#39;samplePlanes&#39;, &#39;forceCoeffs1&#39;]</span>
+<span class="sd">  &gt;&gt;&gt; fcoeffs = post[&#39;forceCoeffs1&#39;]</span>
+<span class="sd">  &gt;&gt;&gt; #print details</span>
+<span class="sd">  ... print(fcoeffs.magUInf, fcoeffs.liftDir, fcoeffs.dragDir)</span>
+<span class="sd">  ...</span>
+<span class="sd">  20 [0 0 1] [1 0 0]</span>
+<span class="sd">  &gt;&gt;&gt; # Get dataframe corresponding to `coefficient.dat`</span>
+<span class="sd">  ... df = fcoeffs()</span>
+<span class="sd">  ... print(df[[&#39;Cl&#39;, &#39;Cd&#39;]].head())</span>
+<span class="sd">  ...</span>
+<span class="sd">           Cl        Cd</span>
+<span class="sd">  0  0.031805  0.003195</span>
+<span class="sd">  1  0.078845  0.001883</span>
+<span class="sd">  2  0.106916  0.001444</span>
+<span class="sd">  3  0.106786  0.001842</span>
+<span class="sd">  4  0.079757  0.002850</span>
+<span class="sd">  &gt;&gt;&gt; df.columns # show available columns</span>
+<span class="sd">  Index([&#39;Time&#39;, &#39;Cd&#39;, &#39;Cs&#39;, &#39;Cl&#39;, &#39;CmRoll&#39;, &#39;CmPitch&#39;, &#39;CmYaw&#39;, &#39;Cd(f)&#39;,</span>
+<span class="sd">         &#39;Cd(r)&#39;, &#39;Cs(f)&#39;, &#39;Cs(r)&#39;, &#39;Cl(f)&#39;, &#39;Cl(r)&#39;],</span>
+<span class="sd">        dtype=&#39;object&#39;)</span>
+<span class="sd">  &gt;&gt;&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">...io</span><span class="w"> </span><span class="kn">import</span> <span class="n">ControlDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">...io.caelusdict</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaelusDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">...io.dtypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">FoamType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.forces</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForceCoeffs</span><span class="p">,</span> <span class="n">Forces</span><span class="p">,</span> <span class="n">LiftDrag</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.residuals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Residuals</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.sampling</span><span class="w"> </span><span class="kn">import</span> <span class="n">SampledSets</span><span class="p">,</span> <span class="n">SampledSurfaces</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.volume_report</span><span class="w"> </span><span class="kn">import</span> <span class="n">VolumeReport</span>
+
+<span class="n">_func_objects_list</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">ForceCoeffs</span><span class="p">,</span>
+    <span class="n">Forces</span><span class="p">,</span>
+    <span class="n">LiftDrag</span><span class="p">,</span>
+    <span class="n">Residuals</span><span class="p">,</span>
+    <span class="n">SampledSets</span><span class="p">,</span>
+    <span class="n">SampledSurfaces</span><span class="p">,</span>
+    <span class="n">VolumeReport</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">_func_obj_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">fobj</span><span class="o">.</span><span class="n">funcobj_type</span><span class="p">():</span> <span class="n">fobj</span> <span class="k">for</span> <span class="n">fobj</span> <span class="ow">in</span> <span class="n">_func_objects_list</span><span class="p">}</span>
+
+<span class="n">_lgr</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PostProcessing">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.functions.PostProcessing">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PostProcessing</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main entry point for accessing OpenFOAM ``postProcessing`` data.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">func_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raise_on_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If the function object dictionary is not provided as an argument, the</span>
+<span class="sd">        class will attempt to infer the functions activated in ``controlDict``</span>
+<span class="sd">        file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            casedir (path): Path to the case directory (default: cwd)</span>
+<span class="sd">            func_dict (CaelusDict): Function objects dictionary</span>
+<span class="sd">            raise_on_error (bool): Raise exception if some objects fail to process</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#: Absolute path to the case directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">casedir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">casedir</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">func_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1">#: Input dictionary for this function object</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">func_dict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cdict</span> <span class="o">=</span> <span class="n">ControlDict</span><span class="o">.</span><span class="n">read_if_present</span><span class="p">(</span><span class="n">casedir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">casedir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">cdict</span><span class="o">.</span><span class="n">functions</span> <span class="ow">or</span> <span class="n">CaelusDict</span><span class="p">()</span>
+
+        <span class="n">fobj</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">FoamType</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="n">ftype</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ftype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_func_obj_map</span><span class="p">:</span>
+                <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Skipping function object: </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">ftype</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">/</span> <span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">_lgr</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Missing postProcessing entry for </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">ftype</span>
+                <span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fcls</span> <span class="o">=</span> <span class="n">_func_obj_map</span><span class="p">[</span><span class="n">ftype</span><span class="p">]</span>
+                <span class="n">fobj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">fcls</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">casedir</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">_lgr</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                    <span class="s2">&quot;Failed to parse function object entry: </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">ftype</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">raise_on_error</span><span class="p">:</span>
+                    <span class="k">raise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func_objects</span> <span class="o">=</span> <span class="n">fobj</span>
+
+<div class="viewcode-block" id="PostProcessing.filter">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.functions.PostProcessing.filter">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func_type</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve function obects of a particular type.</span>
+
+<span class="sd">        The filter method is used to select function objects of a certain</span>
+<span class="sd">        ``type``. This is useful when the custom user-defined names might not</span>
+<span class="sd">        correspond to the exact type of object.</span>
+
+<span class="sd">        Currently supported: ``sets``, ``surfaces``, ``forces``,</span>
+<span class="sd">        ``forceCoeffs``.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">           &gt;&gt;&gt; fig = plt.figure()</span>
+<span class="sd">           &gt;&gt;&gt; for fcoeff in post.filter(&#39;forceCoeffs&#39;):</span>
+<span class="sd">           ...    df = fcoeff(&#39;0&#39;)</span>
+<span class="sd">           ...    plt.plot(df[&#39;Time&#39;], df[&#39;Cl&#39;])</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func_type (str): Type of function object</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            FunctionObject: Function object instances</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">func_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_func_obj_map</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid function type = &#39;</span><span class="si">{</span><span class="n">func_type</span><span class="si">}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">Valid types are:&quot;</span>
+                <span class="s2">&quot;{_func_obj_map.keys()}&quot;</span>
+            <span class="p">)</span>
+        <span class="n">fcls</span> <span class="o">=</span> <span class="n">_func_obj_map</span><span class="p">[</span><span class="n">func_type</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">func_objects</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">fcls</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">val</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return path to the postProcessing directory.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">casedir</span> <span class="o">/</span> <span class="s2">&quot;postProcessing&quot;</span>
+
+<div class="viewcode-block" id="PostProcessing.keys">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.functions.PostProcessing.keys">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the names of the function objects&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func_objects</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the function object interface corresponding to the key.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func_objects</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.funcobj.functions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

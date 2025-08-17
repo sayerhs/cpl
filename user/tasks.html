@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Caelus Tasks &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorials" href="tuts.html" />
+    <link rel="prev" title="caelus_tutorials – Run tutorials" href="cli_apps/caelus_tutorials.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../index.html">
+<!--      <img src="../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tuts.html" title="Tutorials"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cli_apps/caelus_tutorials.html" title="caelus_tutorials – Run tutorials"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Caelus Tasks</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Caelus Tasks</a><ul>
+<li><a class="reference internal" href="#quick-tutorial">Quick tutorial</a></li>
+<li><a class="reference internal" href="#tasks-reference">Tasks reference</a><ul>
+<li><a class="reference internal" href="#run-command-run-openfoam-or-cml-executables">run_command – Run OpenFOAM or CML executables</a></li>
+<li><a class="reference internal" href="#run-python-run-user-python-scripts">run_python – Run user python scripts</a></li>
+<li><a class="reference internal" href="#copy-files-copy-files">copy_files – Copy files</a></li>
+<li><a class="reference internal" href="#copy-tree-recursively-copy-directories">copy_tree – Recursively copy directories</a></li>
+<li><a class="reference internal" href="#clean-case-clean-a-case-directory">clean_case – Clean a case directory</a></li>
+<li><a class="reference internal" href="#process-logs-process-solver-outputs">process_logs – Process solver outputs</a></li>
+<li><a class="reference internal" href="#task-set-group-tasks">task_set – Group tasks</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="cli_apps/caelus_tutorials.html"
+                          title="previous chapter">caelus_tutorials – Run tutorials</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="tuts.html"
+                          title="next chapter">Tutorials</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user/tasks.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="caelus-tasks">
+<span id="user-caelus-tasks"></span><h1>Caelus Tasks<a class="headerlink" href="#caelus-tasks" title="Link to this heading">¶</a></h1>
+<p>CPL provides a <em>tasks</em> interface to automate various aspects of the CFD
+simulation workflow that can be executed by calling <strong class="program">caelus tasks</strong> (see
+<a class="reference internal" href="cli_apps/caelus.html#cli-apps-caelus-tasks"><span class="std std-ref">tasks documentation</span></a>).</p>
+<section id="quick-tutorial">
+<h2>Quick tutorial<a class="headerlink" href="#quick-tutorial" title="Link to this heading">¶</a></h2>
+<p>The <em>tasks</em> interface requires a list of tasks provided in a YAML-formatted file
+as shown below (<a class="reference download internal" download="" href="../_downloads/677089e2eb67a9158f73c51c1cc10d84/caelus_tasks.yaml"><code class="xref download docutils literal notranslate"><span class="pre">download</span></code></a>):</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clean_case</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">remove_zero</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">no</span>
+<span class="w">      </span><span class="nt">remove_mesh</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run_command</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">cmd_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">blockMesh</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run_command</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">cmd_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pisoSolver</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">process_logs</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">log_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pisoSolver.log</span>
+<span class="w">      </span><span class="nt">plot_residuals</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">residuals_plot_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">residuals.pdf</span>
+<span class="w">      </span><span class="nt">residuals_fields</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">Ux</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">Uy</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>The file lists a set of actions to be executed sequentially by <strong class="program">caelus
+tasks</strong>. The tasks can accept various options that can be used to further
+customize the workflow. A sample interaction is shown below</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ caelus -v tasks -f caelus_tasks.yaml
+INFO: Caelus Python Library (CPL) v0.1.0
+INFO: Caelus CML version: 7.04
+INFO: Loaded tasks from: cavity/caelus_tasks.yaml
+INFO: Begin executing tasks in cavity
+INFO: Cleaning case directory: cavity
+INFO: Executing command: blockMesh
+INFO: Executing command: pisoSolver
+INFO: Processing log file: pisoSolver.log
+INFO: Saved figure: cavity/residuals.pdf
+INFO: Residual time history saved to residuals.pdf
+INFO: Successfully executed 4 tasks in cavity
+INFO: All tasks executed successfully.
+</pre></div>
+</div>
+<p>For a comprehensive list of task file examples, please consult the
+<code class="file docutils literal notranslate"><span class="pre">run_tutorial.yaml</span></code> files in the <code class="file docutils literal notranslate"><span class="pre">tutorials</span></code> directory of Caelus CML
+distribution. In particular, the
+<a class="reference external" href="https://bitbucket.org/appliedccm/caelus-cml/src/master/tutorials/incompressible/pimpleSolver/les/motorBike/">motorBike</a> case provides an
+example of a tasks workflow involving two different case directories.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When using CPL with <a class="reference external" href="https://openfoam.com">OpenFOAM</a>, please replace
+<cite>pisoSolver</cite> with <cite>pisoFoam</cite> etc. Other than the name of the solvers, the
+rest of the commands do not change when switching between CML and OpenFOAM.</p>
+</div>
+</section>
+<section id="tasks-reference">
+<h2>Tasks reference<a class="headerlink" href="#tasks-reference" title="Link to this heading">¶</a></h2>
+<p>This section documents the various <em>tasks</em> available currently within CPL and
+the options that can be used to customize execution of those tasks.</p>
+<ul class="simple">
+<li><p>The task file must be in YAML format, and must contain one entry <code class="docutils literal notranslate"><span class="pre">tasks</span></code>
+that is a list of tasks to be executed.</p></li>
+<li><p>The tasks are executed sequentially in the order provided until an error is
+encountered or all tasks are executed successfully.</p></li>
+<li><p>The tasks must be invoked from within a valid Caelus case directory (see
+<code class="docutils literal notranslate"><span class="pre">task_set</span></code> for an exception). All filenames in the task file are interpreted
+relative to the execution directory where the command is invoked.</p></li>
+</ul>
+<section id="run-command-run-openfoam-or-cml-executables">
+<h3>run_command – Run OpenFOAM or CML executables<a class="headerlink" href="#run-command-run-openfoam-or-cml-executables" title="Link to this heading">¶</a></h3>
+<p>This <em>task type</em> is used to execute an OpenFOAM or Caelus CML executable (e.g.,
+<strong class="program">blockMesh</strong> or <strong class="program">pimpleSolver</strong>). CPL will ensure that the
+appropriate version of OpenFOAM or CML is selected and the runtime enviornment
+is setup properly prior to executing the task. The task must provide one mandatory
+parameter <a class="reference internal" href="#taskopt-run_command.cmd_name"><code class="xref std std-taskopt docutils literal notranslate"><span class="pre">run_command.cmd_name</span></code></a> that is the name of the OpenFOAM or CML
+executable. Several other options are available and are documented below. Example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run_command</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cmd_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">potentialSolver</span>
+<span class="w">    </span><span class="nt">cmd_args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;-initialiseUBCs</span><span class="nv"> </span><span class="s">-noFunctionObjects&quot;</span>
+<span class="w">    </span><span class="nt">parallel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-run_command.cmd_name">
+<span class="sig-name descname"><span class="pre">run_command.cmd_name</span></span><a class="headerlink" href="#taskopt-run_command.cmd_name" title="Link to this definition">¶</a></dt>
+<dd><p>The name of the CML executable. This option is mandatory.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-run_command.cmd_args">
+<span class="sig-name descname"><span class="pre">run_command.cmd_args</span></span><a class="headerlink" href="#taskopt-run_command.cmd_args" title="Link to this definition">¶</a></dt>
+<dd><p>Extra arguments that must be passed to the OpenFOAM or CML executable. It is
+recommended that arguments be enclosed in a double-quoted string. Default value
+is an empty string.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-run_command.log_file">
+<span class="sig-name descname"><span class="pre">run_command.log_file</span></span><a class="headerlink" href="#taskopt-run_command.log_file" title="Link to this definition">¶</a></dt>
+<dd><p>The filename where the output of the command is redirected. By default, it is
+the OpenFOAM or CML executable name with the <code class="docutils literal notranslate"><span class="pre">.log</span></code> extension appended to it.
+The user can change this to any valid filename of their choice using this option.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-run_command.parallel">
+<span class="sig-name descname"><span class="pre">run_command.parallel</span></span><a class="headerlink" href="#taskopt-run_command.parallel" title="Link to this definition">¶</a></dt>
+<dd><p>A Boolean flag indicating whether the executable is to be run in parallel
+mode. The default value is <code class="docutils literal notranslate"><span class="pre">False</span></code>. If <code class="docutils literal notranslate"><span class="pre">parallel</span></code> is True, then the
+default options for job scheduler are used from CPL configuration file, but
+can be overriden with additional options to <code class="docutils literal notranslate"><span class="pre">run_command</span></code>.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-run_command.num_ranks">
+<span class="sig-name descname"><span class="pre">run_command.num_ranks</span></span><a class="headerlink" href="#taskopt-run_command.num_ranks" title="Link to this definition">¶</a></dt>
+<dd><p>The number of MPI ranks for a parallel run.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-run_command.mpi_extra_args">
+<span class="sig-name descname"><span class="pre">run_command.mpi_extra_args</span></span><a class="headerlink" href="#taskopt-run_command.mpi_extra_args" title="Link to this definition">¶</a></dt>
+<dd><p>Extra arguments to be passed to <strong class="program">mpiexec</strong> command (e.g.,
+<code class="docutils literal notranslate"><span class="pre">hostfile</span></code> options). As with <a class="reference internal" href="#taskopt-run_command.cmd_args"><code class="xref std std-taskopt docutils literal notranslate"><span class="pre">cmd_args</span></code></a>,
+enclose the options within quotes.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run_command</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cmd_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pimpleSolver</span>
+<span class="w">    </span><span class="nt">parallel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">mpi_extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--hostfile</span><span class="nv"> </span><span class="s">my_hostfile&quot;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="run-python-run-user-python-scripts">
+<h3>run_python – Run user python scripts<a class="headerlink" href="#run-python-run-user-python-scripts" title="Link to this heading">¶</a></h3>
+<p>This task will run a python script within the case directory. Like
+<code class="docutils literal notranslate"><span class="pre">run_command</span></code> task, CPL will ensure that the apporpriate OpenFOAM or CML
+version as well as python environment is setup correctly prior to invoking the
+script. The task must provide one mandatory parameter <a class="reference internal" href="#taskopt-run_python.script"><code class="xref std std-taskopt docutils literal notranslate"><span class="pre">run_python.script</span></code></a>
+that contains the path to the python script to be executed. User can pass
+additional options to this task as documented below.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run_python</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">script</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;../mytestscript.py&quot;</span>
+<span class="w">    </span><span class="nt">script_args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;-v</span><span class="nv"> </span><span class="s">-f</span><span class="nv"> </span><span class="s">option1</span><span class="nv"> </span><span class="s">arg1</span><span class="nv"> </span><span class="s">arg2&quot;</span>
+<span class="w">    </span><span class="nt">log_file</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;mycustom.log&quot;</span>
+</pre></div>
+</div>
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-run_python.script">
+<span class="sig-name descname"><span class="pre">run_python.script</span></span><a class="headerlink" href="#taskopt-run_python.script" title="Link to this definition">¶</a></dt>
+<dd><p>Path to the custom python script.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-run_python.script_args">
+<span class="sig-name descname"><span class="pre">run_python.script_args</span></span><a class="headerlink" href="#taskopt-run_python.script_args" title="Link to this definition">¶</a></dt>
+<dd><p>Arguments that must be passed to the python script during invocation. As with
+<code class="docutils literal notranslate"><span class="pre">run_command</span></code> quote the arguments appropriately to ensure that it is passed
+correctly to the script.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-run_python.log_file">
+<span class="sig-name descname"><span class="pre">run_python.log_file</span></span><a class="headerlink" href="#taskopt-run_python.log_file" title="Link to this definition">¶</a></dt>
+<dd><p>The filename where the outputs and error messages from the script is
+redirected.</p>
+</dd></dl>
+
+</section>
+<section id="copy-files-copy-files">
+<h3>copy_files – Copy files<a class="headerlink" href="#copy-files-copy-files" title="Link to this heading">¶</a></h3>
+<p>This task copies files in a platform-agnostic manner.</p>
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-copy_files.src">
+<span class="sig-name descname"><span class="pre">copy_files.src</span></span><a class="headerlink" href="#taskopt-copy_files.src" title="Link to this definition">¶</a></dt>
+<dd><p>A unix-style file pattern that is used to match the pattern of files to be
+copied. The path to the files must be relative to the execution directory,
+but can exist in other directories as long as the relative paths are provided
+correctly. If the pattern matches multiple files, then
+<a class="reference internal" href="#taskopt-copy_files.dest"><code class="xref std std-taskopt docutils literal notranslate"><span class="pre">copy_files.dest</span></code></a> must be a directory.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-copy_files.dest">
+<span class="sig-name descname"><span class="pre">copy_files.dest</span></span><a class="headerlink" href="#taskopt-copy_files.dest" title="Link to this definition">¶</a></dt>
+<dd><p>The destination where the files are to be copied.</p>
+</dd></dl>
+
+</section>
+<section id="copy-tree-recursively-copy-directories">
+<h3>copy_tree – Recursively copy directories<a class="headerlink" href="#copy-tree-recursively-copy-directories" title="Link to this heading">¶</a></h3>
+<p>This task takes an existing directory (<code class="docutils literal notranslate"><span class="pre">src</span></code>) and copies it to the
+destination. Internally, this task uses <a class="extlink-pythonlib reference external" href="http://docs.python.org/library/shutil.html#shutil.copytree">copytree</a> function to copy the directory, please refer to
+Python docs for more details.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If the destination directory already exists, the directory is deleted before
+copying the contents of the source directory. Currently, this task does not
+provide a way to copy only non-existent files to the destination. Use with
+caution.</p>
+</div>
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-copy_tree.src">
+<span class="sig-name descname"><span class="pre">copy_tree.src</span></span><a class="headerlink" href="#taskopt-copy_tree.src" title="Link to this definition">¶</a></dt>
+<dd><p>The source directory that must be recursively copied.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-copy_tree.dest">
+<span class="sig-name descname"><span class="pre">copy_tree.dest</span></span><a class="headerlink" href="#taskopt-copy_tree.dest" title="Link to this definition">¶</a></dt>
+<dd><p>The pathname for the new directory to be created.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-copy_tree.ignore_patterns">
+<span class="sig-name descname"><span class="pre">copy_tree.ignore_patterns</span></span><a class="headerlink" href="#taskopt-copy_tree.ignore_patterns" title="Link to this definition">¶</a></dt>
+<dd><p>A list of Unix-style file patterns used to ignore files present in source
+directory when copying it to destination. A good example of this is to
+prevent copying the contents of <code class="file docutils literal notranslate"><span class="pre">polyMesh</span></code> when copying the contents of
+<code class="file docutils literal notranslate"><span class="pre">constant</span></code> from one case directory to another.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-copy_tree.preserve_symlinks">
+<span class="sig-name descname"><span class="pre">copy_tree.preserve_symlinks</span></span><a class="headerlink" href="#taskopt-copy_tree.preserve_symlinks" title="Link to this definition">¶</a></dt>
+<dd><p>A Boolean flag indicating whether symbolic links are preserved when copying.
+Linux and Mac OSX only.</p>
+</dd></dl>
+
+</section>
+<section id="clean-case-clean-a-case-directory">
+<h3>clean_case – Clean a case directory<a class="headerlink" href="#clean-case-clean-a-case-directory" title="Link to this heading">¶</a></h3>
+<p>Use this task to clean up a case directory after a run. By default, this task
+will preserve all YAML and python files found in the case directory as well as
+the <code class="file docutils literal notranslate"><span class="pre">0/</span></code> directory. For example,</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clean_case</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">remove_zero</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span>
+<span class="w">    </span><span class="nt">remove_mesh</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">no</span>
+<span class="w">    </span><span class="nt">preserve</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&quot;0.org&quot;</span><span class="w"> </span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-clean_case.remove_zero">
+<span class="sig-name descname"><span class="pre">clean_case.remove_zero</span></span><a class="headerlink" href="#taskopt-clean_case.remove_zero" title="Link to this definition">¶</a></dt>
+<dd><p>Boolean flag indicating whether the <code class="file docutils literal notranslate"><span class="pre">0/</span></code> directory should be removed.
+The default value is <code class="docutils literal notranslate"><span class="pre">no</span></code>.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-clean_case.remove_mesh">
+<span class="sig-name descname"><span class="pre">clean_case.remove_mesh</span></span><a class="headerlink" href="#taskopt-clean_case.remove_mesh" title="Link to this definition">¶</a></dt>
+<dd><p>Boolean flag indicating whether the <code class="file docutils literal notranslate"><span class="pre">constant/polyMesh</span></code> directory
+should be removed. The default value is <code class="docutils literal notranslate"><span class="pre">no</span></code>.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-clean_case.remove_time_dirs">
+<span class="sig-name descname"><span class="pre">clean_case.remove_time_dirs</span></span><a class="headerlink" href="#taskopt-clean_case.remove_time_dirs" title="Link to this definition">¶</a></dt>
+<dd><p>Boolean flag indicating whether time directories from a previous run should
+be removed. The default value is <code class="docutils literal notranslate"><span class="pre">no</span></code>.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-clean_case.remove_processors">
+<span class="sig-name descname"><span class="pre">clean_case.remove_processors</span></span><a class="headerlink" href="#taskopt-clean_case.remove_processors" title="Link to this definition">¶</a></dt>
+<dd><p>Boolean flag indicating whether processor directories from a previous run
+should be removed. The default value is <code class="docutils literal notranslate"><span class="pre">no</span></code>.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-clean_case.purge_generated">
+<span class="sig-name descname"><span class="pre">clean_case.purge_generated</span></span><a class="headerlink" href="#taskopt-clean_case.purge_generated" title="Link to this definition">¶</a></dt>
+<dd><p>A Boolean flag when enabled will set <code class="docutils literal notranslate"><span class="pre">remove_time_dirs</span></code> and
+<code class="docutils literal notranslate"><span class="pre">remove_processors</span></code> to <code class="docutils literal notranslate"><span class="pre">yes</span></code>.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-clean_case.purge_all">
+<span class="sig-name descname"><span class="pre">clean_case.purge_all</span></span><a class="headerlink" href="#taskopt-clean_case.purge_all" title="Link to this definition">¶</a></dt>
+<dd><p>A shortcut to set <code class="docutils literal notranslate"><span class="pre">remove_zero</span></code>, <code class="docutils literal notranslate"><span class="pre">remove_mesh</span></code>, <code class="docutils literal notranslate"><span class="pre">remove_time_dirs</span></code> and
+<code class="docutils literal notranslate"><span class="pre">remove_processors</span></code> to <code class="docutils literal notranslate"><span class="pre">yes</span></code>.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-clean_case.preserve">
+<span class="sig-name descname"><span class="pre">clean_case.preserve</span></span><a class="headerlink" href="#taskopt-clean_case.preserve" title="Link to this definition">¶</a></dt>
+<dd><p>A list of Unix-style file patterns that match files that should be preserved
+within the case directory.</p>
+</dd></dl>
+
+</section>
+<section id="process-logs-process-solver-outputs">
+<h3>process_logs – Process solver outputs<a class="headerlink" href="#process-logs-process-solver-outputs" title="Link to this heading">¶</a></h3>
+<p>This task takes one mandatory argument <a class="reference internal" href="#taskopt-process_logs.log_file"><code class="xref std std-taskopt docutils literal notranslate"><span class="pre">log_file</span></code></a> that contains the outputs from a CFD run. The
+time-histories of the residuals are extracted and output to files that can be
+loaded by <strong class="program">gnuplot</strong>, or loaded in python using <a class="extlink-numpy reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html">loadtxt</a> command
+or using Pandas library. Users can also plot the residuals by using the
+<a class="reference internal" href="#taskopt-process_logs.plot_residuals"><code class="xref std std-taskopt docutils literal notranslate"><span class="pre">plot_residuals</span></code></a> option. For example,</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">process_logs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">log_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pimpleSolver.log</span>
+<span class="w">  </span><span class="nt">log_directory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pimpleSolver_logs</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">process_logs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">log_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">simpleSolver.log</span>
+<span class="w">  </span><span class="nt">plot_residuals</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span>
+<span class="w">  </span><span class="nt">residuals_plot_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">residuals.pdf</span>
+<span class="w">  </span><span class="nt">residuals_fields</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">Ux</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">Uy</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">p</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-process_logs.log_file">
+<span class="sig-name descname"><span class="pre">process_logs.log_file</span></span><a class="headerlink" href="#taskopt-process_logs.log_file" title="Link to this definition">¶</a></dt>
+<dd><p>The filename containing the solver residual ouputs. This parameter is
+mandatory.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-process_logs.logs_directory">
+<span class="sig-name descname"><span class="pre">process_logs.logs_directory</span></span><a class="headerlink" href="#taskopt-process_logs.logs_directory" title="Link to this definition">¶</a></dt>
+<dd><p>The directory where the processed residual time-history outputs are stored.
+Default: <code class="file docutils literal notranslate"><span class="pre">logs</span></code> within the execution directory.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-process_logs.plot_residuals">
+<span class="sig-name descname"><span class="pre">process_logs.plot_residuals</span></span><a class="headerlink" href="#taskopt-process_logs.plot_residuals" title="Link to this definition">¶</a></dt>
+<dd><p>Boolean flag indicating whether a plot of the convergence time-history is
+generated. Default value is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-process_logs.residuals_plot_file">
+<span class="sig-name descname"><span class="pre">process_logs.residuals_plot_file</span></span><a class="headerlink" href="#taskopt-process_logs.residuals_plot_file" title="Link to this definition">¶</a></dt>
+<dd><p>The file where the plot is saved. Default value is <code class="file docutils literal notranslate"><span class="pre">residuals.png</span></code>. The
+user can use an appropriate extension (e.g., <code class="docutils literal notranslate"><span class="pre">.png</span></code>, <code class="docutils literal notranslate"><span class="pre">.pdf</span></code>, <code class="docutils literal notranslate"><span class="pre">.jpg</span></code>) to
+change the image format of the plot generated.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-process_logs.residual_fields">
+<span class="sig-name descname"><span class="pre">process_logs.residual_fields</span></span><a class="headerlink" href="#taskopt-process_logs.residual_fields" title="Link to this definition">¶</a></dt>
+<dd><p>A list of fields that are plotted. If not provided, all fields available are
+plotted.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-process_logs.plot_continuity_errors">
+<span class="sig-name descname"><span class="pre">process_logs.plot_continuity_errors</span></span><a class="headerlink" href="#taskopt-process_logs.plot_continuity_errors" title="Link to this definition">¶</a></dt>
+<dd><p>A Boolean flag indicating whether time-history of continuity errors are
+plotted along with residuals.</p>
+</dd></dl>
+
+</section>
+<section id="task-set-group-tasks">
+<h3>task_set – Group tasks<a class="headerlink" href="#task-set-group-tasks" title="Link to this heading">¶</a></h3>
+<p>A <code class="docutils literal notranslate"><span class="pre">task_set</span></code> groups a sub-set of tasks that can be executed in a different
+case directory. <a class="reference download internal" download="" href="../_downloads/cccfad79a7da0ca77f3f584f15addbc8/caelus_task_set.yaml"><code class="xref download docutils literal notranslate"><span class="pre">Download</span></code></a> an example.</p>
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-task_set.case_dir">
+<span class="sig-name descname"><span class="pre">task_set.case_dir</span></span><a class="headerlink" href="#taskopt-task_set.case_dir" title="Link to this definition">¶</a></dt>
+<dd><p>The path to a valid case directory where the sub-tasks are to be
+executed. This parameter is mandatory.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-task_set.name">
+<span class="sig-name descname"><span class="pre">task_set.name</span></span><a class="headerlink" href="#taskopt-task_set.name" title="Link to this definition">¶</a></dt>
+<dd><p>A unique name to identify this task group.</p>
+</dd></dl>
+
+<dl class="std taskopt">
+<dt class="sig sig-object std" id="taskopt-task_set.tasks">
+<span class="sig-name descname"><span class="pre">task_set.tasks</span></span><a class="headerlink" href="#taskopt-task_set.tasks" title="Link to this definition">¶</a></dt>
+<dd><p>The list of sub-tasks. This list can contain any of the tasks that have been
+documented above.</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tuts.html" title="Tutorials"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cli_apps/caelus_tutorials.html" title="caelus_tutorials – Run tutorials"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Caelus Tasks</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

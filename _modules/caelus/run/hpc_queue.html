@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.run.hpc_queue &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../index.html">
+<!--      <img src="../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.run.hpc_queue</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.run.hpc_queue</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Job Scheduler Interface</span>
+<span class="sd">-----------------------</span>
+
+<span class="sd">This module provides a unified interface to submitting serial, local-MPI</span>
+<span class="sd">parallel, and parallel jobs on high-performance computing (HPC) queues.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">six</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..config</span><span class="w"> </span><span class="kn">import</span> <span class="n">cmlenv</span><span class="p">,</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..config.jinja2wrappers</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaelusTemplates</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">osutils</span>
+
+<span class="n">_lgr</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="caelus_execute">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.caelus_execute">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">caelus_execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute a CML command with the right environment setup</span>
+
+<span class="sd">    A wrapper around subprocess.Popen to set up the correct environment before</span>
+<span class="sd">    invoing the CML executable.</span>
+
+<span class="sd">    The command can either be a string or a list of arguments as appropriate</span>
+<span class="sd">    for Caelus executables.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      caelus_execute(&quot;blockMesh -help&quot;)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cmd (str or list): The command to be executed</span>
+<span class="sd">        env (CMLEnv): An instance representing the CML installation</span>
+<span class="sd">                      (default: latest)</span>
+<span class="sd">        stdout: A file handle where standard output is redirected</span>
+<span class="sd">        stderr: A file handle where standard error is redirected</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        subprocess.Popen : The task instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">renv</span> <span class="o">=</span> <span class="n">env</span> <span class="ow">or</span> <span class="n">cmlenv</span><span class="o">.</span><span class="n">cml_get_latest_version</span><span class="p">()</span>
+    <span class="n">posix</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">osutils</span><span class="o">.</span><span class="n">ostype</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;windows&quot;</span><span class="p">)</span>
+    <span class="n">cmd_popen</span> <span class="o">=</span> <span class="n">cmd</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">posix</span><span class="o">=</span><span class="n">posix</span><span class="p">)</span>
+    <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Executing shell command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd_popen</span><span class="p">))</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+        <span class="n">cmd_popen</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">renv</span><span class="o">.</span><span class="n">environ</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">task</span></div>
+
+
+
+<div class="viewcode-block" id="python_execute">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.python_execute">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">python_execute</span><span class="p">(</span>
+    <span class="n">pyscript</span><span class="p">,</span> <span class="n">script_args</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log_to_file</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute a python script with the right environment</span>
+
+<span class="sd">    This function will setup the correct CPL and CML environment and execute</span>
+<span class="sd">    the python script within this environment. The user should only provide the</span>
+<span class="sd">    name of the script and not ``python script`` as this it is this functions</span>
+<span class="sd">    job to detect the correct python executable and execute within that</span>
+<span class="sd">    environment.</span>
+
+<span class="sd">    If ``log_file`` isn&#39;t provided it automatically creates a &quot;py_*.log&quot; file</span>
+<span class="sd">    to redirect output messages from the script where ``*`` is replaced with</span>
+<span class="sd">    the basename of the python script.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pyscript (path): Filename of the python script</span>
+<span class="sd">        script_args (str): Extra arguments to be passed to the python script</span>
+<span class="sd">        env (CMLEnv): CML environment used for execution</span>
+<span class="sd">        log_file (filename): Filename to redirect output to</span>
+<span class="sd">        log_to_file (bool): Should outputs be redirected to log file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        status (int): The status of the execution</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">spath</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">pyscript</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">log_file</span> <span class="ow">and</span> <span class="n">log_to_file</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">sbase</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">split_path</span><span class="p">(</span><span class="n">spath</span><span class="p">)</span>
+        <span class="n">log_file</span> <span class="o">=</span> <span class="s2">&quot;py_</span><span class="si">%s</span><span class="s2">.log&quot;</span> <span class="o">%</span> <span class="n">sbase</span>
+    <span class="n">pycmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="n">spath</span><span class="p">,</span> <span class="n">script_args</span><span class="p">)</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">log_file</span> <span class="k">else</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="n">caelus_execute</span><span class="p">(</span><span class="n">pycmd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">fh</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Python script </span><span class="si">%s</span><span class="s2"> failed; status = </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">spath</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">log_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">status</span></div>
+
+
+
+<div class="viewcode-block" id="HPCQueue">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue">[docs]</a>
+<span class="nd">@six</span><span class="o">.</span><span class="n">add_metaclass</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HPCQueue</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for job submission interface</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name (str): Job name</span>
+<span class="sd">        queue (str): Queue/partition where job is submitted</span>
+<span class="sd">        account (str): Account the job is charged to</span>
+<span class="sd">        num_nodes (int): Number of nodes requested</span>
+<span class="sd">        num_ranks (int): Number of MPI ranks</span>
+<span class="sd">        stdout (path): Filename where standard out is redirected</span>
+<span class="sd">        stderr (path): Filename where standard error is redirected</span>
+<span class="sd">        join_outputs (bool): Merge stdout/stderr to same file</span>
+<span class="sd">        mail_opts (str): Mail options (see specific queue implementation)</span>
+<span class="sd">        email_address (str): Email address for notifications</span>
+<span class="sd">        qos (str): Quality of service</span>
+<span class="sd">        time_limit (str): Wall clock time limit</span>
+<span class="sd">        shell (str): shell to use for scripts</span>
+<span class="sd">        mpi_extra_args (str): additional arguments for MPI</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Variables to parse from configuration file</span>
+    <span class="n">_cpl_config_vars</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;queue&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;account&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;num_nodes&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;num_ranks&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;stdout&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;stderr&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;join_outputs&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;mail_opts&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;email_address&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;qos&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;time_limit&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;shell&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;exclusive&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;mem_per_node&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;mem_per_rank&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="c1">#: Identifier used for queue</span>
+    <span class="n">queue_name</span> <span class="o">=</span> <span class="s2">&quot;_ERROR_&quot;</span>
+
+    <span class="c1">#: Attribute to job scheduler option mapping</span>
+    <span class="n">_queue_var_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1">#: Default values for attributes</span>
+    <span class="n">_queue_default_values</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="HPCQueue.submit">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.submit">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">script_file</span><span class="p">,</span> <span class="n">job_dependencies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extra_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dep_type</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit the job to the queue&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="HPCQueue.delete">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.delete">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="n">job_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete a job from the queue&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="HPCQueue.is_parallel">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.is_parallel">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_parallel</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flag indicating whether the queue type can support parallel runs&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="HPCQueue.is_job_scheduler">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.is_job_scheduler">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_job_scheduler</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Is this a job scheduler&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cml_env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Name of the job</span>
+<span class="sd">            cml_env (CMLEnv): Environment used for execution</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cml_env</span> <span class="o">=</span> <span class="n">cml_env</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shell</span> <span class="o">=</span> <span class="s2">&quot;/bin/bash&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_ranks</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_has_script_body</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_script_body</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">caelus</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">scheduler_defaults</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue_default_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">opts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;&quot;&lt;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&gt;&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="HPCQueue.write_script">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.write_script">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_script</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">script_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write a submission script using the arguments provided</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            script_name (path): Name of the script file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_script_body</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Contents of script have not been initialized&quot;</span><span class="p">)</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">script_name</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">_</span><span class="si">%s</span><span class="s2">.job&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_name</span><span class="p">)</span>
+        <span class="n">qconf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queue_settings</span><span class="p">()</span>
+        <span class="n">tmpl</span> <span class="o">=</span> <span class="n">CaelusTemplates</span><span class="p">()</span>
+        <span class="n">tmpl</span><span class="o">.</span><span class="n">write_template</span><span class="p">(</span>
+            <span class="n">fname</span><span class="p">,</span>
+            <span class="s2">&quot;run/hpc_queue/hpc_queue.job.tmpl&quot;</span><span class="p">,</span>
+            <span class="n">job</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">queue_config</span><span class="o">=</span><span class="n">qconf</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">fname</span></div>
+
+
+<div class="viewcode-block" id="HPCQueue.update">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update queue settings from the given dictionary&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpl_config_vars</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="n">key</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="HPCQueue.process_cml_run_env">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.process_cml_run_env">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_cml_run_env</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Populate the run variables for script&quot;&quot;&quot;</span>
+        <span class="n">env_cfg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        # CAELUS environment updates</span>
+<span class="s2">        export PROJECT_DIR=</span><span class="si">%s</span>
+<span class="s2">        export CAELUS_PROJECT_DIR=$</span><span class="si">{PROJECT_DIR}</span>
+<span class="s2">        export PATH=</span><span class="si">%s</span><span class="s2">:$</span><span class="si">{PATH}</span>
+<span class="s2">        export LD_LIBRARY_PATH=</span><span class="si">%s</span><span class="s2">:$</span><span class="si">{LD_LIBRARY_PATH}</span>
+<span class="s2">        export MPI_BUFFER_SIZE=20000000</span>
+
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="n">renv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cml_env</span> <span class="ow">or</span> <span class="n">cmlenv</span><span class="o">.</span><span class="n">cml_get_latest_version</span><span class="p">()</span>
+        <span class="n">path_var</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">renv</span><span class="o">.</span><span class="n">bin_dir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="n">renv</span><span class="o">.</span><span class="n">user_bindir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="n">renv</span><span class="o">.</span><span class="n">mpi_bindir</span>
+        <span class="p">)</span>
+        <span class="n">lib_var</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">renv</span><span class="o">.</span><span class="n">lib_dir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="n">renv</span><span class="o">.</span><span class="n">user_libdir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="n">renv</span><span class="o">.</span><span class="n">mpi_libdir</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">env_cfg</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">renv</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span>
+            <span class="n">path_var</span><span class="p">,</span>
+            <span class="n">lib_var</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HPCQueue.process_foam_run_env">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.process_foam_run_env">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_foam_run_env</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Populate the run variables for OpenFOAM execution&quot;&quot;&quot;</span>
+        <span class="n">env_cfg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        # Modules</span>
+<span class="s2">        </span><span class="si">%s</span>
+
+<span class="s2">        # OpenFOAM configuration</span>
+<span class="s2">        source </span><span class="si">%s</span>
+<span class="s2">        export LD_LIBRARY_PATH=</span><span class="si">%s</span><span class="s2">:$</span><span class="si">{LD_LIBRARY_PATH}</span>
+
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="n">renv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cml_env</span>
+        <span class="n">bashrc_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cml_env</span><span class="o">.</span><span class="n">foam_bashrc</span>
+        <span class="n">libs</span> <span class="o">=</span> <span class="s2">&quot;lib_dir user_libdir site_libdir mpi_libdir&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">libvar</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">renv</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span> <span class="k">for</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">libs</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">renv</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">modules</span> <span class="o">=</span> <span class="s2">&quot;# no modules loaded&quot;</span>
+        <span class="k">if</span> <span class="n">renv</span><span class="o">.</span><span class="n">module_list</span><span class="p">:</span>
+            <span class="n">modules</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="s2">&quot;module load </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">mm</span> <span class="k">for</span> <span class="n">mm</span> <span class="ow">in</span> <span class="n">renv</span><span class="o">.</span><span class="n">module_list</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">env_cfg</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">modules</span><span class="p">,</span>
+            <span class="n">bashrc_path</span><span class="p">,</span>
+            <span class="n">libvar</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HPCQueue.process_run_env">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.process_run_env">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_run_env</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process runtime environment for scripts&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cml_env</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cml_env</span><span class="p">,</span> <span class="n">cmlenv</span><span class="o">.</span><span class="n">FOAMEnv</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_foam_run_env</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_cml_run_env</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="HPCQueue.get_queue_settings">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.get_queue_settings">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queue_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a string with all the necessary queue options&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="HPCQueue.prepare_mpi_cmd">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.prepare_mpi_cmd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_mpi_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the MPI invocation&quot;&quot;&quot;</span>
+        <span class="n">num_mpi_ranks</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;num_ranks&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">cmd_tmpl</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;mpiexec -localonly </span><span class="si">%d</span><span class="s2"> &quot;</span>
+            <span class="k">if</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ostype</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;windows&quot;</span>
+            <span class="k">else</span> <span class="s2">&quot;mpiexec -np </span><span class="si">%d</span><span class="s2"> &quot;</span>
+        <span class="p">)</span>
+        <span class="n">mpi_cmd</span> <span class="o">=</span> <span class="n">cmd_tmpl</span> <span class="o">%</span> <span class="n">num_mpi_ranks</span>
+        <span class="k">return</span> <span class="n">mpi_cmd</span> <span class="o">+</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;mpi_extra_args&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit job to scheduler&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">script_body</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The contents of the script submitted to scheduler&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_script_body</span>
+
+    <span class="nd">@script_body</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">script_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_script_body</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_has_script_body</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="SerialJob">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SerialJob">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SerialJob</span><span class="p">(</span><span class="n">HPCQueue</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface to a serial job&quot;&quot;&quot;</span>
+
+    <span class="n">queue_name</span> <span class="o">=</span> <span class="s2">&quot;serial_job&quot;</span>
+
+<div class="viewcode-block" id="SerialJob.submit">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.submit">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">script_file</span><span class="p">,</span> <span class="n">job_dependencies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extra_args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit the job to the queue&quot;&quot;&quot;</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">script_file</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error executing script </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">script_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span></div>
+
+
+<div class="viewcode-block" id="SerialJob.delete">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.delete">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="n">job_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete a job from the queue&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="SerialJob.is_parallel">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.is_parallel">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_parallel</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flag indicating whether the queue type can support parallel runs&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="SerialJob.is_job_scheduler">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.is_job_scheduler">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_job_scheduler</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flag indicating whether this is a job scheduler&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="SerialJob.get_queue_settings">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.get_queue_settings">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queue_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return queue settings&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="SerialJob.prepare_mpi_cmd">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.prepare_mpi_cmd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_mpi_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the MPI invocation&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">wait</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;wait&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_script_body</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Invalid command for execution&quot;</span><span class="p">)</span>
+        <span class="n">cmdline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">script_body</span>
+        <span class="n">outfile</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;stdout&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.log&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">caelus_execute</span><span class="p">(</span>
+                <span class="n">cmdline</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cml_env</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">fh</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>  <span class="c1"># pylint: disable=attribute-defined-outside-init</span>
+            <span class="k">if</span> <span class="n">wait</span><span class="p">:</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">_lgr</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error running command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmdline</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">status</span></div>
+
+
+
+<div class="viewcode-block" id="ParallelJob">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.ParallelJob">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ParallelJob</span><span class="p">(</span><span class="n">SerialJob</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface to a parallel job&quot;&quot;&quot;</span>
+
+    <span class="n">queue_name</span> <span class="o">=</span> <span class="s2">&quot;parallel_job&quot;</span>
+
+<div class="viewcode-block" id="ParallelJob.is_parallel">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.ParallelJob.is_parallel">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_parallel</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flag indicating whether the queue type can support parallel runs&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="ParallelJob.prepare_mpi_cmd">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.ParallelJob.prepare_mpi_cmd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_mpi_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the MPI invocation&quot;&quot;&quot;</span>
+        <span class="n">num_mpi_ranks</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;num_ranks&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">machinefile</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;machinefile&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">cmd_tmpl</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;mpiexec -localonly </span><span class="si">%d</span><span class="s2"> &quot;</span>
+            <span class="k">if</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ostype</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;windows&quot;</span>
+            <span class="k">else</span> <span class="s2">&quot;mpiexec -np </span><span class="si">%d</span><span class="s2"> &quot;</span>
+        <span class="p">)</span>
+        <span class="n">mpi_cmd</span> <span class="o">=</span> <span class="n">cmd_tmpl</span> <span class="o">%</span> <span class="n">num_mpi_ranks</span>
+        <span class="k">if</span> <span class="n">machinefile</span><span class="p">:</span>
+            <span class="n">mpi_cmd</span> <span class="o">+=</span> <span class="n">mpi_cmd</span> <span class="o">+</span> <span class="s2">&quot; -machinefile </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">machinefile</span>
+        <span class="k">return</span> <span class="n">mpi_cmd</span> <span class="o">+</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;mpi_extra_args&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SlurmQueue">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SlurmQueue">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SlurmQueue</span><span class="p">(</span><span class="n">HPCQueue</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface to SLURM queue manager&quot;&quot;&quot;</span>
+
+    <span class="n">queue_name</span> <span class="o">=</span> <span class="s2">&quot;slurm&quot;</span>
+
+    <span class="n">_queue_var_map</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;job-name&quot;</span><span class="p">,</span>
+        <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;partition&quot;</span><span class="p">,</span>
+        <span class="n">account</span><span class="o">=</span><span class="s2">&quot;account&quot;</span><span class="p">,</span>
+        <span class="n">num_nodes</span><span class="o">=</span><span class="s2">&quot;nodes&quot;</span><span class="p">,</span>
+        <span class="n">num_ranks</span><span class="o">=</span><span class="s2">&quot;ntasks&quot;</span><span class="p">,</span>
+        <span class="n">stdout</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">,</span>
+        <span class="n">stderr</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
+        <span class="n">mail_opts</span><span class="o">=</span><span class="s2">&quot;mail-type&quot;</span><span class="p">,</span>
+        <span class="n">email_address</span><span class="o">=</span><span class="s2">&quot;mail-user&quot;</span><span class="p">,</span>
+        <span class="n">qos</span><span class="o">=</span><span class="s2">&quot;qos&quot;</span><span class="p">,</span>
+        <span class="n">time_limit</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
+        <span class="n">dependencies</span><span class="o">=</span><span class="s2">&quot;depend&quot;</span><span class="p">,</span>
+        <span class="n">licenses</span><span class="o">=</span><span class="s2">&quot;licenses&quot;</span><span class="p">,</span>
+        <span class="n">features</span><span class="o">=</span><span class="s2">&quot;constraint&quot;</span><span class="p">,</span>
+        <span class="n">mem_per_node</span><span class="o">=</span><span class="s2">&quot;mem&quot;</span><span class="p">,</span>
+        <span class="n">mem_per_rank</span><span class="o">=</span><span class="s2">&quot;mem-per-cpu&quot;</span><span class="p">,</span>
+        <span class="n">exclusive</span><span class="o">=</span><span class="s2">&quot;exclusive&quot;</span><span class="p">,</span>
+        <span class="n">kill_invalid</span><span class="o">=</span><span class="s2">&quot;kill-on-invalid-dep&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">_queue_default_values</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">stdout</span><span class="o">=</span><span class="s2">&quot;job-</span><span class="si">%x</span><span class="s2">-%J.out&quot;</span><span class="p">,</span> <span class="n">mail_opts</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="s2">&quot;/bin/bash&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">_batch_job_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Submitted batch job (\d+)&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SlurmQueue.submit">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SlurmQueue.submit">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">script_file</span><span class="p">,</span>
+        <span class="n">job_dependencies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">extra_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">dep_type</span><span class="o">=</span><span class="s2">&quot;afterok&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit to SLURM using sbatch command</span>
+
+<span class="sd">        ``job_dependencies`` is a list of SLURM job IDs. The submitted job will</span>
+<span class="sd">        not run until after all the jobs provided in this list have been</span>
+<span class="sd">        completed successfully.</span>
+
+<span class="sd">        ``extra_args`` is a dictionary of extra arguments to be passed to</span>
+<span class="sd">        ``sbatch`` command. Note that this can override options provided in the</span>
+<span class="sd">        script file as well as introduce additional options during submission.</span>
+
+<span class="sd">        ``dep_type`` can be one of: after, afterok, afternotok afterany</span>
+
+<span class="sd">        The job ID returned by this method can be used as an argument to delete</span>
+<span class="sd">        method or as an entry in ``job_dependencies`` for a subsequent job</span>
+<span class="sd">        submission.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            script_file (path): Script provided to sbatch command</span>
+<span class="sd">            job_dependencies (list): List of jobs to wait for</span>
+<span class="sd">            extra_args (dict): Extra SLURM arguments</span>
+<span class="sd">            dep_type (str): Dependency type</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Job ID as a string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">depends_arg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">job_dependencies</span><span class="p">:</span>
+            <span class="n">depends_arg</span> <span class="o">=</span> <span class="s2">&quot;--depend </span><span class="si">%s</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="n">dep_type</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">job_dependencies</span>
+            <span class="p">)</span>
+
+        <span class="n">slurm_args</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extra_args</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="n">slurm_args</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="s2">&quot;--</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_queue_var_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">),</span> <span class="n">val</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">extra_args</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">extra_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">slurm_args</span> <span class="o">=</span> <span class="n">extra_args</span>
+
+        <span class="n">sbatch_cmd</span> <span class="o">=</span> <span class="s2">&quot;sbatch </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">depends_arg</span><span class="p">,</span> <span class="n">slurm_args</span><span class="p">,</span> <span class="n">script_file</span><span class="p">)</span>
+        <span class="n">cmd_line</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sbatch_cmd</span><span class="p">)</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Executing SLURM sbatch command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sbatch_cmd</span><span class="p">)</span>
+        <span class="n">pp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+            <span class="n">cmd_line</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span>
+        <span class="p">)</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">job_id_match</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_batch_job_regex</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">err</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">job_id_match</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Error submitting job: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">sbatch_cmd</span><span class="p">)</span>
+        <span class="n">job_id</span> <span class="o">=</span> <span class="n">job_id_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">job_id</span></div>
+
+
+<div class="viewcode-block" id="SlurmQueue.delete">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SlurmQueue.delete">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="n">job_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete the SLURM batch job using job ID&quot;&quot;&quot;</span>
+        <span class="n">scancel_cmd</span> <span class="o">=</span> <span class="s2">&quot;scancel </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">job_id</span>
+        <span class="n">cmd_line</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">scancel_cmd</span><span class="p">)</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Executing SLURM scancel command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">scancel_cmd</span><span class="p">)</span>
+        <span class="n">pp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+            <span class="n">cmd_line</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span>
+        <span class="p">)</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">out</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;scancel output: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Error executing scancel: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cml_env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Name of the job</span>
+<span class="sd">            cml_env (CMLEnv): Environment used for execution</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SlurmQueue</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">cml_env</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">caelus</span><span class="o">.</span><span class="n">system</span>
+        <span class="n">use_mpiexec</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;slurm_use_mpiexec&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">use_mpiexec</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prepare_mpi_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_srun_cmd</span>
+
+<div class="viewcode-block" id="SlurmQueue.get_queue_settings">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SlurmQueue.get_queue_settings">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queue_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all SBATCH options suitable for embedding in script&quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_opts_helper</span><span class="p">():</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Helper function to convert options&quot;&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">skey</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue_var_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span>
+                <span class="k">yield</span> <span class="s2">&quot;#SBATCH --</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">skey</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+        <span class="n">qopts</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_opts_helper</span><span class="p">())</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"># SLURM options</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">header</span> <span class="o">+</span> <span class="n">qopts</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="SlurmQueue.prepare_srun_cmd">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.SlurmQueue.prepare_srun_cmd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_srun_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the call to SLURM srun command&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;srun --ntasks $</span><span class="si">{SLURM_NTASKS}</span><span class="s2"> &quot;</span> <span class="o">+</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;mpi_extra_args&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit the job&quot;&quot;&quot;</span>
+        <span class="n">script_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;script_file&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">job_deps</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;job_dependencies&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">extra_args</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;extra_args&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_script_body</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Script contents have not been set before submit&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_run_env</span><span class="p">()</span>
+        <span class="n">script_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_script</span><span class="p">(</span><span class="n">script_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">script_file</span><span class="p">,</span> <span class="n">job_deps</span><span class="p">,</span> <span class="n">extra_args</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="PBSQueue">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.PBSQueue">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PBSQueue</span><span class="p">(</span><span class="n">HPCQueue</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PBS Queue Interface&quot;&quot;&quot;</span>
+
+    <span class="n">queue_name</span> <span class="o">=</span> <span class="s2">&quot;pbs&quot;</span>
+
+    <span class="n">_queue_var_map</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;-N &quot;</span><span class="p">,</span>
+        <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;-q &quot;</span><span class="p">,</span>
+        <span class="n">account</span><span class="o">=</span><span class="s2">&quot;-A &quot;</span><span class="p">,</span>
+        <span class="n">num_nodes</span><span class="o">=</span><span class="s2">&quot;-l nodes=&quot;</span><span class="p">,</span>
+        <span class="n">stdout</span><span class="o">=</span><span class="s2">&quot;-o &quot;</span><span class="p">,</span>
+        <span class="n">stderr</span><span class="o">=</span><span class="s2">&quot;-e &quot;</span><span class="p">,</span>
+        <span class="n">join_outputs</span><span class="o">=</span><span class="s2">&quot;-j &quot;</span><span class="p">,</span>
+        <span class="n">mail_opts</span><span class="o">=</span><span class="s2">&quot;-m &quot;</span><span class="p">,</span>
+        <span class="n">email_address</span><span class="o">=</span><span class="s2">&quot;-M &quot;</span><span class="p">,</span>
+        <span class="n">time_limit</span><span class="o">=</span><span class="s2">&quot;-l walltime=&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">_default_queue_vaues</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">stdout</span><span class="o">=</span><span class="s2">&quot;job-$PBS_JOBNAME-$PBS_JOBID.out&quot;</span><span class="p">,</span>
+        <span class="n">join_outputs</span><span class="o">=</span><span class="s2">&quot;oe&quot;</span><span class="p">,</span>
+        <span class="n">shell</span><span class="o">=</span><span class="s2">&quot;/bin/bash&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">_batch_job_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PBSQueue.submit">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.PBSQueue.submit">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">script_file</span><span class="p">,</span>
+        <span class="n">job_dependencies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">extra_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">dep_type</span><span class="o">=</span><span class="s2">&quot;afterok&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit a PBS job using qsub command</span>
+
+<span class="sd">        ``job_dependencies`` is a list of PBS job IDs. The submitted job will</span>
+<span class="sd">        run depending the status of the dependencies.</span>
+
+<span class="sd">        ``extra_args`` is a dictionary of arguments passed to ``qsub`` command.</span>
+
+
+<span class="sd">        The job ID returned by this method can be used as an argument to delete</span>
+<span class="sd">        method or as an entry in ``job_dependencies`` for a subsequent job</span>
+<span class="sd">        submission.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            script_file (path): Script provided to sbatch command</span>
+<span class="sd">            job_dependencies (list): List of jobs to wait for</span>
+<span class="sd">            extra_args (dict): Extra SLURM arguments</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Job ID as a string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">depends_arg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">job_dependencies</span><span class="p">:</span>
+            <span class="n">depends_arg</span> <span class="o">=</span> <span class="s2">&quot;-W depend=</span><span class="si">%s</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="n">dep_type</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">job_dependencies</span>
+            <span class="p">)</span>
+        <span class="n">qsub_args</span> <span class="o">=</span> <span class="n">extra_args</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">qsub_cmd</span> <span class="o">=</span> <span class="s2">&quot;qsub </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">depends_arg</span><span class="p">,</span> <span class="n">qsub_args</span><span class="p">,</span> <span class="n">script_file</span><span class="p">)</span>
+        <span class="n">cmd_line</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">qsub_cmd</span><span class="p">)</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Executing PBS qsub command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">qsub_cmd</span><span class="p">)</span>
+        <span class="n">pp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+            <span class="n">cmd_line</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span>
+        <span class="p">)</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">job_id_match</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_batch_job_regex</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">err</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">job_id_match</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Error submitting job: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">qsub_cmd</span><span class="p">)</span>
+        <span class="n">job_id</span> <span class="o">=</span> <span class="n">job_id_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">job_id</span></div>
+
+
+<div class="viewcode-block" id="PBSQueue.delete">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.PBSQueue.delete">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="n">job_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete the PBS batch job using job ID&quot;&quot;&quot;</span>
+        <span class="n">qdel_cmd</span> <span class="o">=</span> <span class="s2">&quot;qdel </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">job_id</span>
+        <span class="n">cmd_line</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">qdel_cmd</span><span class="p">)</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Executing PBS qdel command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">qdel_cmd</span><span class="p">)</span>
+        <span class="n">pp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+            <span class="n">cmd_line</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span>
+        <span class="p">)</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">out</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;qdel output: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Error executing qdel: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PBSQueue.get_queue_settings">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.PBSQueue.get_queue_settings">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queue_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all PBS options suitable for embedding in script&quot;&quot;&quot;</span>
+        <span class="n">qopts</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="s2">&quot;#PBS </span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue_var_map</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"># PBS Queue options</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">header</span> <span class="o">+</span> <span class="n">qopts</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit the job&quot;&quot;&quot;</span>
+        <span class="n">script_file</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;script_file&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">job_deps</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;job_dependencies&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">extra_args</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;extra_args&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_script_body</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Script contents have not been set before submit&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_run_env</span><span class="p">()</span>
+        <span class="n">script_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_script</span><span class="p">(</span><span class="n">script_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">script_file</span><span class="p">,</span> <span class="n">job_deps</span><span class="p">,</span> <span class="n">extra_args</span><span class="p">)</span></div>
+
+
+
+<span class="n">_hpc_queue_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">no_mpi</span><span class="o">=</span><span class="n">SerialJob</span><span class="p">,</span>
+    <span class="n">local_mpi</span><span class="o">=</span><span class="n">ParallelJob</span><span class="p">,</span>
+    <span class="n">slurm</span><span class="o">=</span><span class="n">SlurmQueue</span><span class="p">,</span>
+    <span class="n">pbs</span><span class="o">=</span><span class="n">PBSQueue</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_job_scheduler">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.hpc_queue.get_job_scheduler">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_job_scheduler</span><span class="p">(</span><span class="n">queue_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return an instance of the job scheduler&quot;&quot;&quot;</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+    <span class="n">cfg_queue_type</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">caelus</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;job_scheduler&quot;</span><span class="p">,</span> <span class="s1">&#39;local_mpi&#39;</span><span class="p">)</span>
+    <span class="n">qtype</span> <span class="o">=</span> <span class="n">queue_type</span> <span class="ow">or</span> <span class="n">cfg_queue_type</span>
+    <span class="k">return</span> <span class="n">_hpc_queue_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">qtype</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">ParallelJob</span><span class="p">)</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.run.hpc_queue</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

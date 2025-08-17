@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>caelus.scripts – CLI App Utilities &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="caelus.io – CML Input File Manipulation" href="caelus.io.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../index.html">
+<!--      <img src="../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus.io.html" title="caelus.io – CML Input File Manipulation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="caelus.html" accesskey="U">Caelus Python API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.scripts – CLI App Utilities</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">caelus.scripts – CLI App Utilities</a><ul>
+<li><a class="reference internal" href="#basic-cli-interface">Basic CLI Interface</a></li>
+<li><a class="reference internal" href="#caelus.scripts.core.CaelusScriptBase"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.scripts.core.CaelusScriptBase.cli_options"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.cli_options()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.scripts.core.CaelusScriptBase.setup_logging"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.setup_logging()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.scripts.core.CaelusScriptBase.args"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.args</span></code></a></li>
+<li><a class="reference internal" href="#caelus.scripts.core.CaelusScriptBase.description"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.description</span></code></a></li>
+<li><a class="reference internal" href="#caelus.scripts.core.CaelusScriptBase.epilog"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.epilog</span></code></a></li>
+<li><a class="reference internal" href="#caelus.scripts.core.CaelusScriptBase.name"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.name</span></code></a></li>
+<li><a class="reference internal" href="#caelus.scripts.core.CaelusScriptBase.parser"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.parser</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.scripts.core.CaelusSubCmdScript"><code class="docutils literal notranslate"><span class="pre">CaelusSubCmdScript</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.scripts.core.CaelusSubCmdScript.cli_options"><code class="docutils literal notranslate"><span class="pre">CaelusSubCmdScript.cli_options()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="caelus.io.html"
+                          title="previous chapter">caelus.io – CML Input File Manipulation</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/dev/caelus.scripts.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-caelus.scripts.core">
+<span id="caelus-scripts-cli-app-utilities"></span><h1>caelus.scripts – CLI App Utilities<a class="headerlink" href="#module-caelus.scripts.core" title="Link to this heading">¶</a></h1>
+<section id="basic-cli-interface">
+<h2>Basic CLI Interface<a class="headerlink" href="#basic-cli-interface" title="Link to this heading">¶</a></h2>
+<p>Defines the base classes that are used to build the CLI scripts.</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.scripts.core.CaelusScriptBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.scripts.core.</span></span><span class="sig-name descname"><span class="pre">CaelusScriptBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/scripts/core.html#CaelusScriptBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.scripts.core.CaelusScriptBase" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for all Caelus CLI applications.</p>
+<p>Defines the common functionality for simple scripts and scripts with
+sub-commands that are used to access functionality from the library without
+writing additional python scripts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Custom name used in messages</p></li>
+<li><p><strong>args</strong> (<em>str</em>) – Pass arguments instead of using sys.argv</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.scripts.core.CaelusScriptBase.cli_options">
+<span class="sig-name descname"><span class="pre">cli_options</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/scripts/core.html#CaelusScriptBase.cli_options"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.scripts.core.CaelusScriptBase.cli_options" title="Link to this definition">¶</a></dt>
+<dd><p>Setup the command line options and arguments</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.scripts.core.CaelusScriptBase.setup_logging">
+<span class="sig-name descname"><span class="pre">setup_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/scripts/core.html#CaelusScriptBase.setup_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.scripts.core.CaelusScriptBase.setup_logging" title="Link to this definition">¶</a></dt>
+<dd><p>Setup logging for the script.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_to_file</strong> (<em>bool</em>) – If True, script will log to file</p></li>
+<li><p><strong>log_file</strong> (<em>path</em>) – Filename to log</p></li>
+<li><p><strong>verbose_level</strong> (<em>int</em>) – Level of verbosity</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.scripts.core.CaelusScriptBase.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#caelus.scripts.core.CaelusScriptBase.args" title="Link to this definition">¶</a></dt>
+<dd><p>Arugments provided by user at the command line</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.scripts.core.CaelusScriptBase.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Caelus</span> <span class="pre">CLI</span> <span class="pre">Application'</span></em><a class="headerlink" href="#caelus.scripts.core.CaelusScriptBase.description" title="Link to this definition">¶</a></dt>
+<dd><p>Description of the CLI app used in help messages</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.scripts.core.CaelusScriptBase.epilog">
+<span class="sig-name descname"><span class="pre">epilog</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Caelus</span> <span class="pre">Python</span> <span class="pre">Library</span> <span class="pre">(CPL)</span> <span class="pre">v5.0.0'</span></em><a class="headerlink" href="#caelus.scripts.core.CaelusScriptBase.epilog" title="Link to this definition">¶</a></dt>
+<dd><p>Epilog for help messages</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.scripts.core.CaelusScriptBase.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#caelus.scripts.core.CaelusScriptBase.name" title="Link to this definition">¶</a></dt>
+<dd><p>Custom name when invoked from a python interface instead of command
+line</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.scripts.core.CaelusScriptBase.parser">
+<span class="sig-name descname"><span class="pre">parser</span></span><a class="headerlink" href="#caelus.scripts.core.CaelusScriptBase.parser" title="Link to this definition">¶</a></dt>
+<dd><p>Instance of the ArgumentParser used to parse command line arguments</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.scripts.core.CaelusSubCmdScript">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.scripts.core.</span></span><span class="sig-name descname"><span class="pre">CaelusSubCmdScript</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/scripts/core.html#CaelusSubCmdScript"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.scripts.core.CaelusSubCmdScript" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#caelus.scripts.core.CaelusScriptBase" title="caelus.scripts.core.CaelusScriptBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">CaelusScriptBase</span></code></a></p>
+<p>A CLI app with sub-commands.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Custom name used in messages</p></li>
+<li><p><strong>args</strong> (<em>str</em>) – Pass arguments instead of using sys.argv</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.scripts.core.CaelusSubCmdScript.cli_options">
+<span class="sig-name descname"><span class="pre">cli_options</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/scripts/core.html#CaelusSubCmdScript.cli_options"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.scripts.core.CaelusSubCmdScript.cli_options" title="Link to this definition">¶</a></dt>
+<dd><p>Setup sub-parsers.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus.io.html" title="caelus.io – CML Input File Manipulation"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="caelus.html" >Caelus Python API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.scripts – CLI App Utilities</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

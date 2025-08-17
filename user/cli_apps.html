@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Command-line Applications &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="caelus – Common CPL actions" href="cli_apps/caelus.html" />
+    <link rel="prev" title="Configuring Caelus Python Library" href="configuration.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../index.html">
+<!--      <img src="../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cli_apps/caelus.html" title="caelus – Common CPL actions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuring Caelus Python Library"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Command-line Applications</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Command-line Applications</a><ul>
+<li><a class="reference internal" href="#common-cli-options">Common CLI options</a></li>
+<li><a class="reference internal" href="#available-command-line-applications">Available command-line applications</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="configuration.html"
+                          title="previous chapter">Configuring Caelus Python Library</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cli_apps/caelus.html"
+                          title="next chapter"><code class="docutils literal notranslate"><span class="pre">caelus</span></code> – Common CPL actions</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user/cli_apps.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="command-line-applications">
+<span id="cli-apps-user"></span><h1>Command-line Applications<a class="headerlink" href="#command-line-applications" title="Link to this heading">¶</a></h1>
+<p>CPL provides command-line interface (CLI) to several frequently used workflows
+without having to write custom python scripts to access features within the
+library. These CLI apps are described in detail in the following sections.</p>
+<section id="common-cli-options">
+<h2>Common CLI options<a class="headerlink" href="#common-cli-options" title="Link to this heading">¶</a></h2>
+<p>All CPL command-line applications support a few common options. These options
+are described below:</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cpl-h">
+<span id="cmdoption-cpl-help"></span><span class="sig-name descname"><span class="pre">-h</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--help</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cpl-h" title="Link to this definition">¶</a></dt>
+<dd><p>Print a brief help message that describes the purpose of the application and
+what options are available when interacting with the application.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cpl-version">
+<span class="sig-name descname"><span class="pre">--version</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cpl-version" title="Link to this definition">¶</a></dt>
+<dd><p>Print the CPL version number and exit. Useful for submitting bug-reports,
+etc.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cpl-v">
+<span id="cmdoption-cpl-verbose"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cpl-v" title="Link to this definition">¶</a></dt>
+<dd><p>Increase the verbosity of messages printed to the standard output. Use
+<code class="docutils literal notranslate"><span class="pre">-vv</span></code> and <code class="docutils literal notranslate"><span class="pre">-vvv</span></code> to progressively increase verbosity of output.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cpl-no-log">
+<span class="sig-name descname"><span class="pre">--no-log</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cpl-no-log" title="Link to this definition">¶</a></dt>
+<dd><p>Disable logging messages from the script to a log file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cpl-cml-version">
+<span class="sig-name descname"><span class="pre">--cml-version</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cpl-cml-version" title="Link to this definition">¶</a></dt>
+<dd><p>Specify CML version to use for this particular invocation of CPL command.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cpl-cli-logs">
+<span class="sig-name descname"><span class="pre">--cli-logs</span></span><span class="sig-prename descclassname"> <span class="pre">log_file</span></span><a class="headerlink" href="#cmdoption-cpl-cli-logs" title="Link to this definition">¶</a></dt>
+<dd><p>Customize the filename used to capture log messages during execution. This
+overrides the configuration parameter <a class="reference internal" href="configuration.html#confval-caelus.logging.log_file"><code class="xref std std-confval docutils literal notranslate"><span class="pre">log_file</span></code></a> provided in the user configuration files.</p>
+</dd></dl>
+
+</section>
+<section id="available-command-line-applications">
+<h2>Available command-line applications<a class="headerlink" href="#available-command-line-applications" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cli_apps/caelus.html"><code class="docutils literal notranslate"><span class="pre">caelus</span></code> – Common CPL actions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli_apps/caelus.html#caelus-cfg-print-cpl-configuration">caelus cfg – Print CPL configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_apps/caelus.html#caelus-clone-clone-a-case-directory">caelus clone – Clone a case directory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_apps/caelus.html#caelus-tasks-run-tasks-from-a-file">caelus tasks – run tasks from a file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_apps/caelus.html#caelus-run-run-an-executable-in-the-appropriate-environment">caelus run – run an executable in the appropriate environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_apps/caelus.html#caelus-runpy-run-a-custom-python-script">caelus runpy – Run a custom python script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_apps/caelus.html#caelus-logs-process-a-solver-log-file-from-a-run">caelus logs – process a solver log file from a run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_apps/caelus.html#caelus-clean-clean-a-case-directory">caelus clean – clean a case directory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_apps/caelus.html#caelus-build-compile-openfoam-or-cml-sources">caelus build – Compile OpenFOAM or CML sources</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli_apps/caelus_sim.html"><code class="docutils literal notranslate"><span class="pre">caelus_sim</span></code> – Parametric Run CLI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli_apps/caelus_sim.html#caelus-sim-setup-setup-a-parametric-run">caelus_sim setup – Setup a parametric run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_apps/caelus_sim.html#caelus-sim-status-print-status-of-the-parametric-runs">caelus_sim status – Print status of the parametric runs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli_apps/caelus_tutorials.html">caelus_tutorials – Run tutorials</a></li>
+</ul>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cli_apps/caelus.html" title="caelus – Common CPL actions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuring Caelus Python Library"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Command-line Applications</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

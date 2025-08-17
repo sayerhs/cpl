@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.post.plots &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../index.html">
+<!--      <img src="../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.plots</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.post.plots</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># pylint: disable=wrong-import-position</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Caelus Plotting Utilities</span>
+<span class="sd">-------------------------</span>
+
+<span class="sd">This module provides the capability to plot various quantities of interest</span>
+<span class="sd">using matplotlib through :class:`CaelusPlot`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">six</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">coroutines</span><span class="p">,</span> <span class="n">osutils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.logs</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogProcessor</span><span class="p">,</span> <span class="n">SolverLog</span>
+
+<span class="n">_lgr</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="mpl_settings">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.plots.mpl_settings">[docs]</a>
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mpl_settings</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;agg&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Temporarily switch matplotlib settings for a plot&quot;&quot;&quot;</span>
+    <span class="n">cur_backend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_backend</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">cur_backend</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="n">backend</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">switch_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">switch_backend</span><span class="p">(</span><span class="n">cur_backend</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="make_plot_method">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.plots.make_plot_method">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_plot_method</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a wrapper plot method&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;%s</span>
+
+<span class="sd">        plotfile: File to save plot (e.g., residuals.png)</span>
+<span class="sd">        dpi: Resolution for saving plots (default=300)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">plotfile</span><span class="p">:</span>
+            <span class="n">osutils</span><span class="o">.</span><span class="n">ensure_directory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plotdir</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">mpl_settings</span><span class="p">(</span><span class="s2">&quot;agg&quot;</span><span class="p">):</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span>
+                <span class="n">outfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plotdir</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+                <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saved figure: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">plot_wrapper</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">plot_wrapper</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="vm">__doc__</span>
+    <span class="k">return</span> <span class="n">plot_wrapper</span></div>
+
+
+
+<div class="viewcode-block" id="PlotsMeta">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.plots.PlotsMeta">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlotsMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Provide interactive and non-interactive versions of plot methods.</span>
+
+<span class="sd">    This metaclass automatically wraps methods starting with ``_plot`` such</span>
+<span class="sd">    that these methods can be used in both interactive and non-interactive</span>
+<span class="sd">    modes. Non-interactive modes are automatically enabled if the user provides</span>
+<span class="sd">    a file name to save the resulting figure.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="n">mcls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">cdict</span><span class="p">):</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cdict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_plot_&quot;</span><span class="p">):</span>
+                <span class="n">cdict</span><span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span> <span class="o">=</span> <span class="n">make_plot_method</span><span class="p">(</span><span class="n">cdict</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">PlotsMeta</span><span class="p">,</span> <span class="n">mcls</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">mcls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">cdict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span></div>
+
+
+
+<div class="viewcode-block" id="CaelusPlot">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.plots.CaelusPlot">[docs]</a>
+<span class="nd">@six</span><span class="o">.</span><span class="n">add_metaclass</span><span class="p">(</span><span class="n">PlotsMeta</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CaelusPlot</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Caelus Data Plotting Interface</span>
+
+<span class="sd">    Currently implemented:</span>
+<span class="sd">        - Plot residual time history</span>
+<span class="sd">        - Plot convergence of forces and force coeffcients</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plotdir</span><span class="o">=</span><span class="s2">&quot;results&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            casedir (path): Path to the case directory</span>
+<span class="sd">            plotdir (path): Directory where figures are saved</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#: Path to the case directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">casedir</span> <span class="o">=</span> <span class="n">casedir</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="c1">#: Path to plots output directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plotdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">casedir</span><span class="p">,</span> <span class="n">plotdir</span><span class="p">)</span>
+
+        <span class="c1">#: Instance of :class:`~caelus.post.logs.SolverLog`</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_log</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1">#: Flag indicating whether continuity errors are plotted along with</span>
+        <span class="c1">#: residuals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_continuity_errors</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_plot_residuals_hist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot time-history of residuals for a Caelus run</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fields (list): Plot residuals only for the fields in this list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_log</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solver_log</span> <span class="o">=</span> <span class="n">SolverLog</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">casedir</span><span class="p">)</span>
+        <span class="n">logf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_log</span>
+
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Residuals&#39;</span><span class="p">)</span>
+
+        <span class="n">field_list</span> <span class="o">=</span> <span class="n">fields</span> <span class="ow">or</span> <span class="n">logf</span><span class="o">.</span><span class="n">fields</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">field_list</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">logf</span><span class="o">.</span><span class="n">residual</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+            <span class="c1"># We only want initial residuals (iter = 1)</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">res</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">field</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_continuity_errors</span><span class="p">:</span>
+            <span class="n">cerrs</span> <span class="o">=</span> <span class="n">logf</span><span class="o">.</span><span class="n">continuity_errors</span><span class="p">()</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">cerrs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cerrs</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cerrs</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;continuity&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_force_plot_helper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func_object</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">ylabels</span><span class="p">):</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">casedir</span><span class="p">,</span> <span class="s2">&quot;postProcessing&quot;</span><span class="p">,</span> <span class="n">func_object</span><span class="p">)</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">times</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Cannot find &#39;</span><span class="si">%s</span><span class="s2">&#39; data for plotting.&quot;</span><span class="p">,</span> <span class="n">func_object</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">fpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">force_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
+        <span class="c1"># Extract time from the numpy array</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">force_hist</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">ylabel</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">ylabels</span><span class="p">)):</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">force_hist</span><span class="p">[:,</span> <span class="p">(</span><span class="mi">3</span> <span class="o">-</span> <span class="n">i</span><span class="p">)])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ax</span><span class="o">.</span><span class="n">is_last_row</span><span class="p">():</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_plot_force_coeffs_hist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func_object</span><span class="o">=</span><span class="s2">&quot;forceCoeffs&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot force coefficients</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func_object (str): The function object used in controlDict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ylabels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;$C_l$&quot;</span><span class="p">,</span> <span class="s2">&quot;$C_d$&quot;</span><span class="p">,</span> <span class="s2">&quot;$C_m$&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_plot_helper</span><span class="p">(</span><span class="n">func_object</span><span class="p">,</span> <span class="s2">&quot;forceCoeffs.dat&quot;</span><span class="p">,</span> <span class="n">ylabels</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_plot_forces_hist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func_object</span><span class="o">=</span><span class="s2">&quot;forces&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot forces</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func_object (str): The function object used in controlDict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ylabels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Lift&quot;</span><span class="p">,</span> <span class="s2">&quot;Drag&quot;</span><span class="p">,</span> <span class="s2">&quot;Moment&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_plot_helper</span><span class="p">(</span><span class="n">func_object</span><span class="p">,</span> <span class="s2">&quot;forces.dat&quot;</span><span class="p">,</span> <span class="n">ylabels</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="LogWatcher">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.plots.LogWatcher">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LogWatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Real-time log monitoring utility&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logfile</span><span class="p">,</span> <span class="n">case_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            logfile (str): Name of the Caelus log file</span>
+<span class="sd">            casedir (path): Path to the case directory (default: cwd)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logprocessor</span> <span class="o">=</span> <span class="n">LogProcessor</span><span class="p">(</span><span class="n">logfile</span><span class="p">,</span> <span class="n">case_dir</span><span class="p">)</span>
+        <span class="c1"># Flag indicating new data is available for plot updates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_needs_update</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1">#: List of fields to plot. If None, plots all available fields</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_fields</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1">#: List of fields to skip. If None, plots all available fields</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skip_fields</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1">#: Time array used for plotting data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_array</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1">#: Dictionary containing fields requested for plotting and data</span>
+        <span class="c1">#: extracted from log file so far</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="c1"># Flag for initialization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_need_init</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Flag indicating whether continuity errors are plotted</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_continuity_errors</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the residual watcher&quot;&quot;&quot;</span>
+        <span class="c1"># Register time and residual consumers with LogProcessor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logprocessor</span><span class="o">.</span><span class="n">extend_rule</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_processor</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logprocessor</span><span class="o">.</span><span class="n">extend_rule</span><span class="p">(</span><span class="s2">&quot;residual&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_processor</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_continuity_errors</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logprocessor</span><span class="o">.</span><span class="n">extend_rule</span><span class="p">(</span>
+                <span class="s2">&quot;continuity&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuity_processor</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+            <span class="c1"># Quell warning issued by matplotlib during the first timestep for</span>
+            <span class="c1"># axis limits</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting residuals monitor; Ctrl+C to quit...&quot;</span><span class="p">)</span>
+            <span class="n">user_exit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logprocessor</span><span class="o">.</span><span class="n">watch_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_residuals</span><span class="p">())</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logprocessor</span><span class="o">.</span><span class="n">solve_completed</span><span class="p">:</span>
+                <span class="n">six</span><span class="o">.</span><span class="n">moves</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s2">&quot;Run has completed. Hit &lt;Enter&gt; to quit: &quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">user_exit</span>
+
+<div class="viewcode-block" id="LogWatcher.skip_field">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.plots.LogWatcher.skip_field">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">skip_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper function to determine if field must be processed&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_fields</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_fields</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_fields</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="LogWatcher.time_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.plots.LogWatcher.time_processor">[docs]</a>
+    <span class="nd">@coroutines</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">time_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Capture time array&quot;&quot;&quot;</span>
+        <span class="n">logp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logprocessor</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="k">yield</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">logp</span><span class="o">.</span><span class="n">time</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_array</span><span class="p">,</span> <span class="n">logp</span><span class="o">.</span><span class="n">time</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_needs_update</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="LogWatcher.residual_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.plots.LogWatcher.residual_processor">[docs]</a>
+    <span class="nd">@coroutines</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residual_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Capture residuals for plot updates&quot;&quot;&quot;</span>
+        <span class="n">logp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logprocessor</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">rexp</span> <span class="o">=</span> <span class="k">yield</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">rexp</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">icorr</span> <span class="o">=</span> <span class="n">logp</span><span class="o">.</span><span class="n">subiter_map</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_field</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="ow">and</span> <span class="n">icorr</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rexp</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_needs_update</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="LogWatcher.continuity_processor">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.plots.LogWatcher.continuity_processor">[docs]</a>
+    <span class="nd">@coroutines</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">continuity_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Capture continuity errors for plot updates&quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;continuity&#39;</span>
+        <span class="n">logp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logprocessor</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">rexp</span> <span class="o">=</span> <span class="k">yield</span>
+            <span class="n">icorr</span> <span class="o">=</span> <span class="n">logp</span><span class="o">.</span><span class="n">subiter_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">icorr</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">rexp</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_needs_update</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="LogWatcher.plot_residuals">
+<a class="viewcode-back" href="../../../dev/caelus.post.html#caelus.post.plots.LogWatcher.plot_residuals">[docs]</a>
+    <span class="nd">@coroutines</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update plot for residuals&quot;&quot;&quot;</span>
+        <span class="n">logp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logprocessor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_need_init</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># pylint: disable=invalid-name</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">title_str</span> <span class="o">=</span> <span class="s2">&quot;Case = </span><span class="si">%s</span><span class="s2">; timestep = </span><span class="si">%%</span><span class="s2">d&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">logp</span><span class="o">.</span><span class="n">case_dir</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">tstep</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="k">yield</span>
+            <span class="n">tarr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_array</span>
+            <span class="n">tstep</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_needs_update</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_need_init</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="n">line</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">tarr</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">relim</span><span class="p">()</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">autoscale_view</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title_str</span> <span class="o">%</span> <span class="n">tstep</span><span class="p">)</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">flush_events</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">0.00001</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_need_init</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">interactive</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\log$(residual)&quot;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time/Iterations&quot;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_field_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="p">(</span><span class="n">line</span><span class="p">,)</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tarr</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                    <span class="n">lines</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">0.00001</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.plots</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

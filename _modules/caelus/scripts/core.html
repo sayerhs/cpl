@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.scripts.core &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../index.html">
+<!--      <img src="../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.scripts.core</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.scripts.core</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Basic CLI Interface</span>
+<span class="sd">-------------------</span>
+
+<span class="sd">Defines the base classes that are used to build the CLI scripts.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..config</span><span class="w"> </span><span class="kn">import</span> <span class="n">cmlenv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..config.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">configure_logging</span><span class="p">,</span> <span class="n">get_config</span><span class="p">,</span> <span class="n">rcfiles_loaded</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..version</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span>
+
+<span class="n">_lgr</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CaelusScriptBase">
+<a class="viewcode-back" href="../../../dev/caelus.scripts.html#caelus.scripts.core.CaelusScriptBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CaelusScriptBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for all Caelus CLI applications.</span>
+
+<span class="sd">    Defines the common functionality for simple scripts and scripts with</span>
+<span class="sd">    sub-commands that are used to access functionality from the library without</span>
+<span class="sd">    writing additional python scripts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Description of the CLI app used in help messages</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Caelus CLI Application&quot;</span>
+    <span class="c1">#: Epilog for help messages</span>
+    <span class="n">epilog</span> <span class="o">=</span> <span class="s2">&quot;Caelus Python Library (CPL) </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">version</span>
+
+    <span class="n">script_levels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="s2">&quot;DEBUG&quot;</span><span class="p">]</span>
+    <span class="n">lib_levels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;WARNING&quot;</span><span class="p">,</span> <span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="s2">&quot;DEBUG&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Custom name used in messages</span>
+<span class="sd">            args (str): Pass arguments instead of using sys.argv</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#: Custom name when invoked from a python interface instead of command</span>
+        <span class="c1">#: line</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="c1">#: Instance of the ArgumentParser used to parse command line arguments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">epilog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epilog</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="n">name</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cli_options</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+            <span class="c1">#: Arugments provided by user at the command line</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+<div class="viewcode-block" id="CaelusScriptBase.cli_options">
+<a class="viewcode-back" href="../../../dev/caelus.scripts.html#caelus.scripts.core.CaelusScriptBase.cli_options">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cli_options</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the command line options and arguments&quot;&quot;&quot;</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--version&#39;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span>
+            <span class="n">version</span><span class="o">=</span><span class="s2">&quot;Caelus Python Library (CPL) </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">version</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--cml-version&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;CML version used for this invocation&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">verbosity</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">verbosity</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--quiet&#39;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;disable informational messages to screen&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">verbosity</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;-v&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--verbose&#39;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;increase verbosity of logging. Default: No&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">dolog</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">dolog</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--no-log&#39;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;disable logging of script to file.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">dolog</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--cli-logs&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;name of the log file.&quot;</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute the CLI application&quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span>
+        <span class="n">verbosity</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">verbose</span>
+        <span class="n">log_to_file</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_log</span>
+        <span class="n">log_file</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">cli_logs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_logging</span><span class="p">(</span><span class="n">log_to_file</span><span class="p">,</span> <span class="n">log_file</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">quiet</span><span class="p">)</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Caelus Python Library (CPL) </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">cml_version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cmlenv</span><span class="o">.</span><span class="n">cml_get_version</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">cml_version</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">RuntimeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                <span class="n">_lgr</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s2">&quot;Invalid CML version specified: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">cml_version</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">caelus</span><span class="o">.</span><span class="n">caelus_cml</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">cml_version</span>
+
+<div class="viewcode-block" id="CaelusScriptBase.setup_logging">
+<a class="viewcode-back" href="../../../dev/caelus.scripts.html#caelus.scripts.core.CaelusScriptBase.setup_logging">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_logging</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">log_to_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">log_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup logging for the script.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            log_to_file (bool): If True, script will log to file</span>
+<span class="sd">            log_file (path): Filename to log</span>
+<span class="sd">            verbose_level (int): Level of verbosity</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">script_levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">script_levels</span>
+        <span class="n">lib_levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib_levels</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">(</span><span class="n">init_logging</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">log_cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">caelus</span><span class="o">.</span><span class="n">logging</span>
+        <span class="n">lggr_cfg</span> <span class="o">=</span> <span class="n">log_cfg</span><span class="o">.</span><span class="n">pylogger_options</span>
+        <span class="k">if</span> <span class="n">quiet</span><span class="p">:</span>
+            <span class="n">lggr_cfg</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">console_caelus</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="s2">&quot;ERROR&quot;</span>
+            <span class="n">lggr_cfg</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">console_script</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="s2">&quot;ERROR&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lggr_cfg</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">console_caelus</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="n">lib_levels</span><span class="p">[</span>
+                <span class="nb">min</span><span class="p">(</span><span class="n">verbose_level</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lib_levels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">lggr_cfg</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">console_script</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="n">script_levels</span><span class="p">[</span>
+                <span class="nb">min</span><span class="p">(</span><span class="n">verbose_level</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">script_levels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="n">lggr_cfg</span><span class="o">.</span><span class="n">loggers</span><span class="p">[</span><span class="s2">&quot;caelus.scripts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;log_file&quot;</span><span class="p">)</span>
+        <span class="n">log_cfg</span><span class="o">.</span><span class="n">log_to_file</span> <span class="o">=</span> <span class="n">log_to_file</span>
+        <span class="k">if</span> <span class="n">log_to_file</span><span class="p">:</span>
+            <span class="n">log_cfg</span><span class="o">.</span><span class="n">log_file</span> <span class="o">=</span> <span class="n">log_file</span> <span class="ow">or</span> <span class="n">log_cfg</span><span class="o">.</span><span class="n">log_file</span>
+        <span class="n">configure_logging</span><span class="p">(</span><span class="n">log_cfg</span><span class="p">)</span>
+
+        <span class="n">rcfiles</span> <span class="o">=</span> <span class="n">rcfiles_loaded</span><span class="p">()</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;Loaded configuration from files = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">rcfiles</span>
+            <span class="k">if</span> <span class="n">rcfiles</span>
+            <span class="k">else</span> <span class="s2">&quot;No configuration found; using defaults.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">log_cfg</span><span class="o">.</span><span class="n">log_to_file</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Logging to file disabled.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CaelusSubCmdScript">
+<a class="viewcode-back" href="../../../dev/caelus.scripts.html#caelus.scripts.core.CaelusSubCmdScript">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CaelusSubCmdScript</span><span class="p">(</span><span class="n">CaelusScriptBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A CLI app with sub-commands.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CaelusSubCmdScript.cli_options">
+<a class="viewcode-back" href="../../../dev/caelus.scripts.html#caelus.scripts.core.CaelusSubCmdScript.cli_options">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cli_options</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup sub-parsers.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CaelusSubCmdScript</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">cli_options</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subparsers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">add_subparsers</span><span class="p">(</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Choose from one of the following sub-commands; use -h to see sub-command options&quot;</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute sub-command&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CaelusSubCmdScript</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;func&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No subcommand specified. Use &#39;-h&#39; for detailed help.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">print_usage</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">func</span><span class="p">()</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.scripts.core</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

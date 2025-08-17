@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.post.funcobj.funcobj &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../../index.html">
+<!--      <img src="../../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.funcobj.funcobj</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.post.funcobj.funcobj</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Core function object utilities</span>
+<span class="sd">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">Implements the base classes upon with the concrete function object interfaces</span>
+<span class="sd">are built on. :class:`FunctionObject` implements common methods used by all the</span>
+<span class="sd">subclasses.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">...io.caelusdict</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaelusDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">...utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">osutils</span>
+
+
+<div class="viewcode-block" id="DictMeta">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.funcobj.DictMeta">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DictMeta</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create property methods and add validation for properties.</span>
+
+<span class="sd">    This metaclass implements the boilerplate code necessary to add</span>
+<span class="sd">    getter/setters for various entries found in a Caelus input file. It expects</span>
+<span class="sd">    a class variable ``_dict_properties`` that contains tuples for the various</span>
+<span class="sd">    entries in the input file. The tuple can be of two forms:</span>
+
+<span class="sd">      - (name, default_value)</span>
+<span class="sd">      - (name, default_value, valid_values)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=no-value-for-parameter</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">cdict</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DictMeta</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">cdict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;_dict_properties&quot;</span> <span class="ow">in</span> <span class="n">cdict</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">process_properties</span><span class="p">(</span><span class="n">cdict</span><span class="p">[</span><span class="s2">&quot;_dict_properties&quot;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="DictMeta.process_properties">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.funcobj.DictMeta.process_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_properties</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">proplist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create getters/setters for properties&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">plist</span> <span class="ow">in</span> <span class="n">proplist</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">process_property</span><span class="p">(</span><span class="n">plist</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DictMeta.process_property">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.funcobj.DictMeta.process_property">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_property</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">plist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process a property&quot;&quot;&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">plist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">plist</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">plist</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">getter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Getter&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">plist</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">options</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">setter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Setter&quot;&quot;&quot;</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: Invalid option for &#39;</span><span class="si">%s</span><span class="s2">&#39;. &quot;</span>
+                        <span class="s2">&quot;Valid options are:</span><span class="se">\n\t</span><span class="si">%s</span><span class="s2">&quot;</span>
+                        <span class="o">%</span> <span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">setter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                <span class="s2">&quot;Setter&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">property</span><span class="p">(</span><span class="n">getter</span><span class="p">,</span> <span class="n">setter</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">doc</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FuncObjMeta">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.funcobj.FuncObjMeta">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FuncObjMeta</span><span class="p">(</span><span class="n">DictMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Specialization for Function objects&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if it is a concrete type&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;_funcobj_type&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot instantiate </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="FunctionObject">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FunctionObject</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">FuncObjMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class representing an OpenFOAM function object&quot;&quot;&quot;</span>
+
+    <span class="n">_run_control_opts</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;none&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;timeStep&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;writeTime&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;runTime&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;adjustableRunTime&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;clockTime&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;cpuTime&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;onEnd&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;libs&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;region0&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;timeStart&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;timeEnd&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;executeControl&#39;</span><span class="p">,</span> <span class="s1">&#39;timeStep&#39;</span><span class="p">,</span> <span class="n">_run_control_opts</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;executeInterval&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;writeControl&#39;</span><span class="p">,</span> <span class="s1">&#39;timeStep&#39;</span><span class="p">,</span> <span class="n">_run_control_opts</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;writeInterval&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="FunctionObject.funcobj_type">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.funcobj_type">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">funcobj_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the string representing this functionObject type.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;_funcobj_type&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FunctionObject.create">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.create">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a function object from scratch&quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">casedir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">casedir</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">CaelusDict</span><span class="p">()</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_funcobj_type</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">libs</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_funcobj_libs</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize object from input dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): User-defined name for this object (in functions)</span>
+<span class="sd">            obj_dict (CaelusDict): Input dictionary for this functionObject</span>
+<span class="sd">            casedir (path): Path to the case directory (default: cwd)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">casedir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">casedir</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">obj_dict</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Root path to the function object in postProcessing&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">casedir</span> <span class="o">/</span> <span class="s2">&quot;postProcessing&quot;</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the list of time directories available&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">osutils</span><span class="o">.</span><span class="n">set_work_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;[0-9]*&quot;</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">latest_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the latest time available&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&gt;&quot;</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.funcobj.funcobj</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

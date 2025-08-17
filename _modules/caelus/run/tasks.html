@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.run.tasks &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../index.html">
+<!--      <img src="../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.run.tasks</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.run.tasks</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Caelus Tasks Manager</span>
+<span class="sd">----------------------</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">six</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..config</span><span class="w"> </span><span class="kn">import</span> <span class="n">cmlenv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..io</span><span class="w"> </span><span class="kn">import</span> <span class="n">dictfile</span> <span class="k">as</span> <span class="n">cmlio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..post.logs</span><span class="w"> </span><span class="kn">import</span> <span class="n">SolverLog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..post.plots</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaelusPlot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">osutils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">Struct</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">core</span> <span class="k">as</span> <span class="n">run_cmds</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.cmd</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaelusCmd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.hpc_queue</span><span class="w"> </span><span class="kn">import</span> <span class="n">python_execute</span>
+
+<span class="n">_lgr</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TasksMeta">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.TasksMeta">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TasksMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process available tasks within each Tasks class.</span>
+
+<span class="sd">    :class:`TasksMeta` is a metaclass that automates the process of creating a</span>
+<span class="sd">    lookup table for tasks that have been implemented within the :class:`Tasks`</span>
+<span class="sd">    and any of its subclasses. Upon initialization of the class, it populates a</span>
+<span class="sd">    class attribute ``task_map`` that contains a mapping between the task name</span>
+<span class="sd">    (used in the tasks YAML file) and the corresponding method executed by the</span>
+<span class="sd">    Tasks class executed.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">cdict</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TasksMeta</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">cdict</span><span class="p">)</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span>
+        <span class="n">task_map</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">OrderedDict</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">task_map</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="s2">&quot;task_map&quot;</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cdict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;cmd_&quot;</span><span class="p">):</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span>
+                <span class="n">task_map</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">task_map</span> <span class="o">=</span> <span class="n">task_map</span></div>
+
+
+
+<div class="viewcode-block" id="Tasks">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.Tasks">[docs]</a>
+<span class="nd">@six</span><span class="o">.</span><span class="n">add_metaclass</span><span class="p">(</span><span class="n">TasksMeta</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Tasks</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Caelus Tasks.</span>
+
+<span class="sd">    Tasks provides a simple automated workflow interface that provides various</span>
+<span class="sd">    pre-defined actions via a YAML file interface.</span>
+
+<span class="sd">    The tasks are defined as methods with a ``cmd_`` prefix and are</span>
+<span class="sd">    automaticaly converted to task names. Users can create additional tasks by</span>
+<span class="sd">    subclassing and adding additional methods with ``cmd_`` prefix. These</span>
+<span class="sd">    methods accept one argument ``options``, a dictionary containing parameters</span>
+<span class="sd">    provided by the user for that particular task.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#: List of tasks that must be performed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1">#: File that was used to load tasks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_file</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+        <span class="c1">#: Directory where the tasks are to be executed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1">#: Caelus environment used when executing tasks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dep_job_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_set_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="Tasks.load">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.Tasks.load">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">task_file</span><span class="o">=</span><span class="s2">&quot;caelus_tasks.yaml&quot;</span><span class="p">,</span> <span class="n">task_node</span><span class="o">=</span><span class="s2">&quot;tasks&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load tasks from a YAML file.</span>
+
+<span class="sd">        If ``exedir is None`` then the execution directory is set to the</span>
+<span class="sd">        directory where the tasks file is found.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            task_file (filename): Path to the YAML file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">absfile</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">task_file</span><span class="p">)</span>
+        <span class="n">act_file</span> <span class="o">=</span> <span class="n">Struct</span><span class="o">.</span><span class="n">load_yaml</span><span class="p">(</span><span class="n">absfile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;tasks&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">act_file</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Cannot find tasks list in file: &quot;</span> <span class="o">+</span> <span class="n">task_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span> <span class="o">=</span> <span class="n">act_file</span><span class="p">[</span><span class="n">task_node</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_file</span> <span class="o">=</span> <span class="n">absfile</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loaded tasks from: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">absfile</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">case_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute the tasks</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            case_dir: Absolute path to the case directory (default: CWD)</span>
+<span class="sd">            env (CMLEnv): Environment used for the runs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_tasks</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span> <span class="o">=</span> <span class="n">case_dir</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">env</span> <span class="ow">or</span> <span class="n">cmlenv</span><span class="o">.</span><span class="n">cml_get_version</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dep_job_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_set_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">used_job_scheduler</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">act_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_map</span>
+        <span class="n">num_tasks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">)</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Begin executing tasks in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">osutils</span><span class="o">.</span><span class="n">set_work_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">act</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">act</span><span class="p">:</span>
+                    <span class="n">act_map</span><span class="p">[</span><span class="n">key</span><span class="p">](</span><span class="bp">self</span><span class="p">,</span> <span class="n">act</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Successfully executed </span><span class="si">%d</span><span class="s2"> tasks in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">num_tasks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate tasks provided by the user before executing&quot;&quot;&quot;</span>
+        <span class="n">invalid_tasks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">act</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">act</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_map</span><span class="p">:</span>
+                    <span class="n">invalid_tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">invalid_tasks</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid tasks detected: &quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">act</span> <span class="ow">in</span> <span class="n">invalid_tasks</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - &quot;</span> <span class="o">+</span> <span class="n">act</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Valid tasks are: &quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">docstr</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="vm">__doc__</span>
+                <span class="n">desc</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">docstr</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">docstr</span>
+                    <span class="k">else</span> <span class="s2">&quot;No help description.&quot;</span>
+                <span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - </span><span class="si">%s</span><span class="s2"> - </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">desc</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Invalid tasks provided&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Tasks.cmd_run_command">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_run_command">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cmd_run_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a Caelus CML binary.</span>
+
+<span class="sd">        This method is an interface to :class:`CaelusCmd`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cml_exe</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">cmd_name</span>
+        <span class="n">log_file</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;log_file&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">cml_cmd</span> <span class="o">=</span> <span class="n">CaelusCmd</span><span class="p">(</span>
+            <span class="n">cml_exe</span><span class="p">,</span>
+            <span class="n">casedir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">,</span>
+            <span class="n">cml_env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">,</span>
+            <span class="n">output_file</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parallel</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;parallel&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">cml_cmd</span><span class="o">.</span><span class="n">cml_exe_args</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cmd_args&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">cml_cmd</span><span class="o">.</span><span class="n">parallel</span> <span class="o">=</span> <span class="n">parallel</span>
+        <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
+            <span class="n">cml_cmd</span><span class="o">.</span><span class="n">num_mpi_ranks</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;num_ranks&quot;</span><span class="p">,</span> <span class="n">run_cmds</span><span class="o">.</span><span class="n">get_mpi_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">cml_cmd</span><span class="o">.</span><span class="n">mpi_extra_args</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mpi_extra_args&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;queue_settings&quot;</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+            <span class="n">cml_cmd</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;queue_settings&quot;</span><span class="p">])</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Executing command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cml_exe</span><span class="p">)</span>
+        <span class="n">job_dep</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dep_job_id</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dep_job_id</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">cml_cmd</span><span class="p">(</span><span class="n">job_dependencies</span><span class="o">=</span><span class="n">job_dep</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dep_job_id</span> <span class="o">=</span> <span class="n">cml_cmd</span><span class="o">.</span><span class="n">job_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">used_job_scheduler</span> <span class="o">=</span> <span class="n">cml_cmd</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">is_job_scheduler</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Error executing command: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cml_exe</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Tasks.cmd_run_python">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_run_python">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cmd_run_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a python script&quot;&quot;&quot;</span>
+        <span class="n">pyscript</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">script</span>
+        <span class="n">pysfull</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">pyscript</span><span class="p">)</span>
+        <span class="n">pyargs</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;script_args&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">pylog</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;log_file&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">log_to_file</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;log_to_file&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">osutils</span><span class="o">.</span><span class="n">path_exists</span><span class="p">(</span><span class="n">pysfull</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Python file not found: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pyscript</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">python_execute</span><span class="p">(</span>
+            <span class="n">pysfull</span><span class="p">,</span>
+            <span class="n">pyargs</span><span class="p">,</span>
+            <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">,</span>
+            <span class="n">log_file</span><span class="o">=</span><span class="n">pylog</span><span class="p">,</span>
+            <span class="n">log_to_file</span><span class="o">=</span><span class="n">log_to_file</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Error executing python script: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pyscript</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Tasks.cmd_copy_files">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_copy_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cmd_copy_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Copy given file(s) to the destination.&quot;&quot;&quot;</span>
+        <span class="n">srcfiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">src</span><span class="p">)</span>
+        <span class="n">dest</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">dest</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">srcfiles</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Error src pattern </span><span class="si">%s</span><span class="s2"> returns no files&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">src</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">srcfiles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">osutils</span><span class="o">.</span><span class="n">ensure_directory</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">srcfile</span> <span class="ow">in</span> <span class="n">srcfiles</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">srcfile</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Tasks.cmd_copy_tree">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_copy_tree">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cmd_copy_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively copy a given directory to the destination.&quot;&quot;&quot;</span>
+        <span class="n">srcdir</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">src</span>
+        <span class="n">destdir</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">dest</span>
+        <span class="n">ignore_pat</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ignore_patterns&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">symlinks</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;preserve_symlinks&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">ignore_func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">ignore_pat</span><span class="p">:</span>
+            <span class="n">ignore_func</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">ignore_patterns</span><span class="p">(</span><span class="o">*</span><span class="n">ignore_pat</span><span class="p">)</span>
+        <span class="n">osutils</span><span class="o">.</span><span class="n">copy_tree</span><span class="p">(</span>
+            <span class="n">srcdir</span><span class="p">,</span> <span class="n">destdir</span><span class="p">,</span> <span class="n">symlinks</span><span class="o">=</span><span class="n">symlinks</span><span class="p">,</span> <span class="n">ignore_func</span><span class="o">=</span><span class="n">ignore_func</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Tasks.cmd_clean_case">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_clean_case">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cmd_clean_case</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean a case directory&quot;&quot;&quot;</span>
+        <span class="n">purge_all</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;purge_all&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">purge_generated</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;purge_generated&quot;</span><span class="p">,</span> <span class="n">purge_all</span><span class="p">)</span>
+        <span class="n">remove_zero</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;remove_zero&quot;</span><span class="p">,</span> <span class="n">purge_all</span><span class="p">)</span>
+        <span class="n">remove_mesh</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;remove_mesh&quot;</span><span class="p">,</span> <span class="n">purge_all</span><span class="p">)</span>
+        <span class="n">remove_times</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;remove_time_dirs&quot;</span><span class="p">,</span> <span class="n">purge_generated</span><span class="p">)</span>
+        <span class="n">remove_processors</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;remove_processor&quot;</span><span class="p">,</span> <span class="n">purge_generated</span><span class="p">)</span>
+        <span class="n">preserve_extra</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;preserve&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">remove_extra</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;remove_extra&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Cleaning case directory: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">)</span>
+        <span class="n">run_cmds</span><span class="o">.</span><span class="n">clean_casedir</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">,</span>
+            <span class="n">preserve_zero</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">remove_zero</span><span class="p">),</span>
+            <span class="n">preserve_times</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">remove_times</span><span class="p">),</span>
+            <span class="n">preserve_processors</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">remove_processors</span><span class="p">),</span>
+            <span class="n">purge_mesh</span><span class="o">=</span><span class="n">remove_mesh</span><span class="p">,</span>
+            <span class="n">preserve_extra</span><span class="o">=</span><span class="n">preserve_extra</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">remove_extra</span><span class="p">:</span>
+            <span class="n">osutils</span><span class="o">.</span><span class="n">remove_files_dirs</span><span class="p">(</span><span class="n">remove_extra</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Tasks.cmd_process_logs">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_process_logs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cmd_process_logs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process logs for a case&quot;&quot;&quot;</span>
+        <span class="n">log_file</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">log_file</span>
+        <span class="n">lgfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">,</span> <span class="n">log_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">used_job_scheduler</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">lgfile</span><span class="p">):</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Skipping process_logs; job submitted on scheduler&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">logs_dir</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;logs_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;logs&quot;</span><span class="p">)</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processing log file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">log_file</span><span class="p">)</span>
+        <span class="n">clog</span> <span class="o">=</span> <span class="n">SolverLog</span><span class="p">(</span>
+            <span class="n">case_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">,</span> <span class="n">logs_dir</span><span class="o">=</span><span class="n">logs_dir</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="n">log_file</span>
+        <span class="p">)</span>
+        <span class="n">do_plots</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;plot_residuals&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">do_plots</span><span class="p">:</span>
+            <span class="n">plot_file</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;residuals_plot_file&quot;</span><span class="p">,</span> <span class="s2">&quot;residuals.png&quot;</span><span class="p">)</span>
+            <span class="n">fields</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;residuals_fields&quot;</span><span class="p">,</span> <span class="n">clog</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span>
+            <span class="n">cerrors</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;plot_continuity_errors&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">plot</span> <span class="o">=</span> <span class="n">CaelusPlot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">)</span>
+            <span class="n">dname</span><span class="p">,</span> <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">plot_file</span><span class="p">)</span>
+            <span class="n">plot</span><span class="o">.</span><span class="n">plotdir</span> <span class="o">=</span> <span class="n">dname</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+            <span class="n">plot</span><span class="o">.</span><span class="n">solver_log</span> <span class="o">=</span> <span class="n">clog</span>
+            <span class="n">plot</span><span class="o">.</span><span class="n">plot_continuity_errors</span> <span class="o">=</span> <span class="n">cerrors</span>
+            <span class="n">plot</span><span class="o">.</span><span class="n">plot_residuals_hist</span><span class="p">(</span><span class="n">plotfile</span><span class="o">=</span><span class="n">fname</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">)</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Residual time history saved to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">plot_file</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">osutils</span><span class="o">.</span><span class="n">set_work_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">):</span>
+                <span class="n">cname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_dir</span><span class="p">)</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cname</span> <span class="o">+</span> <span class="s2">&quot;.foam&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+                    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Error creating .foam file&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Tasks.cmd_exec_tasks">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_exec_tasks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cmd_exec_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute another task file&quot;&quot;&quot;</span>
+        <span class="n">task_file</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">task_file</span>
+        <span class="n">casedir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">task_file</span><span class="p">)</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="n">Tasks</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">task_file</span><span class="p">)</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Executing tasks from file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">task_file</span><span class="p">)</span>
+        <span class="n">tasks</span><span class="p">(</span><span class="n">case_dir</span><span class="o">=</span><span class="n">casedir</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Tasks.cmd_task_set">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_task_set">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cmd_task_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A subset of tasks for grouping&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_set_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;Task set #</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_set_count</span><span class="p">)</span>
+        <span class="n">casedir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">case_dir</span><span class="p">)</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Executing task set: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="n">Tasks</span><span class="p">()</span>
+        <span class="n">tasks</span><span class="o">.</span><span class="n">tasks</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">tasks</span>
+        <span class="n">tasks</span><span class="o">.</span><span class="n">task_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_file</span>
+        <span class="n">tasks</span><span class="p">(</span><span class="n">case_dir</span><span class="o">=</span><span class="n">casedir</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Tasks.cmd_change_inputs">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_change_inputs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cmd_change_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change input files in case directory&quot;&quot;&quot;</span>
+        <span class="n">dictfile_map</span> <span class="o">=</span> <span class="n">cmlio</span><span class="o">.</span><span class="n">cml_std_files</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dictfile_map</span><span class="p">:</span>
+                <span class="bp">cls</span> <span class="o">=</span> <span class="n">dictfile_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">read_if_present</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="n">cmlio</span><span class="o">.</span><span class="n">DictFile</span><span class="o">.</span><span class="n">read_if_present</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updating file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">write</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.run.tasks</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

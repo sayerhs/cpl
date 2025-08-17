@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Caelus Python Library (CPL) &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx13.css?v=bcebad1a" />
+    <script src="_static/documentation_options.js?v=35c0298d"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Introduction" href="user/intro.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+      .related { display: none; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="#">
+<!--      <img src="_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="user/intro.html" title="Introduction"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">Home</a>&nbsp;|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Caelus Python Library (CPL)</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="#">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Caelus Python Library (CPL)</a><ul>
+<li><a class="reference internal" href="#user-manual">User Manual</a></li>
+<li><a class="reference internal" href="#developer-manual">Developer Manual</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="user/intro.html"
+                          title="next chapter">Introduction</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="caelus-python-library-cpl">
+<h1>Caelus Python Library (CPL)<a class="headerlink" href="#caelus-python-library-cpl" title="Link to this heading">¶</a></h1>
+<dl class="field-list simple">
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>v5.0.0</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>Aug 17, 2025</p>
+</dd>
+</dl>
+<p>Caelus Python Library is a companion package for interacting with <a class="reference external" href="http://openfoam.com/">OpenFOAM</a> and its derivative <a class="reference external" href="https://www.appliedccm.com/caelus/">Caelus CML</a> open-source CFD packages. The library provides
+utilities for pre and post-processing, as well as automating various aspects of
+the CFD simulation workflow. Written in Python, it provides a consistent
+user-interface across the three major operating systems Linux, Windows, and Mac
+OS X ensuring that the scripts written in one platform can be quickly copied and
+used on other platforms.</p>
+<p>Like CML, CPL is also an open-source library released under the Apache License
+Version 2.0 license. See <a class="reference external" href="https://www.apache.org/licenses/LICENSE-2.0">Apache License Version 2.0</a> for more details on use and
+distribution.</p>
+<p>This documentation is split into two parts: a <a class="reference internal" href="#user-manual"><span class="std std-ref">user</span></a> and a
+<a class="reference internal" href="#developer-manual"><span class="std std-ref">developer</span></a> manual. New users should start with the user
+manual that provides an overview of the features and capabilities currently
+available in CPL, the installation process and examples of usage. The developer
+manual documents the application programming interface (API) and is useful for
+users and developers looking to write their own python scripts to extend
+functionality or add features to the library. See <a class="reference internal" href="user/intro.html#user-intro"><span class="std std-ref">Introduction</span></a> for more
+details.</p>
+<section id="user-manual">
+<span id="id1"></span><h2>User Manual<a class="headerlink" href="#user-manual" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user/intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user/intro.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/intro.html#contributing">Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user/installation.html">Installing Caelus Python Library (CPL)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user/installation.html#installing-cpl-with-anaconda-python-distribution">Installing CPL with Anaconda Python Distribution</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user/installation.html#install-anaconda">Install Anaconda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/installation.html#install-cpl-from-conda-forge-recommended">Install CPL from conda-forge (recommended)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/installation.html#install-using-pip">Install using pip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/installation.html#install-cpl-from-source">Install CPL from source</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="user/installation.html#alternate-installation-virtualenv">Alternate Installation – Virtualenv</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user/installation.html#install-cpl">Install CPL</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="user/installation.html#check-installation">Check installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/installation.html#building-documentation">Building documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/installation.html#running-tests">Running tests</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user/configuration.html">Configuring Caelus Python Library</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user/configuration.html#checking-current-configuration">Checking current configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/configuration.html#cpl-configuration-reference">CPL configuration reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user/configuration.html#core-library-configuration">Core library configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="user/configuration.html#python-environment-options">Python environment options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/configuration.html#system-configuration">System configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/configuration.html#cpl-logging-options">CPL logging options</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="user/configuration.html#cml-version-configuration">CML version configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user/cli_apps.html">Command-line Applications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user/cli_apps.html#common-cli-options">Common CLI options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/cli_apps.html#available-command-line-applications">Available command-line applications</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user/cli_apps/caelus.html"><code class="docutils literal notranslate"><span class="pre">caelus</span></code> – Common CPL actions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="user/cli_apps/caelus.html#caelus-cfg-print-cpl-configuration">caelus cfg – Print CPL configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/cli_apps/caelus.html#caelus-clone-clone-a-case-directory">caelus clone – Clone a case directory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/cli_apps/caelus.html#caelus-tasks-run-tasks-from-a-file">caelus tasks – run tasks from a file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/cli_apps/caelus.html#caelus-run-run-an-executable-in-the-appropriate-environment">caelus run – run an executable in the appropriate environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/cli_apps/caelus.html#caelus-runpy-run-a-custom-python-script">caelus runpy – Run a custom python script</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/cli_apps/caelus.html#caelus-logs-process-a-solver-log-file-from-a-run">caelus logs – process a solver log file from a run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/cli_apps/caelus.html#caelus-clean-clean-a-case-directory">caelus clean – clean a case directory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/cli_apps/caelus.html#caelus-build-compile-openfoam-or-cml-sources">caelus build – Compile OpenFOAM or CML sources</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="user/cli_apps/caelus_sim.html"><code class="docutils literal notranslate"><span class="pre">caelus_sim</span></code> – Parametric Run CLI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="user/cli_apps/caelus_sim.html#caelus-sim-setup-setup-a-parametric-run">caelus_sim setup – Setup a parametric run</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/cli_apps/caelus_sim.html#caelus-sim-status-print-status-of-the-parametric-runs">caelus_sim status – Print status of the parametric runs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="user/cli_apps/caelus_tutorials.html">caelus_tutorials – Run tutorials</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user/tasks.html">Caelus Tasks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user/tasks.html#quick-tutorial">Quick tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/tasks.html#tasks-reference">Tasks reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user/tasks.html#run-command-run-openfoam-or-cml-executables">run_command – Run OpenFOAM or CML executables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/tasks.html#run-python-run-user-python-scripts">run_python – Run user python scripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/tasks.html#copy-files-copy-files">copy_files – Copy files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/tasks.html#copy-tree-recursively-copy-directories">copy_tree – Recursively copy directories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/tasks.html#clean-case-clean-a-case-directory">clean_case – Clean a case directory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/tasks.html#process-logs-process-solver-outputs">process_logs – Process solver outputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/tasks.html#task-set-group-tasks">task_set – Group tasks</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user/tuts.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user/tutorials/caelus_sim.html">Parametric runs using CPL</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user/tutorials/caelus_sim.html#preliminaries">Preliminaries</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="user/tutorials/caelus_sim.html#preparing-a-case-template-directory">Preparing a case template directory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/tutorials/caelus_sim.html#inputs-for-setting-up-parametric-run">Inputs for setting up parametric run</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="user/tutorials/caelus_sim.html#setting-up-a-parametric-run">Setting up a parametric run</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/tutorials/caelus_sim.html#prep-solve-and-post">Prep, solve, and post</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="user/tutorials/cpl_io.html">Mainpulating input files with CPL</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user/tutorials/cpl_io.html#specialized-cpl-classes-for-cml-input-files">Specialized CPL classes for CML input files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/tutorials/cpl_io.html#accessing-keywords-with-special-characters">Accessing keywords with special characters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/tutorials/cpl_io.html#input-files-for-turbulence-models">Input files for turbulence models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="user/tutorials/cpl_script.html">Custom scripts using CPL</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="developer-manual">
+<span id="id2"></span><h2>Developer Manual<a class="headerlink" href="#developer-manual" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dev/caelus.html">Caelus Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dev/caelus.config.html">caelus.config – Caelus Configuration Infrastructure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus-python-configuration">Caelus Python Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.CaelusCfg"><code class="docutils literal notranslate"><span class="pre">CaelusCfg</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.CaelusCfg.yaml_decoder"><code class="docutils literal notranslate"><span class="pre">CaelusCfg.yaml_decoder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.CaelusCfg.yaml_encoder"><code class="docutils literal notranslate"><span class="pre">CaelusCfg.yaml_encoder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.CaelusCfg.write_config"><code class="docutils literal notranslate"><span class="pre">CaelusCfg.write_config()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.configure_logging"><code class="docutils literal notranslate"><span class="pre">configure_logging()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.get_appdata_dir"><code class="docutils literal notranslate"><span class="pre">get_appdata_dir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.get_caelus_root"><code class="docutils literal notranslate"><span class="pre">get_caelus_root()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.get_config"><code class="docutils literal notranslate"><span class="pre">get_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.get_cpl_root"><code class="docutils literal notranslate"><span class="pre">get_cpl_root()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.get_default_config"><code class="docutils literal notranslate"><span class="pre">get_default_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.rcfiles_loaded"><code class="docutils literal notranslate"><span class="pre">rcfiles_loaded()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.reload_config"><code class="docutils literal notranslate"><span class="pre">reload_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.reset_default_config"><code class="docutils literal notranslate"><span class="pre">reset_default_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.config.search_cfg_files"><code class="docutils literal notranslate"><span class="pre">search_cfg_files()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus-cml-environment-manager">Caelus CML Environment Manager</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv"><code class="docutils literal notranslate"><span class="pre">CMLEnv</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.etc_file"><code class="docutils literal notranslate"><span class="pre">CMLEnv.etc_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.from_modules"><code class="docutils literal notranslate"><span class="pre">CMLEnv.from_modules()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.bin_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.bin_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.build_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.build_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.environ"><code class="docutils literal notranslate"><span class="pre">CMLEnv.environ</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.etc_dirs"><code class="docutils literal notranslate"><span class="pre">CMLEnv.etc_dirs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.lib_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.lib_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.module_list"><code class="docutils literal notranslate"><span class="pre">CMLEnv.module_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.mpi_bindir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.mpi_bindir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.mpi_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.mpi_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.mpi_libdir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.mpi_libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.project_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.project_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.root"><code class="docutils literal notranslate"><span class="pre">CMLEnv.root</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.user_bindir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.user_bindir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.user_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.user_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.user_libdir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.user_libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.version"><code class="docutils literal notranslate"><span class="pre">CMLEnv.version</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv"><code class="docutils literal notranslate"><span class="pre">FOAMEnv</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.etc_file"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.etc_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.from_modules"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.from_modules()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.bin_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.bin_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.build_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.build_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.build_option"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.build_option</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.environ"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.environ</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.etc_dirs"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.etc_dirs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.foam_api_info"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.foam_api_info</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.foam_bashrc"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.foam_bashrc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.foam_version"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.foam_version</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.lib_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.lib_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.module_list"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.module_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.mpi_bindir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.mpi_bindir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.mpi_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.mpi_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.mpi_libdir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.mpi_libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.project_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.project_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.root"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.root</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.site_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.site_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.site_libdir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.site_libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.user_bindir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.user_bindir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.user_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.user_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.user_libdir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.user_libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.version"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.version</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv"><code class="docutils literal notranslate"><span class="pre">HelyxEnv</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.etc_file"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.etc_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.bin_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.bin_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.build_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.build_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.build_option"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.build_option</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.environ"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.environ</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.etc_dirs"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.etc_dirs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.foam_bashrc"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.foam_bashrc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.lib_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.lib_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.module_list"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.module_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.mpi_bindir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.mpi_bindir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.mpi_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.mpi_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.mpi_libdir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.mpi_libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.project_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.project_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.site_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.site_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.site_libdir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.site_libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.user_bindir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.user_bindir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.user_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.user_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.user_libdir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.user_libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.version"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.version</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.cml_get_latest_version"><code class="docutils literal notranslate"><span class="pre">cml_get_latest_version()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.cml_get_version"><code class="docutils literal notranslate"><span class="pre">cml_get_version()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.discover_versions"><code class="docutils literal notranslate"><span class="pre">discover_versions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.get_cmlenv_instance"><code class="docutils literal notranslate"><span class="pre">get_cmlenv_instance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.config.html#caelus.config.cmlenv.is_foam_var"><code class="docutils literal notranslate"><span class="pre">is_foam_var()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dev/caelus.utils.html">caelus.utils – Basic utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#struct-module">Struct Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.Struct"><code class="docutils literal notranslate"><span class="pre">Struct</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.Struct.yaml_decoder"><code class="docutils literal notranslate"><span class="pre">Struct.yaml_decoder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.Struct.yaml_encoder"><code class="docutils literal notranslate"><span class="pre">Struct.yaml_encoder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.Struct.from_yaml"><code class="docutils literal notranslate"><span class="pre">Struct.from_yaml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.Struct.load_yaml"><code class="docutils literal notranslate"><span class="pre">Struct.load_yaml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.Struct.merge"><code class="docutils literal notranslate"><span class="pre">Struct.merge()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.Struct.pget"><code class="docutils literal notranslate"><span class="pre">Struct.pget()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.Struct.pset"><code class="docutils literal notranslate"><span class="pre">Struct.pset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.Struct.to_yaml"><code class="docutils literal notranslate"><span class="pre">Struct.to_yaml()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.StructMeta"><code class="docutils literal notranslate"><span class="pre">StructMeta</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.gen_yaml_decoder"><code class="docutils literal notranslate"><span class="pre">gen_yaml_decoder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.gen_yaml_encoder"><code class="docutils literal notranslate"><span class="pre">gen_yaml_encoder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.struct.merge"><code class="docutils literal notranslate"><span class="pre">merge()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#miscellaneous-utilities">Miscellaneous utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.abspath"><code class="docutils literal notranslate"><span class="pre">abspath()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.backup_file"><code class="docutils literal notranslate"><span class="pre">backup_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.clean_directory"><code class="docutils literal notranslate"><span class="pre">clean_directory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.copy_tree"><code class="docutils literal notranslate"><span class="pre">copy_tree()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.ensure_directory"><code class="docutils literal notranslate"><span class="pre">ensure_directory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.ostype"><code class="docutils literal notranslate"><span class="pre">ostype()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.path_exists"><code class="docutils literal notranslate"><span class="pre">path_exists()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.path_or_cwd"><code class="docutils literal notranslate"><span class="pre">path_or_cwd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.remove_files_dirs"><code class="docutils literal notranslate"><span class="pre">remove_files_dirs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.set_work_dir"><code class="docutils literal notranslate"><span class="pre">set_work_dir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.split_path"><code class="docutils literal notranslate"><span class="pre">split_path()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.timestamp"><code class="docutils literal notranslate"><span class="pre">timestamp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.user_home_dir"><code class="docutils literal notranslate"><span class="pre">user_home_dir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.utils.html#caelus.utils.osutils.username"><code class="docutils literal notranslate"><span class="pre">username()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dev/caelus.run.html">caelus.run – CML Execution Utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus-tasks-manager">Caelus Tasks Manager</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks"><code class="docutils literal notranslate"><span class="pre">Tasks</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_change_inputs"><code class="docutils literal notranslate"><span class="pre">Tasks.cmd_change_inputs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_clean_case"><code class="docutils literal notranslate"><span class="pre">Tasks.cmd_clean_case()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_copy_files"><code class="docutils literal notranslate"><span class="pre">Tasks.cmd_copy_files()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_copy_tree"><code class="docutils literal notranslate"><span class="pre">Tasks.cmd_copy_tree()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_exec_tasks"><code class="docutils literal notranslate"><span class="pre">Tasks.cmd_exec_tasks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_process_logs"><code class="docutils literal notranslate"><span class="pre">Tasks.cmd_process_logs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_run_command"><code class="docutils literal notranslate"><span class="pre">Tasks.cmd_run_command()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_run_python"><code class="docutils literal notranslate"><span class="pre">Tasks.cmd_run_python()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.cmd_task_set"><code class="docutils literal notranslate"><span class="pre">Tasks.cmd_task_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.load"><code class="docutils literal notranslate"><span class="pre">Tasks.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.case_dir"><code class="docutils literal notranslate"><span class="pre">Tasks.case_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.env"><code class="docutils literal notranslate"><span class="pre">Tasks.env</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.task_file"><code class="docutils literal notranslate"><span class="pre">Tasks.task_file</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.Tasks.tasks"><code class="docutils literal notranslate"><span class="pre">Tasks.tasks</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.tasks.TasksMeta"><code class="docutils literal notranslate"><span class="pre">TasksMeta</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#cml-simulation">CML Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase"><code class="docutils literal notranslate"><span class="pre">CMLSimBase</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.clean"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.clean()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.clone"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.clone()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.get_input_dict"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.get_input_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.load"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.save_state"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.save_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.LESProperties"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.LESProperties</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.RASProperties"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.RASProperties</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.basedir"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.basedir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.blockMeshDict"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.blockMeshDict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.casedir"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.casedir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.changeDictionaryDict"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.changeDictionaryDict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.cmlControls"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.cmlControls</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.controlDict"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.controlDict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.decomposeParDict"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.decomposeParDict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.env"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.env</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.fvSchemes"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.fvSchemes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.fvSolution"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.fvSolution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.name"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.parent"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.parent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.run_config"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.run_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.run_flags"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.run_flags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.transportProperties"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.transportProperties</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.turbulenceProperties"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.turbulenceProperties</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimBase.udf"><code class="docutils literal notranslate"><span class="pre">CMLSimBase.udf</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.filter_cases"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.filter_cases()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.load"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.post"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.post()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.prep"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.prep()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.save_state"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.save_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.setup"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.setup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.simulation_class"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.simulation_class()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.solve"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.solve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.status"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.udf_instance"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.udf_instance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.basedir"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.basedir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.case_names"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.case_names</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.casedir"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.casedir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.cases"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.cases</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.env"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.env</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.name"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.udf"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.udf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.udf_params"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.udf_params</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimCollection.udf_script"><code class="docutils literal notranslate"><span class="pre">CMLSimCollection.udf_script</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimMeta"><code class="docutils literal notranslate"><span class="pre">CMLSimMeta</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimMeta.add_dictfile_attrs"><code class="docutils literal notranslate"><span class="pre">CMLSimMeta.add_dictfile_attrs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimMeta.process_attr"><code class="docutils literal notranslate"><span class="pre">CMLSimMeta.process_attr()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation"><code class="docutils literal notranslate"><span class="pre">CMLSimulation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.case_log"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.case_log()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.decompose_case"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.decompose_case()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.post_case"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.post_case()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.prep_case"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.prep_case()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.reconstruct_case"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.reconstruct_case()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.run_tasks"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.run_tasks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.solve"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.solve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.status"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.update"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.LESProperties"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.LESProperties</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.RASProperties"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.RASProperties</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.blockMeshDict"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.blockMeshDict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.changeDictionaryDict"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.changeDictionaryDict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.cmlControls"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.cmlControls</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.controlDict"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.controlDict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.decomposeParDict"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.decomposeParDict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.fvSchemes"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.fvSchemes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.fvSolution"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.fvSolution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.job_ids"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.job_ids</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.logfile"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.logfile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.run_flags"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.run_flags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.solver"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.solver</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.task_file"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.task_file</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.transportProperties"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.transportProperties</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.case.CMLSimulation.turbulenceProperties"><code class="docutils literal notranslate"><span class="pre">CMLSimulation.turbulenceProperties</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#cml-parametric-run-manager">CML Parametric Run Manager</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.parametric.CMLParametricRun"><code class="docutils literal notranslate"><span class="pre">CMLParametricRun</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.parametric.CMLParametricRun.setup"><code class="docutils literal notranslate"><span class="pre">CMLParametricRun.setup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.parametric.CMLParametricRun.setup_case"><code class="docutils literal notranslate"><span class="pre">CMLParametricRun.setup_case()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.parametric.CMLParametricRun.sim_dict"><code class="docutils literal notranslate"><span class="pre">CMLParametricRun.sim_dict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.parametric.CMLParametricRun.udf_params"><code class="docutils literal notranslate"><span class="pre">CMLParametricRun.udf_params</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.parametric.CMLParametricRun.udf_script"><code class="docutils literal notranslate"><span class="pre">CMLParametricRun.udf_script</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.parametric.iter_case_params"><code class="docutils literal notranslate"><span class="pre">iter_case_params()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.parametric.normalize_variable_param"><code class="docutils literal notranslate"><span class="pre">normalize_variable_param()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus-job-manager-interface">Caelus Job Manager Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd"><code class="docutils literal notranslate"><span class="pre">CaelusCmd</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.prepare_exe_cmd"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.prepare_exe_cmd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.prepare_shell_cmd"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.prepare_shell_cmd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.casedir"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.casedir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.cfg"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.cfg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.cml_env"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.cml_env</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.cml_exe"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.cml_exe</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.cml_exe_args"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.cml_exe_args</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.mpi_extra_args"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.mpi_extra_args</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.num_mpi_ranks"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.num_mpi_ranks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.output_file"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.output_file</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.parallel"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.parallel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.cmd.CaelusCmd.runner"><code class="docutils literal notranslate"><span class="pre">CaelusCmd.runner</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#cml-execution-utilities">CML Execution Utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.core.clean_casedir"><code class="docutils literal notranslate"><span class="pre">clean_casedir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.core.clean_polymesh"><code class="docutils literal notranslate"><span class="pre">clean_polymesh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.core.clone_case"><code class="docutils literal notranslate"><span class="pre">clone_case()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.core.find_caelus_recipe_dirs"><code class="docutils literal notranslate"><span class="pre">find_caelus_recipe_dirs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.core.find_case_dirs"><code class="docutils literal notranslate"><span class="pre">find_case_dirs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.core.find_recipe_dirs"><code class="docutils literal notranslate"><span class="pre">find_recipe_dirs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.core.get_mpi_size"><code class="docutils literal notranslate"><span class="pre">get_mpi_size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.core.is_caelus_casedir"><code class="docutils literal notranslate"><span class="pre">is_caelus_casedir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#job-scheduler-interface">Job Scheduler Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue"><code class="docutils literal notranslate"><span class="pre">HPCQueue</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.name"><code class="docutils literal notranslate"><span class="pre">HPCQueue.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.queue"><code class="docutils literal notranslate"><span class="pre">HPCQueue.queue</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.account"><code class="docutils literal notranslate"><span class="pre">HPCQueue.account</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.num_nodes"><code class="docutils literal notranslate"><span class="pre">HPCQueue.num_nodes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.num_ranks"><code class="docutils literal notranslate"><span class="pre">HPCQueue.num_ranks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.stdout"><code class="docutils literal notranslate"><span class="pre">HPCQueue.stdout</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.stderr"><code class="docutils literal notranslate"><span class="pre">HPCQueue.stderr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.join_outputs"><code class="docutils literal notranslate"><span class="pre">HPCQueue.join_outputs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.mail_opts"><code class="docutils literal notranslate"><span class="pre">HPCQueue.mail_opts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.email_address"><code class="docutils literal notranslate"><span class="pre">HPCQueue.email_address</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.qos"><code class="docutils literal notranslate"><span class="pre">HPCQueue.qos</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.time_limit"><code class="docutils literal notranslate"><span class="pre">HPCQueue.time_limit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.shell"><code class="docutils literal notranslate"><span class="pre">HPCQueue.shell</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.mpi_extra_args"><code class="docutils literal notranslate"><span class="pre">HPCQueue.mpi_extra_args</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.delete"><code class="docutils literal notranslate"><span class="pre">HPCQueue.delete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.get_queue_settings"><code class="docutils literal notranslate"><span class="pre">HPCQueue.get_queue_settings()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.is_job_scheduler"><code class="docutils literal notranslate"><span class="pre">HPCQueue.is_job_scheduler()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.is_parallel"><code class="docutils literal notranslate"><span class="pre">HPCQueue.is_parallel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.prepare_mpi_cmd"><code class="docutils literal notranslate"><span class="pre">HPCQueue.prepare_mpi_cmd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.process_cml_run_env"><code class="docutils literal notranslate"><span class="pre">HPCQueue.process_cml_run_env()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.process_foam_run_env"><code class="docutils literal notranslate"><span class="pre">HPCQueue.process_foam_run_env()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.process_run_env"><code class="docutils literal notranslate"><span class="pre">HPCQueue.process_run_env()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.submit"><code class="docutils literal notranslate"><span class="pre">HPCQueue.submit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.update"><code class="docutils literal notranslate"><span class="pre">HPCQueue.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.write_script"><code class="docutils literal notranslate"><span class="pre">HPCQueue.write_script()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.queue_name"><code class="docutils literal notranslate"><span class="pre">HPCQueue.queue_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.HPCQueue.script_body"><code class="docutils literal notranslate"><span class="pre">HPCQueue.script_body</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.PBSQueue"><code class="docutils literal notranslate"><span class="pre">PBSQueue</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.PBSQueue.delete"><code class="docutils literal notranslate"><span class="pre">PBSQueue.delete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.PBSQueue.get_queue_settings"><code class="docutils literal notranslate"><span class="pre">PBSQueue.get_queue_settings()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.PBSQueue.submit"><code class="docutils literal notranslate"><span class="pre">PBSQueue.submit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.PBSQueue.queue_name"><code class="docutils literal notranslate"><span class="pre">PBSQueue.queue_name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.ParallelJob"><code class="docutils literal notranslate"><span class="pre">ParallelJob</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.ParallelJob.is_parallel"><code class="docutils literal notranslate"><span class="pre">ParallelJob.is_parallel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.ParallelJob.prepare_mpi_cmd"><code class="docutils literal notranslate"><span class="pre">ParallelJob.prepare_mpi_cmd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.ParallelJob.queue_name"><code class="docutils literal notranslate"><span class="pre">ParallelJob.queue_name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SerialJob"><code class="docutils literal notranslate"><span class="pre">SerialJob</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.delete"><code class="docutils literal notranslate"><span class="pre">SerialJob.delete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.get_queue_settings"><code class="docutils literal notranslate"><span class="pre">SerialJob.get_queue_settings()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.is_job_scheduler"><code class="docutils literal notranslate"><span class="pre">SerialJob.is_job_scheduler()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.is_parallel"><code class="docutils literal notranslate"><span class="pre">SerialJob.is_parallel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.prepare_mpi_cmd"><code class="docutils literal notranslate"><span class="pre">SerialJob.prepare_mpi_cmd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.submit"><code class="docutils literal notranslate"><span class="pre">SerialJob.submit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SerialJob.queue_name"><code class="docutils literal notranslate"><span class="pre">SerialJob.queue_name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SlurmQueue"><code class="docutils literal notranslate"><span class="pre">SlurmQueue</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SlurmQueue.delete"><code class="docutils literal notranslate"><span class="pre">SlurmQueue.delete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SlurmQueue.get_queue_settings"><code class="docutils literal notranslate"><span class="pre">SlurmQueue.get_queue_settings()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SlurmQueue.prepare_srun_cmd"><code class="docutils literal notranslate"><span class="pre">SlurmQueue.prepare_srun_cmd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SlurmQueue.submit"><code class="docutils literal notranslate"><span class="pre">SlurmQueue.submit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.SlurmQueue.queue_name"><code class="docutils literal notranslate"><span class="pre">SlurmQueue.queue_name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.caelus_execute"><code class="docutils literal notranslate"><span class="pre">caelus_execute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.get_job_scheduler"><code class="docutils literal notranslate"><span class="pre">get_job_scheduler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.run.html#caelus.run.hpc_queue.python_execute"><code class="docutils literal notranslate"><span class="pre">python_execute()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dev/caelus.post.html">caelus.post – Post-processing utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#post-processing-interface">Post-processing interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.functions.PostProcessing"><code class="docutils literal notranslate"><span class="pre">PostProcessing</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.functions.PostProcessing.filter"><code class="docutils literal notranslate"><span class="pre">PostProcessing.filter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.functions.PostProcessing.keys"><code class="docutils literal notranslate"><span class="pre">PostProcessing.keys()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.functions.PostProcessing.casedir"><code class="docutils literal notranslate"><span class="pre">PostProcessing.casedir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.functions.PostProcessing.data"><code class="docutils literal notranslate"><span class="pre">PostProcessing.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.functions.PostProcessing.root"><code class="docutils literal notranslate"><span class="pre">PostProcessing.root</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#core-function-object-utilities">Core function object utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.DictMeta"><code class="docutils literal notranslate"><span class="pre">DictMeta</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.DictMeta.process_properties"><code class="docutils literal notranslate"><span class="pre">DictMeta.process_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.DictMeta.process_property"><code class="docutils literal notranslate"><span class="pre">DictMeta.process_property()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FuncObjMeta"><code class="docutils literal notranslate"><span class="pre">FuncObjMeta</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject"><code class="docutils literal notranslate"><span class="pre">FunctionObject</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.create"><code class="docutils literal notranslate"><span class="pre">FunctionObject.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.funcobj_type"><code class="docutils literal notranslate"><span class="pre">FunctionObject.funcobj_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.enabled"><code class="docutils literal notranslate"><span class="pre">FunctionObject.enabled</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.executeControl"><code class="docutils literal notranslate"><span class="pre">FunctionObject.executeControl</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.executeInterval"><code class="docutils literal notranslate"><span class="pre">FunctionObject.executeInterval</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.latest_time"><code class="docutils literal notranslate"><span class="pre">FunctionObject.latest_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.libs"><code class="docutils literal notranslate"><span class="pre">FunctionObject.libs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.log"><code class="docutils literal notranslate"><span class="pre">FunctionObject.log</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.region"><code class="docutils literal notranslate"><span class="pre">FunctionObject.region</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.root"><code class="docutils literal notranslate"><span class="pre">FunctionObject.root</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.timeEnd"><code class="docutils literal notranslate"><span class="pre">FunctionObject.timeEnd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.timeStart"><code class="docutils literal notranslate"><span class="pre">FunctionObject.timeStart</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.times"><code class="docutils literal notranslate"><span class="pre">FunctionObject.times</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.writeControl"><code class="docutils literal notranslate"><span class="pre">FunctionObject.writeControl</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.funcobj.FunctionObject.writeInterval"><code class="docutils literal notranslate"><span class="pre">FunctionObject.writeInterval</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#sets-and-surfaces-sampling">Sets and surfaces sampling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledData"><code class="docutils literal notranslate"><span class="pre">SampledData</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledData.data"><code class="docutils literal notranslate"><span class="pre">SampledData.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledData.fields"><code class="docutils literal notranslate"><span class="pre">SampledData.fields</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledData.name"><code class="docutils literal notranslate"><span class="pre">SampledData.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledData.parent"><code class="docutils literal notranslate"><span class="pre">SampledData.parent</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSet"><code class="docutils literal notranslate"><span class="pre">SampledSet</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSet.axis"><code class="docutils literal notranslate"><span class="pre">SampledSet.axis</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSet.coord_cols"><code class="docutils literal notranslate"><span class="pre">SampledSet.coord_cols</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSet.num_coord_cols"><code class="docutils literal notranslate"><span class="pre">SampledSet.num_coord_cols</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSet.points"><code class="docutils literal notranslate"><span class="pre">SampledSet.points</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSet.type"><code class="docutils literal notranslate"><span class="pre">SampledSet.type</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSets"><code class="docutils literal notranslate"><span class="pre">SampledSets</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSets.setFormat"><code class="docutils literal notranslate"><span class="pre">SampledSets.setFormat</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSurface"><code class="docutils literal notranslate"><span class="pre">SampledSurface</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSurface.type"><code class="docutils literal notranslate"><span class="pre">SampledSurface.type</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSurfaces"><code class="docutils literal notranslate"><span class="pre">SampledSurfaces</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSurfaces.surfaceFormat"><code class="docutils literal notranslate"><span class="pre">SampledSurfaces.surfaceFormat</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.Sampling"><code class="docutils literal notranslate"><span class="pre">Sampling</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.Sampling.keys"><code class="docutils literal notranslate"><span class="pre">Sampling.keys()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.Sampling.fields"><code class="docutils literal notranslate"><span class="pre">Sampling.fields</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.Sampling.interpolationScheme"><code class="docutils literal notranslate"><span class="pre">Sampling.interpolationScheme</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.sampling.Sampling.samples"><code class="docutils literal notranslate"><span class="pre">Sampling.samples</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#force-and-force-coefficients-interface">Force and Force coefficients interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.ForceCoeffs"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.ForceCoeffs.Aref"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.Aref</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.ForceCoeffs.dragDir"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.dragDir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.ForceCoeffs.lRef"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.lRef</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.ForceCoeffs.liftDir"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.liftDir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.ForceCoeffs.magUInf"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.magUInf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.ForceCoeffs.patches"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.patches</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.ForceCoeffs.pitchAxis"><code class="docutils literal notranslate"><span class="pre">ForceCoeffs.pitchAxis</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.Forces"><code class="docutils literal notranslate"><span class="pre">Forces</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag"><code class="docutils literal notranslate"><span class="pre">LiftDrag</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.Uinf"><code class="docutils literal notranslate"><span class="pre">LiftDrag.Uinf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.dragDirection"><code class="docutils literal notranslate"><span class="pre">LiftDrag.dragDirection</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.liftDirection"><code class="docutils literal notranslate"><span class="pre">LiftDrag.liftDirection</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.maxCp"><code class="docutils literal notranslate"><span class="pre">LiftDrag.maxCp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.minCp"><code class="docutils literal notranslate"><span class="pre">LiftDrag.minCp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.nAveragingSteps"><code class="docutils literal notranslate"><span class="pre">LiftDrag.nAveragingSteps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.outputRegionData"><code class="docutils literal notranslate"><span class="pre">LiftDrag.outputRegionData</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.patches"><code class="docutils literal notranslate"><span class="pre">LiftDrag.patches</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.pitchAxis"><code class="docutils literal notranslate"><span class="pre">LiftDrag.pitchAxis</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.porosity"><code class="docutils literal notranslate"><span class="pre">LiftDrag.porosity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.referenceArea"><code class="docutils literal notranslate"><span class="pre">LiftDrag.referenceArea</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.referenceLength"><code class="docutils literal notranslate"><span class="pre">LiftDrag.referenceLength</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.rhoInfo"><code class="docutils literal notranslate"><span class="pre">LiftDrag.rhoInfo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.runOnLastIterOnly"><code class="docutils literal notranslate"><span class="pre">LiftDrag.runOnLastIterOnly</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.wheelbase"><code class="docutils literal notranslate"><span class="pre">LiftDrag.wheelbase</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.funcobj.forces.LiftDrag.writeFields"><code class="docutils literal notranslate"><span class="pre">LiftDrag.writeFields</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus-log-analyzer">Caelus Log Analyzer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor"><code class="docutils literal notranslate"><span class="pre">LogProcessor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.add_rule"><code class="docutils literal notranslate"><span class="pre">LogProcessor.add_rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.bounding_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.bounding_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.completion_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.completion_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.continuity_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.continuity_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.convergence_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.convergence_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.courant_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.courant_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.exec_time_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.exec_time_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.exiting_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.exiting_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.extend_rule"><code class="docutils literal notranslate"><span class="pre">LogProcessor.extend_rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.fatal_error_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.fatal_error_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.residual_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.residual_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.time_processor"><code class="docutils literal notranslate"><span class="pre">LogProcessor.time_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.watch_file"><code class="docutils literal notranslate"><span class="pre">LogProcessor.watch_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.bound_files"><code class="docutils literal notranslate"><span class="pre">LogProcessor.bound_files</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.case_dir"><code class="docutils literal notranslate"><span class="pre">LogProcessor.case_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.converged"><code class="docutils literal notranslate"><span class="pre">LogProcessor.converged</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.converged_time"><code class="docutils literal notranslate"><span class="pre">LogProcessor.converged_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.current_state"><code class="docutils literal notranslate"><span class="pre">LogProcessor.current_state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.failed"><code class="docutils literal notranslate"><span class="pre">LogProcessor.failed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.logfile"><code class="docutils literal notranslate"><span class="pre">LogProcessor.logfile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.logs_dir"><code class="docutils literal notranslate"><span class="pre">LogProcessor.logs_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.res_files"><code class="docutils literal notranslate"><span class="pre">LogProcessor.res_files</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.solve_completed"><code class="docutils literal notranslate"><span class="pre">LogProcessor.solve_completed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.subiter_map"><code class="docutils literal notranslate"><span class="pre">LogProcessor.subiter_map</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.time"><code class="docutils literal notranslate"><span class="pre">LogProcessor.time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.LogProcessor.time_str"><code class="docutils literal notranslate"><span class="pre">LogProcessor.time_str</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.SolverLog"><code class="docutils literal notranslate"><span class="pre">SolverLog</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.SolverLog.bounding_var"><code class="docutils literal notranslate"><span class="pre">SolverLog.bounding_var()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.SolverLog.clock_time"><code class="docutils literal notranslate"><span class="pre">SolverLog.clock_time()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.SolverLog.continuity_errors"><code class="docutils literal notranslate"><span class="pre">SolverLog.continuity_errors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.logs.SolverLog.residual"><code class="docutils literal notranslate"><span class="pre">SolverLog.residual()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus-plotting-utilities">Caelus Plotting Utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.CaelusPlot"><code class="docutils literal notranslate"><span class="pre">CaelusPlot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.CaelusPlot.plot_force_coeffs_hist"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.plot_force_coeffs_hist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.CaelusPlot.plot_forces_hist"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.plot_forces_hist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.CaelusPlot.plot_residuals_hist"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.plot_residuals_hist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.CaelusPlot.casedir"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.casedir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.CaelusPlot.plot_continuity_errors"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.plot_continuity_errors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.CaelusPlot.plotdir"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.plotdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.CaelusPlot.solver_log"><code class="docutils literal notranslate"><span class="pre">CaelusPlot.solver_log</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.LogWatcher"><code class="docutils literal notranslate"><span class="pre">LogWatcher</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.LogWatcher.continuity_processor"><code class="docutils literal notranslate"><span class="pre">LogWatcher.continuity_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.LogWatcher.plot_residuals"><code class="docutils literal notranslate"><span class="pre">LogWatcher.plot_residuals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.LogWatcher.residual_processor"><code class="docutils literal notranslate"><span class="pre">LogWatcher.residual_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.LogWatcher.skip_field"><code class="docutils literal notranslate"><span class="pre">LogWatcher.skip_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.LogWatcher.time_processor"><code class="docutils literal notranslate"><span class="pre">LogWatcher.time_processor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.LogWatcher.plot_fields"><code class="docutils literal notranslate"><span class="pre">LogWatcher.plot_fields</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.LogWatcher.skip_fields"><code class="docutils literal notranslate"><span class="pre">LogWatcher.skip_fields</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.LogWatcher.time_array"><code class="docutils literal notranslate"><span class="pre">LogWatcher.time_array</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.PlotsMeta"><code class="docutils literal notranslate"><span class="pre">PlotsMeta</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.make_plot_method"><code class="docutils literal notranslate"><span class="pre">make_plot_method()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.post.html#caelus.post.plots.mpl_settings"><code class="docutils literal notranslate"><span class="pre">mpl_settings()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dev/caelus.io.html">caelus.io – CML Input File Manipulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus-openfoam-input-file-interface">Caelus/OpenFOAM Input File Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.BlockMeshDict"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.BlockMeshDict.create_default_entries"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.create_default_entries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.BlockMeshDict.blocks"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.blocks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.BlockMeshDict.boundary"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.boundary</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.BlockMeshDict.convertToMeters"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.convertToMeters</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.BlockMeshDict.edges"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.edges</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.BlockMeshDict.mergePatchPairs"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.mergePatchPairs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.BlockMeshDict.vertices"><code class="docutils literal notranslate"><span class="pre">BlockMeshDict.vertices</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ChangeDictionaryDict"><code class="docutils literal notranslate"><span class="pre">ChangeDictionaryDict</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ChangeDictionaryDict.create_default_entries"><code class="docutils literal notranslate"><span class="pre">ChangeDictionaryDict.create_default_entries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ChangeDictionaryDict.dictionaryReplacement"><code class="docutils literal notranslate"><span class="pre">ChangeDictionaryDict.dictionaryReplacement</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.CmlControls"><code class="docutils literal notranslate"><span class="pre">CmlControls</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict"><code class="docutils literal notranslate"><span class="pre">ControlDict</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.create_default_entries"><code class="docutils literal notranslate"><span class="pre">ControlDict.create_default_entries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.adjustTimeStep"><code class="docutils literal notranslate"><span class="pre">ControlDict.adjustTimeStep</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.application"><code class="docutils literal notranslate"><span class="pre">ControlDict.application</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.deltaT"><code class="docutils literal notranslate"><span class="pre">ControlDict.deltaT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.endTime"><code class="docutils literal notranslate"><span class="pre">ControlDict.endTime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.functions"><code class="docutils literal notranslate"><span class="pre">ControlDict.functions</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.graphFormat"><code class="docutils literal notranslate"><span class="pre">ControlDict.graphFormat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.maxCo"><code class="docutils literal notranslate"><span class="pre">ControlDict.maxCo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.purgeWrite"><code class="docutils literal notranslate"><span class="pre">ControlDict.purgeWrite</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.runTimeModifiable"><code class="docutils literal notranslate"><span class="pre">ControlDict.runTimeModifiable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.startFrom"><code class="docutils literal notranslate"><span class="pre">ControlDict.startFrom</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.startTime"><code class="docutils literal notranslate"><span class="pre">ControlDict.startTime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.stopAt"><code class="docutils literal notranslate"><span class="pre">ControlDict.stopAt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.timeFormat"><code class="docutils literal notranslate"><span class="pre">ControlDict.timeFormat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.timePrecision"><code class="docutils literal notranslate"><span class="pre">ControlDict.timePrecision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.writeCompression"><code class="docutils literal notranslate"><span class="pre">ControlDict.writeCompression</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.writeControl"><code class="docutils literal notranslate"><span class="pre">ControlDict.writeControl</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.writeFormat"><code class="docutils literal notranslate"><span class="pre">ControlDict.writeFormat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.writeInterval"><code class="docutils literal notranslate"><span class="pre">ControlDict.writeInterval</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.ControlDict.writePrecision"><code class="docutils literal notranslate"><span class="pre">ControlDict.writePrecision</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DecomposeParDict"><code class="docutils literal notranslate"><span class="pre">DecomposeParDict</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DecomposeParDict.create_default_entries"><code class="docutils literal notranslate"><span class="pre">DecomposeParDict.create_default_entries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DecomposeParDict.method"><code class="docutils literal notranslate"><span class="pre">DecomposeParDict.method</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DecomposeParDict.numberOfSubdomains"><code class="docutils literal notranslate"><span class="pre">DecomposeParDict.numberOfSubdomains</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile"><code class="docutils literal notranslate"><span class="pre">DictFile</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.create_default_entries"><code class="docutils literal notranslate"><span class="pre">DictFile.create_default_entries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.create_header"><code class="docutils literal notranslate"><span class="pre">DictFile.create_header()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.get_full_contents"><code class="docutils literal notranslate"><span class="pre">DictFile.get_full_contents()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.keys"><code class="docutils literal notranslate"><span class="pre">DictFile.keys()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.load"><code class="docutils literal notranslate"><span class="pre">DictFile.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.merge"><code class="docutils literal notranslate"><span class="pre">DictFile.merge()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.read_if_present"><code class="docutils literal notranslate"><span class="pre">DictFile.read_if_present()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.write"><code class="docutils literal notranslate"><span class="pre">DictFile.write()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.contents"><code class="docutils literal notranslate"><span class="pre">DictFile.contents</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.data"><code class="docutils literal notranslate"><span class="pre">DictFile.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.filename"><code class="docutils literal notranslate"><span class="pre">DictFile.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictFile.header"><code class="docutils literal notranslate"><span class="pre">DictFile.header</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictMeta"><code class="docutils literal notranslate"><span class="pre">DictMeta</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictMeta.process_defaults"><code class="docutils literal notranslate"><span class="pre">DictMeta.process_defaults()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictMeta.process_properties"><code class="docutils literal notranslate"><span class="pre">DictMeta.process_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.DictMeta.process_property"><code class="docutils literal notranslate"><span class="pre">DictMeta.process_property()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSchemes.create_default_entries"><code class="docutils literal notranslate"><span class="pre">FvSchemes.create_default_entries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSchemes.ddtSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.ddtSchemes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSchemes.divSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.divSchemes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSchemes.fluxRequired"><code class="docutils literal notranslate"><span class="pre">FvSchemes.fluxRequired</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSchemes.gradSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.gradSchemes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSchemes.interpolationSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.interpolationSchemes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSchemes.laplacianSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.laplacianSchemes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSchemes.snGradSchemes"><code class="docutils literal notranslate"><span class="pre">FvSchemes.snGradSchemes</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSolution"><code class="docutils literal notranslate"><span class="pre">FvSolution</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSolution.create_default_entries"><code class="docutils literal notranslate"><span class="pre">FvSolution.create_default_entries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSolution.PIMPLE"><code class="docutils literal notranslate"><span class="pre">FvSolution.PIMPLE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSolution.PISO"><code class="docutils literal notranslate"><span class="pre">FvSolution.PISO</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSolution.SIMPLE"><code class="docutils literal notranslate"><span class="pre">FvSolution.SIMPLE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSolution.potentialFlow"><code class="docutils literal notranslate"><span class="pre">FvSolution.potentialFlow</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSolution.relaxationFactors"><code class="docutils literal notranslate"><span class="pre">FvSolution.relaxationFactors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.FvSolution.solvers"><code class="docutils literal notranslate"><span class="pre">FvSolution.solvers</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.LESProperties"><code class="docutils literal notranslate"><span class="pre">LESProperties</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.LESProperties.create_default_entries"><code class="docutils literal notranslate"><span class="pre">LESProperties.create_default_entries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.LESProperties.delta"><code class="docutils literal notranslate"><span class="pre">LESProperties.delta</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.PolyMeshBoundary"><code class="docutils literal notranslate"><span class="pre">PolyMeshBoundary</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.RASProperties"><code class="docutils literal notranslate"><span class="pre">RASProperties</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TransportProperties"><code class="docutils literal notranslate"><span class="pre">TransportProperties</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TransportProperties.create_default_entries"><code class="docutils literal notranslate"><span class="pre">TransportProperties.create_default_entries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TransportProperties.transportModel"><code class="docutils literal notranslate"><span class="pre">TransportProperties.transportModel</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TurbModelProps"><code class="docutils literal notranslate"><span class="pre">TurbModelProps</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TurbModelProps.create_default_entries"><code class="docutils literal notranslate"><span class="pre">TurbModelProps.create_default_entries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TurbModelProps.coeffs"><code class="docutils literal notranslate"><span class="pre">TurbModelProps.coeffs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TurbModelProps.model"><code class="docutils literal notranslate"><span class="pre">TurbModelProps.model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TurbModelProps.printCoeffs"><code class="docutils literal notranslate"><span class="pre">TurbModelProps.printCoeffs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TurbModelProps.turbulence"><code class="docutils literal notranslate"><span class="pre">TurbModelProps.turbulence</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TurbulenceProperties"><code class="docutils literal notranslate"><span class="pre">TurbulenceProperties</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TurbulenceProperties.create_default_entries"><code class="docutils literal notranslate"><span class="pre">TurbulenceProperties.create_default_entries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TurbulenceProperties.get_turb_file"><code class="docutils literal notranslate"><span class="pre">TurbulenceProperties.get_turb_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.TurbulenceProperties.simulationType"><code class="docutils literal notranslate"><span class="pre">TurbulenceProperties.simulationType</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dictfile.cml_std_files"><code class="docutils literal notranslate"><span class="pre">cml_std_files</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus-openfoam-dictionary-implementation">Caelus/OpenFOAM Dictionary Implementation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.caelusdict.CaelusDict"><code class="docutils literal notranslate"><span class="pre">CaelusDict</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.caelusdict.CaelusDict.yaml_decoder"><code class="docutils literal notranslate"><span class="pre">CaelusDict.yaml_decoder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.caelusdict.CaelusDict.yaml_encoder"><code class="docutils literal notranslate"><span class="pre">CaelusDict.yaml_encoder</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.BoundaryList"><code class="docutils literal notranslate"><span class="pre">BoundaryList</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.BoundaryList.write_value"><code class="docutils literal notranslate"><span class="pre">BoundaryList.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.CalcDirective"><code class="docutils literal notranslate"><span class="pre">CalcDirective</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.CalcDirective.write_value"><code class="docutils literal notranslate"><span class="pre">CalcDirective.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.CodeStream"><code class="docutils literal notranslate"><span class="pre">CodeStream</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.CodeStream.write_value"><code class="docutils literal notranslate"><span class="pre">CodeStream.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.DimStr"><code class="docutils literal notranslate"><span class="pre">DimStr</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.DimStr.write_value"><code class="docutils literal notranslate"><span class="pre">DimStr.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.DimValue"><code class="docutils literal notranslate"><span class="pre">DimValue</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.DimValue.write_value"><code class="docutils literal notranslate"><span class="pre">DimValue.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.Dimension"><code class="docutils literal notranslate"><span class="pre">Dimension</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.Dimension.write_value"><code class="docutils literal notranslate"><span class="pre">Dimension.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.Directive"><code class="docutils literal notranslate"><span class="pre">Directive</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.Directive.write_value"><code class="docutils literal notranslate"><span class="pre">Directive.write_value()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.Directive.directive"><code class="docutils literal notranslate"><span class="pre">Directive.directive</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.Directive.value"><code class="docutils literal notranslate"><span class="pre">Directive.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.EvalDirective"><code class="docutils literal notranslate"><span class="pre">EvalDirective</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.EvalDirective.write_value"><code class="docutils literal notranslate"><span class="pre">EvalDirective.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.Field"><code class="docutils literal notranslate"><span class="pre">Field</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.Field.write_nonuniform"><code class="docutils literal notranslate"><span class="pre">Field.write_nonuniform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.Field.write_uniform"><code class="docutils literal notranslate"><span class="pre">Field.write_uniform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.Field.write_value"><code class="docutils literal notranslate"><span class="pre">Field.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.FoamType"><code class="docutils literal notranslate"><span class="pre">FoamType</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.FoamType.write_value"><code class="docutils literal notranslate"><span class="pre">FoamType.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.ListTemplate"><code class="docutils literal notranslate"><span class="pre">ListTemplate</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.ListTemplate.write_value"><code class="docutils literal notranslate"><span class="pre">ListTemplate.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.MacroSubstitution"><code class="docutils literal notranslate"><span class="pre">MacroSubstitution</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.MacroSubstitution.write_value"><code class="docutils literal notranslate"><span class="pre">MacroSubstitution.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.MultipleValues"><code class="docutils literal notranslate"><span class="pre">MultipleValues</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.dtypes.MultipleValues.write_value"><code class="docutils literal notranslate"><span class="pre">MultipleValues.write_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus-input-file-pretty-printer">Caelus Input File Pretty-printer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.DictPrinter"><code class="docutils literal notranslate"><span class="pre">DictPrinter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.DictPrinter.write_dict"><code class="docutils literal notranslate"><span class="pre">DictPrinter.write_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.DictPrinter.write_dict_item"><code class="docutils literal notranslate"><span class="pre">DictPrinter.write_dict_item()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.DictPrinter.write_list"><code class="docutils literal notranslate"><span class="pre">DictPrinter.write_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.DictPrinter.write_ndarray"><code class="docutils literal notranslate"><span class="pre">DictPrinter.write_ndarray()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.DictPrinter.write_value"><code class="docutils literal notranslate"><span class="pre">DictPrinter.write_value()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.DictPrinter.keyword_fmt"><code class="docutils literal notranslate"><span class="pre">DictPrinter.keyword_fmt</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.Indenter"><code class="docutils literal notranslate"><span class="pre">Indenter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.Indenter.dedent"><code class="docutils literal notranslate"><span class="pre">Indenter.dedent()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.Indenter.emit"><code class="docutils literal notranslate"><span class="pre">Indenter.emit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.Indenter.indent"><code class="docutils literal notranslate"><span class="pre">Indenter.indent()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.Indenter.curr_indent"><code class="docutils literal notranslate"><span class="pre">Indenter.curr_indent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.Indenter.indent_str"><code class="docutils literal notranslate"><span class="pre">Indenter.indent_str</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.Indenter.tab_width"><code class="docutils literal notranslate"><span class="pre">Indenter.tab_width</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.io.html#caelus.io.printer.foam_writer"><code class="docutils literal notranslate"><span class="pre">foam_writer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dev/caelus.scripts.html">caelus.scripts – CLI App Utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.scripts.html#basic-cli-interface">Basic CLI Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.scripts.html#caelus.scripts.core.CaelusScriptBase"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.scripts.html#caelus.scripts.core.CaelusScriptBase.cli_options"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.cli_options()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.scripts.html#caelus.scripts.core.CaelusScriptBase.setup_logging"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.setup_logging()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.scripts.html#caelus.scripts.core.CaelusScriptBase.args"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.args</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.scripts.html#caelus.scripts.core.CaelusScriptBase.description"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.scripts.html#caelus.scripts.core.CaelusScriptBase.epilog"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.epilog</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.scripts.html#caelus.scripts.core.CaelusScriptBase.name"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.scripts.html#caelus.scripts.core.CaelusScriptBase.parser"><code class="docutils literal notranslate"><span class="pre">CaelusScriptBase.parser</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dev/caelus.scripts.html#caelus.scripts.core.CaelusSubCmdScript"><code class="docutils literal notranslate"><span class="pre">CaelusSubCmdScript</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dev/caelus.scripts.html#caelus.scripts.core.CaelusSubCmdScript.cli_options"><code class="docutils literal notranslate"><span class="pre">CaelusSubCmdScript.cli_options()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="user/intro.html" title="Introduction"
+             >next</a> |</li>
+        <li><a href="#">Home</a>&nbsp;|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Caelus Python Library (CPL)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

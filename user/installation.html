@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Installing Caelus Python Library (CPL) &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Configuring Caelus Python Library" href="configuration.html" />
+    <link rel="prev" title="Introduction" href="intro.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../index.html">
+<!--      <img src="../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuring Caelus Python Library"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Installing Caelus Python Library (CPL)</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Installing Caelus Python Library (CPL)</a><ul>
+<li><a class="reference internal" href="#installing-cpl-with-anaconda-python-distribution">Installing CPL with Anaconda Python Distribution</a><ul>
+<li><a class="reference internal" href="#install-anaconda">Install Anaconda</a></li>
+<li><a class="reference internal" href="#install-cpl-from-conda-forge-recommended">Install CPL from conda-forge (recommended)</a></li>
+<li><a class="reference internal" href="#install-using-pip">Install using pip</a></li>
+<li><a class="reference internal" href="#install-cpl-from-source">Install CPL from source</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#alternate-installation-virtualenv">Alternate Installation – Virtualenv</a><ul>
+<li><a class="reference internal" href="#install-cpl">Install CPL</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#check-installation">Check installation</a></li>
+<li><a class="reference internal" href="#building-documentation">Building documentation</a></li>
+<li><a class="reference internal" href="#running-tests">Running tests</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="intro.html"
+                          title="previous chapter">Introduction</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="configuration.html"
+                          title="next chapter">Configuring Caelus Python Library</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user/installation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="installing-caelus-python-library-cpl">
+<span id="installation"></span><h1>Installing Caelus Python Library (CPL)<a class="headerlink" href="#installing-caelus-python-library-cpl" title="Link to this heading">¶</a></h1>
+<p>CPL is a python package for use with <a class="reference external" href="https://openfoam.com">OpenFOAM</a> or <a class="reference external" href="https://www.appliedccm.com/caelus/">Caelus CML</a>.
+Therefore, it is assumed that users have a properly functioning OpenFOAM
+installation on their system. In addition to OpenFoAM/Caelus CML and python, it
+also requires several scientific python libraries:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="http://www.numpy.org">NumPy</a> – Arrays, linear algebra</p></li>
+<li><p><a class="reference external" href="http://pandas.pydata.org">Pandas</a> – Data Analysis library</p></li>
+<li><p><a class="reference external" href="https://matplotlib.org">Matplotlib</a> – Plotting package</p></li>
+</ul>
+</div></blockquote>
+<p>The quickest way to install CPL is to install through <a class="reference external" href="http://docs.continuum.io/anaconda/index">Anaconda Python
+Distribution</a>. This distribution
+provides a comprehensive set of python packages necessary to get up and running
+with CPL. Once installed, please proceed to <a class="reference internal" href="#check-install"><span class="std std-ref">Check installation</span></a> to learn how to
+use CPL.</p>
+<p>For users wishing to install CPL from the git repository, this user
+guide recommends the use of Anaconda. An alternate approach using Python
+<em>virtualenv</em> is described at the end of this section, but will require some
+Python expertise on the part of the user.</p>
+<p>The default installation instructions use Python v2.7. However, CPL is
+designed to work with both Python v2.7 and Python v3.x versions.</p>
+<section id="installing-cpl-with-anaconda-python-distribution">
+<h2>Installing CPL with Anaconda Python Distribution<a class="headerlink" href="#installing-cpl-with-anaconda-python-distribution" title="Link to this heading">¶</a></h2>
+<section id="install-anaconda">
+<h3>Install Anaconda<a class="headerlink" href="#install-anaconda" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://www.continuum.io/downloads">Download the Anaconda installer</a> for your operating system.</p></li>
+<li><p>Execute the downloaded file and follow the installation
+instructions. It is recommended that you install the default
+packages.</p></li>
+<li><p>Update the anaconda environment according to <a class="reference external" href="http://conda.pydata.org/docs/install/full.html#install-instructions">installation
+instructions</a></p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Make sure that you answer <code class="docutils literal notranslate"><span class="pre">yes</span></code> when the installer asks to add the
+installation location to your default PATH locations. Or else the following
+commands will not work. It might be necessary to open a new shell for the
+environment to be updated.</p>
+</div>
+</section>
+<section id="install-cpl-from-conda-forge-recommended">
+<h3>Install CPL from conda-forge (recommended)<a class="headerlink" href="#install-cpl-from-conda-forge-recommended" title="Link to this heading">¶</a></h3>
+<ol class="arabic">
+<li><p>Install CPL using the Anaconda package manager.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">conda install -c conda-forge caelus</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="install-using-pip">
+<h3>Install using pip<a class="headerlink" href="#install-using-pip" title="Link to this heading">¶</a></h3>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install py-caelus</span>
+</pre></div>
+</div>
+</section>
+<section id="install-cpl-from-source">
+<span id="install-dev-git"></span><h3>Install CPL from source<a class="headerlink" href="#install-cpl-from-source" title="Link to this heading">¶</a></h3>
+<ol class="arabic">
+<li><p>Obtain the CPL source from the public Git repository.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Change<span class="w"> </span>to<span class="w"> </span>directory<span class="w"> </span>where<span class="w"> </span>you<span class="w"> </span>want<span class="w"> </span>to<span class="w"> </span>develop/store<span class="w"> </span>sources
+<span class="go">git clone https://github.com/sayerhs/cpl</span>
+<span class="go">cd cpl</span>
+</pre></div>
+</div>
+</li>
+<li><p>Create a custom conda environment</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Ensure<span class="w"> </span>working<span class="w"> </span>directory<span class="w"> </span>is<span class="w"> </span>CPL
+<span class="go">conda env create -f etc/caelus3.yml</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ol class="arabic simple">
+<li><p>Developers interested in developing CPL might want to install the
+development environment available in <code class="file docutils literal notranslate"><span class="pre">etc/caelus3-dev.yml</span></code>. This
+installs additional packages like <code class="docutils literal notranslate"><span class="pre">sphinx</span></code> for document generation,
+and <code class="docutils literal notranslate"><span class="pre">pytest</span></code> for running the test suite.</p></li>
+<li><p>By default, the environment created is named <code class="docutils literal notranslate"><span class="pre">caelus</span></code> when using
+<code class="file docutils literal notranslate"><span class="pre">etc/caelus3.yml</span></code> and <code class="docutils literal notranslate"><span class="pre">caelus-dev</span></code> when using
+<code class="file docutils literal notranslate"><span class="pre">etc/caelus3-dev.yml</span></code>. The user can change the name of the
+environment by using <cite>-n &lt;env_name&gt;</cite> option in the previous command.</p></li>
+</ol>
+</div>
+</li>
+<li><p>Activate the custom environment and install CPL within this environment</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">source activate caelus</span>
+<span class="go">pip install .</span>
+</pre></div>
+</div>
+<p>For <em>editable</em> development versions of CPL use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code>
+instead.</p>
+</li>
+</ol>
+<p>After completing this steps, please proceed to <a class="reference internal" href="#check-install"><span class="std std-ref">Check installation</span></a> to test that
+your installation is working properly.</p>
+</section>
+</section>
+<section id="alternate-installation-virtualenv">
+<h2>Alternate Installation – Virtualenv<a class="headerlink" href="#alternate-installation-virtualenv" title="Link to this heading">¶</a></h2>
+<p>This method is suitable for users who prefer to use the existing python
+installations in their system (e.g., from <code class="docutils literal notranslate"><span class="pre">apt-get</span></code> for Linux systems). A
+brief outline of the installation process is described here. Users are referred
+to the <a class="reference external" href="https://docs.python.org/3/library/venv.html">virtual environments docs</a> for more information.</p>
+<section id="install-cpl">
+<h3>Install CPL<a class="headerlink" href="#install-cpl" title="Link to this heading">¶</a></h3>
+<ol class="arabic">
+<li><p>Obtain the CPL source from the public Git repository.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Change<span class="w"> </span>to<span class="w"> </span>directory<span class="w"> </span>where<span class="w"> </span>you<span class="w"> </span>want<span class="w"> </span>to<span class="w"> </span>develop/store<span class="w"> </span>sources
+<span class="go">git clone https://github.com/sayerhs/cpl</span>
+<span class="go">cd cpl</span>
+</pre></div>
+</div>
+</li>
+<li><p>Create a virtual environment with all dependencies for CPL</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Create<span class="w"> </span>virtual<span class="w"> </span>environment
+<span class="go">python3 -m venv --system-site-packages .venv</span>
+
+<span class="gp"># </span>Activate<span class="w"> </span>virtual<span class="w"> </span>environment
+<span class="go">source .venv/bin/activate</span>
+
+<span class="gp"># </span>Install<span class="w"> </span>dependencies
+<span class="go">python3 -m pip install -r requirements.txt</span>
+</pre></div>
+</div>
+</li>
+<li><p>Activate virtual environment and install CPL into it</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Ensure<span class="w"> </span>that<span class="w"> </span>we<span class="w"> </span>are<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>right<span class="w"> </span>environment
+<span class="go">source .venv/bin/activate</span>
+<span class="go">pip install . # Install CPL within this environment</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+</section>
+<section id="check-installation">
+<span id="check-install"></span><h2>Check installation<a class="headerlink" href="#check-installation" title="Link to this heading">¶</a></h2>
+<p>After installing CPL, please open a command line terminal, activate the right
+python environment, and execute <strong class="program">caelus -h</strong> to check if the
+installation process was completed succesfully. If everything was installed and
+configured successfully, users should see a detailed help message summarizing
+the usage of <strong class="program">caelus</strong>. At this stage, you can either learn about
+building documentation and executing unit tests (provided with CPL) in the next
+sections or skip to <a class="reference internal" href="configuration.html#configuration"><span class="std std-ref">Configuring Caelus Python Library</span></a> to learn how to configure and use CPL.</p>
+</section>
+<section id="building-documentation">
+<h2>Building documentation<a class="headerlink" href="#building-documentation" title="Link to this heading">¶</a></h2>
+<p>A local version of this documentation can be built using sphinx. See
+<a class="reference internal" href="#install-dev-git"><span class="std std-ref">Install CPL from source</span></a> for more details on installing the developer environment
+and sources.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Change<span class="w"> </span>working<span class="w"> </span>directory<span class="w"> </span>to<span class="w"> </span>CPL
+<span class="go">cd docs/</span>
+
+<span class="gp"># </span>Build<span class="w"> </span>HTML<span class="w"> </span>documentation
+<span class="go">make html</span>
+<span class="gp"># </span>View<span class="w"> </span><span class="k">in</span><span class="w"> </span>browser
+<span class="go">open build/html/index.html</span>
+
+<span class="gp"># </span>Build<span class="w"> </span>PDF<span class="w"> </span>documentation
+<span class="go">make latexpdf</span>
+<span class="go">open build/latex/CPL.pdf</span>
+</pre></div>
+</div>
+</section>
+<section id="running-tests">
+<h2>Running tests<a class="headerlink" href="#running-tests" title="Link to this heading">¶</a></h2>
+<p>The unit tests are written using <a class="reference external" href="https://docs.pytest.org/en/latest/">py.test</a>. To run the tests executing
+<strong class="command">py.test tests</strong> from the top-level CPL directory. Note that this will
+require the user to have initialized the environment using
+<code class="file docutils literal notranslate"><span class="pre">etc/caelus3-dev.yml</span></code>.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuring Caelus Python Library"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Installing Caelus Python Library (CPL)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

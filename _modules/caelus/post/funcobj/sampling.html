@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.post.funcobj.sampling &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../../index.html">
+<!--      <img src="../../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.funcobj.sampling</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.post.funcobj.sampling</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># pylint: disable=too-few-public-methods</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Sets and surfaces sampling</span>
+<span class="sd">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">This module implements the python interface to OpenFOAM&#39;s ``sets`` and</span>
+<span class="sd">``surfaces`` sampling objects.</span>
+
+<span class="sd">.. currentmodule: caelus.post.funcobj.sampling</span>
+<span class="sd">.. autosummary::</span>
+<span class="sd">   :nosignatures:</span>
+
+<span class="sd">   SampledSets</span>
+<span class="sd">   SampledSurfaces</span>
+<span class="sd">   SampledSet</span>
+<span class="sd">   SampledSurface</span>
+
+<span class="sd">The different classes are illustrated using this example functionObject entry</span>
+<span class="sd">in ``motorBike`` tutorial example::</span>
+
+<span class="sd">   cuttingPlane</span>
+<span class="sd">   {</span>
+<span class="sd">       type            surfaces;</span>
+<span class="sd">       libs            (sampling);</span>
+<span class="sd">       writeControl    writeTime;</span>
+
+<span class="sd">       surfaceFormat   vtk;</span>
+<span class="sd">       fields          ( p U );</span>
+
+<span class="sd">       interpolationScheme cellPoint;</span>
+
+<span class="sd">       surfaces</span>
+<span class="sd">       {</span>
+<span class="sd">           yNormal</span>
+<span class="sd">           {</span>
+<span class="sd">               type            cuttingPlane;</span>
+<span class="sd">               planeType       pointAndNormal;</span>
+<span class="sd">               pointAndNormalDict</span>
+<span class="sd">               {</span>
+<span class="sd">                   point   (0 0 0);</span>
+<span class="sd">                   normal  (0 1 0);</span>
+<span class="sd">               }</span>
+<span class="sd">               interpolate     true;</span>
+<span class="sd">           }</span>
+<span class="sd">       }</span>
+<span class="sd">   }</span>
+
+<span class="sd">When the above object is accessed via</span>
+<span class="sd">:class:`~caelus.post.funcobj.functions.PostProcessing` class, the</span>
+<span class="sd">``cuttingPlane`` object is represented by :class:`SampledSurfaces`, and the</span>
+<span class="sd">``yNormal`` object is represented by :class:`SampledSurface` instance. Similar</span>
+<span class="sd">relationship exists between :class:`SampledSets` and :class:`SampledSet`.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">...utils.vtk_helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyvista</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.funcobj</span><span class="w"> </span><span class="kn">import</span> <span class="n">DictMeta</span><span class="p">,</span> <span class="n">FunctionObject</span>
+
+
+<div class="viewcode-block" id="SampledData">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.sampling.SampledData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SampledData</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">DictMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for a single sampling object.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">fobj_dict</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize data from input dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): User-defined name for this sampling instance</span>
+<span class="sd">            fobj_dict (CaelusDict): Input parameter dictionary</span>
+<span class="sd">            parent (Sampling): Parent collection instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#: User-defined name for this sampling instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="c1">#: Input dictionary containing data for this instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">fobj_dict</span>
+        <span class="c1">#: The parent sets/surfaces group instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the names of fields requested by user&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fields&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&gt;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="SampledSet">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSet">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SampledSet</span><span class="p">(</span><span class="n">SampledData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A concrete ``set`` instance.</span>
+
+<span class="sd">    Currently only ``raw``, ``vtk``, and ``csv`` formats are supported for</span>
+<span class="sd">    ``setFormat`` if the user intends to load the dataset through this class.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">      &gt;&gt;&gt; post = PostProcessing()      # Access post-processing instance</span>
+<span class="sd">      &gt;&gt;&gt; sets = post[&#39;sampledSets1&#39;]  # Get the sets group</span>
+<span class="sd">      &gt;&gt;&gt; probes = sets[&#39;probe1&#39;]      # Access line probe data</span>
+<span class="sd">      &gt;&gt;&gt; df = probes()                # Get dataframe for latest time</span>
+<span class="sd">      &gt;&gt;&gt; df1 = probes(&#39;10&#39;)           # Get dataframe for different time</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="p">(</span>
+                <span class="s1">&#39;uniform&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;face&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;midPoint&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;midPointAndFace&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;cloud&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;patchCloud&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;patchSeed&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;polyLine&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;triSurfaceMeshPointSet&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;axis&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;x y z xyz distance&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()),</span>
+        <span class="p">(</span><span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">fobj_dict</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize data from input dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): User-defined name for this sampling instance</span>
+<span class="sd">            fobj_dict (CaelusDict): Input parameter dictionary</span>
+<span class="sd">            parent (Sampling): Parent collection instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">fobj_dict</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_coord_cols</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the number of expected columns for coordinates.</span>
+
+<span class="sd">        If the ``axis`` is ``xyz`` then returns 3, else returns 1 for all other</span>
+<span class="sd">        axis options.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">3</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis</span> <span class="o">==</span> <span class="s2">&quot;xyz&quot;</span> <span class="k">else</span> <span class="mi">1</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">coord_cols</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return names of the coordinates column.</span>
+
+<span class="sd">        If ``axis == &quot;xyz&quot;`` then returns a list of 3 columns, else returns the</span>
+<span class="sd">        column name defined by axis.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;x y z&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis</span> <span class="o">==</span> <span class="s2">&quot;xyz&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_file_fmt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a shell wildcard glob expression for files.</span>
+
+<span class="sd">        The wildcard glob is based on the user-defined name for this set</span>
+<span class="sd">        instance and the ``setFormat`` option.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ext_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">raw</span><span class="o">=</span><span class="s2">&quot;.xy&quot;</span><span class="p">,</span>
+            <span class="n">vtk</span><span class="o">=</span><span class="s2">&quot;.vtk&quot;</span><span class="p">,</span>
+            <span class="n">csv</span><span class="o">=</span><span class="s2">&quot;.csv&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">outfmt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">setFormat</span>
+        <span class="k">if</span> <span class="n">outfmt</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ext_map</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">outfmt</span><span class="si">}</span><span class="s2"> not yet supported&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">*</span><span class="si">{</span><span class="n">ext_map</span><span class="p">[</span><span class="n">outfmt</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_field_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract field names from a file name.&quot;&quot;&quot;</span>
+        <span class="n">skip</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">stem</span><span class="p">[</span><span class="n">skip</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">filtered</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_field_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">ncols</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return names for components.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fields (list): List of field names in the file</span>
+<span class="sd">            ncols (int): Number of columns seen per field</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            list: A list of column names for a data file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ncols</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="s2">&quot;x y z&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+            <span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncols</span><span class="p">))]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_raw_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a raw format file.</span>
+
+<span class="sd">        Loads files of the format ``&lt;name&gt;_&lt;field&gt;.xy``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fname (str): Name of the file to read.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: Pandas dataframe with the dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coord_cols</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_field_names</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">ncols</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+        <span class="n">fnames</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">fields</span> <span class="k">if</span> <span class="n">ncols</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_field_names</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">ncols</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">coords</span> <span class="o">+</span> <span class="n">fnames</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_vtk_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a legacy VTK file and return data.</span>
+
+<span class="sd">        Loads files of the format ``&lt;name&gt;_&lt;field&gt;.vtk``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fname (str): Name of the file to read.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: Pandas dataframe with the dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">pyvista</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;x y z&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">mesh</span><span class="o">.</span><span class="n">point_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">point_data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">fnames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_field_names</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">val</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">fnames</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load data for this set at a given time.&quot;&quot;&quot;</span>
+        <span class="n">reader_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">raw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_raw_file</span><span class="p">,</span>
+            <span class="n">vtk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_vtk_file</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">dtime</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="k">if</span> <span class="n">time</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">latest_time</span>
+        <span class="k">if</span> <span class="n">dtime</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">dtime</span><span class="p">]</span>
+
+        <span class="n">dpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="n">dtime</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dpath</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No data found: </span><span class="si">{</span><span class="n">dpath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">flist</span> <span class="o">=</span> <span class="n">dpath</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_fmt</span><span class="p">())</span>
+        <span class="n">file_fmt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">setFormat</span>
+        <span class="n">file_reader</span> <span class="o">=</span> <span class="n">reader_map</span><span class="p">[</span><span class="n">file_fmt</span><span class="p">]</span>
+        <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">file_reader</span><span class="p">(</span><span class="n">ff</span><span class="p">)</span> <span class="k">for</span> <span class="n">ff</span> <span class="ow">in</span> <span class="n">flist</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">frames</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading data for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">df1</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="o">~</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">dpath</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span> <span class="n">df1</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">df1</span></div>
+
+
+
+<div class="viewcode-block" id="SampledSurface">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSurface">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SampledSurface</span><span class="p">(</span><span class="n">SampledData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A concrete ``surface`` instance.</span>
+
+<span class="sd">    Currently only ``vtk`` output format is supported for reading data. A</span>
+<span class="sd">    ``pyvista.Mesh`` instance is returned and can be interacted using</span>
+<span class="sd">    ``vtk.vtkPolyData`` methods.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">      &gt;&gt;&gt; post = PostProcessing()          # Access post-processing instance</span>
+<span class="sd">      &gt;&gt;&gt; surfaces = post[&#39;cuttingPlane&#39;]  # Get the surfaces group</span>
+<span class="sd">      &gt;&gt;&gt; plane = surfaces[&#39;yNormal&#39;]      # Access plane data</span>
+<span class="sd">      &gt;&gt;&gt; patch = plane()                  # Get dataframe for latest time</span>
+<span class="sd">      &gt;&gt;&gt; patch1 = plane(&#39;10&#39;)             # Get dataframe for different time</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">fobj_dict</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize data from input dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): User-defined name for this sampling instance</span>
+<span class="sd">            fobj_dict (CaelusDict): Input parameter dictionary</span>
+<span class="sd">            parent (Sampling): Parent collection instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">fobj_dict</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the dataframe associated with a given time.&quot;&quot;&quot;</span>
+        <span class="n">dtime</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="k">if</span> <span class="n">time</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">latest_time</span>
+        <span class="k">if</span> <span class="n">dtime</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">dtime</span><span class="p">]</span>
+
+        <span class="n">dpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="n">dtime</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">dpath</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;.vtp&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fname</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Surface output not found: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">pyvista</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">dpath</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">mesh</span></div>
+
+
+
+<div class="viewcode-block" id="Sampling">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.sampling.Sampling">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Sampling</span><span class="p">(</span><span class="n">FunctionObject</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for sets and surfaces sampling groups.&quot;&quot;&quot;</span>
+
+    <span class="n">_funcobj_libs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sampling&quot;</span><span class="p">]</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;fields&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span>
+            <span class="s1">&#39;interpolationScheme&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;cell&#39;</span><span class="p">,</span>
+            <span class="s2">&quot;cell cellPoint cellPointFace pointMVC cellPatchConstrained&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span>
+        <span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="n">casedir</span><span class="p">)</span>
+        <span class="c1">#: Mapping of sampling instances to their names.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="Sampling.keys">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.sampling.Sampling.keys">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the names of the sampling entries&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the instance corresponding to user given name.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="SampledSets">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSets">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SampledSets</span><span class="p">(</span><span class="n">Sampling</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A ``sets`` functionObjects entry.</span>
+
+<span class="sd">    This class provides an interface to a group of sampled set instances. The</span>
+<span class="sd">    instances are of type :class:`SampledSet`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_funcobj_type</span> <span class="o">=</span> <span class="s2">&quot;sets&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;setFormat&#39;</span><span class="p">,</span> <span class="s1">&#39;raw&#39;</span><span class="p">,</span> <span class="s2">&quot;raw gnuplot xmgr jplot vtk ensight csv&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()),</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="n">casedir</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sets</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">entry</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">SampledSet</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SampledSurfaces">
+<a class="viewcode-back" href="../../../../dev/caelus.post.html#caelus.post.funcobj.sampling.SampledSurfaces">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SampledSurfaces</span><span class="p">(</span><span class="n">Sampling</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A ``surfaces`` functionObjects entry.</span>
+
+<span class="sd">    This class provides an interface to a group of sampled surface (planes or</span>
+<span class="sd">    patches) instances. The instances are of type :class:`SampledSurface`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_funcobj_type</span> <span class="o">=</span> <span class="s2">&quot;surfaces&quot;</span>
+
+    <span class="n">_dict_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;surfaceFormat&#39;</span><span class="p">,</span> <span class="s1">&#39;vtk&#39;</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="n">casedir</span><span class="p">)</span>
+
+        <span class="n">surfaces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">surfaces</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">surfaces</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">surf</span> <span class="ow">in</span> <span class="n">surfaces</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">surf</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">SampledSurface</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">surfaces</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">SampledSurface</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.post.funcobj.sampling</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

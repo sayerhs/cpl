@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.run.cmd &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../index.html">
+<!--      <img src="../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.run.cmd</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.run.cmd</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Caelus Job Manager Interface</span>
+<span class="sd">----------------------------</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..config</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">osutils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.hpc_queue</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_job_scheduler</span>
+
+<span class="n">_lgr</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CaelusCmd">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.cmd.CaelusCmd">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CaelusCmd</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;CML execution interface.</span>
+
+<span class="sd">    CaelusCmd is a high-level interface to execute CML binaries within an</span>
+<span class="sd">    appropriate enviroment across different operating systems.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cml_exe</span><span class="p">,</span> <span class="n">casedir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cml_env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            cml_exe (str): The binary to be executed (e.g., blockMesh)</span>
+<span class="sd">            casedir (path): Absolute path to case directory</span>
+<span class="sd">            cml_env (CMLEnv): Environment used to run the executable</span>
+<span class="sd">            output_file (file): Filename to redirect all output</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#: CPL configuration object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="c1">#: CML program to be executed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cml_exe</span> <span class="o">=</span> <span class="n">cml_exe</span>
+        <span class="c1">#: Case directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">casedir</span> <span class="o">=</span> <span class="n">casedir</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="c1">#: CML version used for this run</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cml_env</span> <span class="o">=</span> <span class="n">cml_env</span>
+        <span class="n">exe_base</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">cml_exe</span><span class="p">))</span>
+        <span class="c1">#: Log file where all output and error are captured</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_file</span> <span class="o">=</span> <span class="n">output_file</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.log&quot;</span> <span class="o">%</span> <span class="n">exe_base</span>
+
+        <span class="c1">#: Handle to the subprocess instance running the command</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner</span> <span class="o">=</span> <span class="n">get_job_scheduler</span><span class="p">()(</span><span class="bp">self</span><span class="o">.</span><span class="n">cml_exe</span><span class="p">)</span>
+
+        <span class="c1">#: Is this a parallel run</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_mpi_ranks</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1">#: Arguments passed to the CML executable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cml_exe_args</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="c1">#: Extra arguments passed to MPI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mpi_extra_args</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_id</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_mpi_ranks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of MPI ranks for a parallel run&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">num_ranks</span>
+
+    <span class="nd">@num_mpi_ranks</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_mpi_ranks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nranks</span><span class="p">):</span>
+        <span class="n">nranks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nranks</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">num_ranks</span> <span class="o">=</span> <span class="n">nranks</span>
+        <span class="k">if</span> <span class="n">nranks</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mpi_extra_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extra arguments to pass to MPI command&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">mpi_extra_args</span>
+
+    <span class="nd">@mpi_extra_args</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mpi_extra_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">mpi_extra_args</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="CaelusCmd.prepare_exe_cmd">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.cmd.CaelusCmd.prepare_exe_cmd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_exe_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the shell command and return as a string</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The CML command invocation with all its options</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cmd_args</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot; -parallel &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cml_exe_args</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">cml_exe_args</span>
+        <span class="p">)</span>
+        <span class="n">cmd_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cml_exe</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">cmd_args</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">is_job_scheduler</span><span class="p">():</span>
+            <span class="n">cmd_line</span> <span class="o">+=</span> <span class="s2">&quot; &gt;&amp; </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_file</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_file</span>
+        <span class="k">return</span> <span class="n">cmd_line</span></div>
+
+
+<div class="viewcode-block" id="CaelusCmd.prepare_shell_cmd">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.cmd.CaelusCmd.prepare_shell_cmd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_shell_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the complete command line string as executed&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">prepare_mpi_cmd</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_exe_cmd</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_exe_cmd</span><span class="p">()</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">job_dependencies</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the executable&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">osutils</span><span class="o">.</span><span class="n">set_work_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">casedir</span><span class="p">):</span>
+            <span class="n">runner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runner</span>
+            <span class="n">runner</span><span class="o">.</span><span class="n">cml_env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cml_env</span>
+            <span class="n">runner</span><span class="o">.</span><span class="n">script_body</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_shell_cmd</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">runner</span><span class="o">.</span><span class="n">is_job_scheduler</span><span class="p">():</span>  <span class="c1"># pylint: disable=no-else-return</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">job_id</span> <span class="o">=</span> <span class="n">runner</span><span class="p">(</span><span class="n">job_dependencies</span><span class="o">=</span><span class="n">job_dependencies</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">runner</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">)</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.run.cmd</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

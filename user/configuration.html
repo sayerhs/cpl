@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Configuring Caelus Python Library &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Command-line Applications" href="cli_apps.html" />
+    <link rel="prev" title="Installing Caelus Python Library (CPL)" href="installation.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../index.html">
+<!--      <img src="../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cli_apps.html" title="Command-line Applications"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installing Caelus Python Library (CPL)"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Configuring Caelus Python Library</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Configuring Caelus Python Library</a><ul>
+<li><a class="reference internal" href="#checking-current-configuration">Checking current configuration</a></li>
+<li><a class="reference internal" href="#cpl-configuration-reference">CPL configuration reference</a><ul>
+<li><a class="reference internal" href="#core-library-configuration">Core library configuration</a><ul>
+<li><a class="reference internal" href="#python-environment-options">Python environment options</a></li>
+<li><a class="reference internal" href="#system-configuration">System configuration</a></li>
+<li><a class="reference internal" href="#cpl-logging-options">CPL logging options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cml-version-configuration">CML version configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="installation.html"
+                          title="previous chapter">Installing Caelus Python Library (CPL)</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cli_apps.html"
+                          title="next chapter">Command-line Applications</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user/configuration.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="configuring-caelus-python-library">
+<span id="configuration"></span><h1>Configuring Caelus Python Library<a class="headerlink" href="#configuring-caelus-python-library" title="Link to this heading">¶</a></h1>
+<p>CPL provides a YAML-based configuration utility that can be used to customize
+the library depending on the operating system and user’s specific needs. A good
+example is to provide non-standard install locations for the OpenFOAM or Caelus
+CML executables, as well as using different versions of OpenFOAM/CML with CPL
+simultaneously.</p>
+<p>The use of configuration file is optional, CPL provides defaults that should
+work on most systems and will attempt to auto-detect CML installations on
+standard paths. On Linux/OS X systems, CPL will look at
+<code class="file docutils literal notranslate"><span class="pre">~/Caelus/caelus-VERSION</span></code> to determine the installed CML versions and use
+the <code class="docutils literal notranslate"><span class="pre">VERSION</span></code> tag to determine the latest version to use. On Window systems,
+the default search path is <code class="file docutils literal notranslate"><span class="pre">C:\Caelus</span></code>.</p>
+<p>Upon invocation, CPL will search and load configuration files from the following
+locations, if available. The files are loaded in sequence shown below and
+options found in succeeding files will overwrite configuration options found in
+preceeding files.</p>
+<ol class="arabic simple">
+<li><p>Default configuration supplied with CPL;</p></li>
+<li><p>The system-wide configuration in file pointed by environment variable
+<span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal notranslate"><span class="pre">CAELUSRC_SYSTEM</span></code> if it exists;</p></li>
+<li><p>The per-user configuration file, if available. On Linux/OS X, this is the
+file <code class="file docutils literal notranslate"><span class="pre">~/.caelus/caelus.yaml</span></code>, and <code class="file docutils literal notranslate"><span class="pre">%APPDATA%/caelus/caelus.yaml</span></code>
+on Windows systems;</p></li>
+<li><p>The per-user configuration file pointed by the environment variable
+<span class="target" id="index-1"></span><code class="xref std std-envvar docutils literal notranslate"><span class="pre">CAELUSRC</span></code> if it exists;</p></li>
+<li><p>The file <code class="docutils literal notranslate"><span class="pre">caelus.yaml</span></code> in the current working directory, if it exists.</p></li>
+</ol>
+<p>While CPL provides a way to auto-discover installed OpenFOAM and CML versions,
+often it will be necessary to provide at least a system-wide or per-user
+configuration file to allow CPL to use the right CML executables present in your
+system. A sample CPL configuration is shown below <a class="reference download internal" download="" href="../_downloads/18dff83da7ace7fddabf45ced783dfa8/caelus_config.yaml"><code class="xref download docutils literal notranslate"><span class="pre">download</span>
+<span class="pre">caelus.yaml</span></code></a>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># -*- mode: yaml -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Sample CPL configuration file</span>
+<span class="c1">#</span>
+
+<span class="c1"># Root CPL configuration node</span>
+<span class="nt">caelus</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Control logging of CPL library</span>
+<span class="w">  </span><span class="nt">logging</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">log_to_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">log_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/Caelus/cpl.log</span>
+
+<span class="w">  </span><span class="c1"># Configuration for Caelus CML or OpenFOAM versions</span>
+<span class="w">  </span><span class="nt">caelus_cml</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># Pick the development version of CML available; use &quot;latest&quot; to choose the</span>
+<span class="w">    </span><span class="c1"># latest version available.</span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;v2012&quot;</span>
+
+<span class="w">    </span><span class="c1"># Versions that can be used with CPL</span>
+<span class="w">    </span><span class="nt">versions</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;9.04&quot;</span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/Caelus/caelus-9.04</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;10.04&quot;</span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/Caelus/caelus-10.04</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dev-gcc&quot;</span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/Caelus/caelus-cml</span><span class="w">            </span><span class="c1"># Use latest git repository</span>
+<span class="w">        </span><span class="nt">mpi_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/openmpi</span><span class="w">         </span><span class="c1"># Use system OpenMPI</span>
+<span class="w">        </span><span class="nt">build_option</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;linux64gcc++DPOpt&quot;</span><span class="w">    </span><span class="c1"># Use the GCC version</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;v2012&quot;</span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/OpenFOAM/OpenFOAM-v2012</span><span class="w">      </span><span class="c1"># Use OpenFOAM</span>
+<span class="w">        </span><span class="nt">mpi_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/openmpi</span><span class="w">         </span><span class="c1"># Use system OpenMPI</span>
+</pre></div>
+</div>
+<p>The above configuration would be suitable as as a system-wide or per-user
+configuration stored in the home directory, and the user can override specific
+options used for particular runs by using, for example, the following
+<code class="file docutils literal notranslate"><span class="pre">caelus.yaml</span></code> within the case directory:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Local CPL settings for this working directory</span>
+<span class="nt">caelus</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">logging</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">log_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cpl_dev.log</span><span class="w">  </span><span class="c1"># Change log file to a local file</span>
+
+<span class="w">  </span><span class="nt">caelus_cml</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dev-gcc&quot;</span><span class="w">     </span><span class="c1"># Use the latest dev version for this run</span>
+</pre></div>
+</div>
+<p>Note that only options that are being overridden need to be specified. Other
+options are populated from the system-wide or per-user configuration file if
+they exist.</p>
+<section id="checking-current-configuration">
+<h2>Checking current configuration<a class="headerlink" href="#checking-current-configuration" title="Link to this heading">¶</a></h2>
+<p>To aid debugging and troubleshooting, CPL provides a command <strong class="program">caelus
+cfg</strong> to dump the configuration used by the library based on all available
+configuration files. A sample usage is shown here:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>$<span class="w"> </span>caelus<span class="w"> </span>-v<span class="w"> </span>cfg
+<span class="linenos"> 2</span>DEBUG:<span class="w"> </span>Loaded<span class="w"> </span>configuration<span class="w"> </span>from<span class="w"> </span><span class="nv">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="s1">&#39;/home/caelus/.caelus/caelus.yaml&#39;</span><span class="o">]</span>
+<span class="linenos"> 3</span>INFO:<span class="w"> </span>Caelus<span class="w"> </span>Python<span class="w"> </span>Library<span class="w"> </span><span class="o">(</span>CPL<span class="o">)</span><span class="w"> </span>v0.1.0
+<span class="linenos"> 4</span><span class="c1"># -*- mode: yaml -*-</span>
+<span class="linenos"> 5</span><span class="c1">#</span>
+<span class="linenos"> 6</span><span class="c1"># Caelus Python Library (CPL) v0.1.0</span>
+<span class="linenos"> 7</span><span class="c1">#</span>
+<span class="linenos"> 8</span><span class="c1"># Auto-generated on: 2018-04-21 17:03:35 (UTC)</span>
+<span class="linenos"> 9</span><span class="c1">#</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span>caelus:
+<span class="linenos">12</span><span class="w">  </span>cpl:
+<span class="linenos">13</span><span class="w">    </span>python_env_type:<span class="w"> </span>conda
+<span class="linenos">14</span><span class="w">    </span>python_env_name:<span class="w"> </span>caelus
+<span class="linenos">15</span><span class="w">    </span>conda_settings:
+<span class="linenos">16</span><span class="w">      </span>conda_bin:<span class="w"> </span>~/anaconda/bin
+<span class="linenos">17</span><span class="w">  </span>system:
+<span class="linenos">18</span><span class="w">    </span>job_scheduler:<span class="w"> </span>local_mpi
+<span class="linenos">19</span><span class="w">    </span>always_use_scheduler:<span class="w"> </span><span class="nb">false</span>
+<span class="linenos">20</span><span class="w">    </span>scheduler_defaults:
+<span class="linenos">21</span><span class="w">      </span>join_outputs:<span class="w"> </span><span class="nb">true</span>
+<span class="linenos">22</span><span class="w">      </span>shell:<span class="w"> </span>/bin/bash
+<span class="linenos">23</span><span class="w">      </span>mail_opts:<span class="w"> </span>NONE
+<span class="linenos">24</span><span class="w">  </span>logging:
+<span class="linenos">25</span><span class="w">    </span>log_to_file:<span class="w"> </span><span class="nb">true</span>
+<span class="linenos">26</span><span class="w">    </span>log_file:<span class="w"> </span>null
+<span class="linenos">27</span><span class="w">  </span>caelus_cml:
+<span class="linenos">28</span><span class="w">    </span>default:<span class="w"> </span>latest
+<span class="linenos">29</span><span class="w">    </span>versions:<span class="w"> </span><span class="o">[]</span>
+</pre></div>
+</div>
+<p>The <strong>final</strong> configuration after parsing all available configuration files is
+shown in the output. If the user provides <code class="docutils literal notranslate"><span class="pre">-v</span></code> (verbose) flag, then the
+command also prints out all the configuration files that were detected and read
+during the initialization process. Users can also use <a class="reference internal" href="cli_apps/caelus.html#cmdoption-caelus-cfg-f"><code class="xref std std-option docutils literal notranslate"><span class="pre">caelus</span> <span class="pre">cfg</span></code></a> to create a configuration file with all the current settings
+using the <code class="docutils literal notranslate"><span class="pre">-f</span></code> option. Please see <a class="reference internal" href="cli_apps/caelus.html#cli-apps-caelus"><span class="std std-ref">caelus</span></a> command
+documentation for details.</p>
+</section>
+<section id="cpl-configuration-reference">
+<h2>CPL configuration reference<a class="headerlink" href="#cpl-configuration-reference" title="Link to this heading">¶</a></h2>
+<p>CPL configuration files are in YAML format and must contain at least one node
+<a class="reference internal" href="#confval-caelus"><code class="xref std std-confval docutils literal notranslate"><span class="pre">caelus</span></code></a>. Two other optional nodes can be present in the file,
+<a class="reference internal" href="#confval-caelus_scripts"><code class="xref std std-confval docutils literal notranslate"><span class="pre">caelus_scripts</span></code></a> and <a class="reference internal" href="#confval-caelus_user"><code class="xref std std-confval docutils literal notranslate"><span class="pre">caelus_user</span></code></a> whose purpose is described
+below.</p>
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus">
+<span class="sig-name descname"><span class="pre">caelus</span></span><a class="headerlink" href="#confval-caelus" title="Link to this definition">¶</a></dt>
+<dd><p>The root YAML node containing the core CPL configuration object. This node
+contains all configuration options used internally by the library.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus_scripts">
+<span class="sig-name descname"><span class="pre">caelus_scripts</span></span><a class="headerlink" href="#confval-caelus_scripts" title="Link to this definition">¶</a></dt>
+<dd><p>An optional node used to store configuration for CPL CLI apps.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus_user">
+<span class="sig-name descname"><span class="pre">caelus_user</span></span><a class="headerlink" href="#confval-caelus_user" title="Link to this definition">¶</a></dt>
+<dd><p>An optional node node reserved for user scripts and applications that will be
+built upon CPL.</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the following sections, the configuration parameters are documented in the
+format <code class="docutils literal notranslate"><span class="pre">root_note.sub_node.config_parameter</span></code>. Please see the sample
+configuration file above for the exact nesting structure used for
+<a class="reference internal" href="#confval-caelus.logging.log_file"><code class="xref std std-confval docutils literal notranslate"><span class="pre">caelus.logging.log_file</span></code></a>.</p>
+</div>
+<section id="core-library-configuration">
+<h3>Core library configuration<a class="headerlink" href="#core-library-configuration" title="Link to this heading">¶</a></h3>
+<section id="python-environment-options">
+<h4>Python environment options<a class="headerlink" href="#python-environment-options" title="Link to this heading">¶</a></h4>
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.cpl">
+<span class="sig-name descname"><span class="pre">caelus.cpl</span></span><a class="headerlink" href="#confval-caelus.cpl" title="Link to this definition">¶</a></dt>
+<dd><p>This section contains options to configure the python environment (either
+Anaconda/Conda environment or virtualenv settings).</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.cpl.python_env_type">
+<span class="sig-name descname"><span class="pre">caelus.cpl.python_env_type</span></span><a class="headerlink" href="#confval-caelus.cpl.python_env_type" title="Link to this definition">¶</a></dt>
+<dd><p>Type of python environment. Currently this can be either <code class="docutils literal notranslate"><span class="pre">conda</span></code> or
+<code class="docutils literal notranslate"><span class="pre">virtualenv</span></code>.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.cpl.python_env_name">
+<span class="sig-name descname"><span class="pre">caelus.cpl.python_env_name</span></span><a class="headerlink" href="#confval-caelus.cpl.python_env_name" title="Link to this definition">¶</a></dt>
+<dd><p>The name of the Python environment for use with CPL, e.g., <code class="docutils literal notranslate"><span class="pre">caelus</span></code> or
+<code class="docutils literal notranslate"><span class="pre">caelus-dev</span></code>.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.cpl.conda_settings">
+<span class="sig-name descname"><span class="pre">caelus.cpl.conda_settings</span></span><a class="headerlink" href="#confval-caelus.cpl.conda_settings" title="Link to this definition">¶</a></dt>
+<dd><p>Extra information for Conda installation on your system.</p>
+</dd></dl>
+
+</section>
+<section id="system-configuration">
+<h4>System configuration<a class="headerlink" href="#system-configuration" title="Link to this heading">¶</a></h4>
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.system">
+<span class="sig-name descname"><span class="pre">caelus.system</span></span><a class="headerlink" href="#confval-caelus.system" title="Link to this definition">¶</a></dt>
+<dd><p>This section provides CPL with necessary information on the system settings,
+particularly the queue configuration on HPC systems.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.system.job_scheduler">
+<span class="sig-name descname"><span class="pre">caelus.system.job_scheduler</span></span><a class="headerlink" href="#confval-caelus.system.job_scheduler" title="Link to this definition">¶</a></dt>
+<dd><p>The type of job-scheduler available on the system and used by CPL when
+executing CML executables on the system. By default, all parallel jobs will
+use the job scheduler, user can configure even serial jobs (e.g., mesh
+generation, domain decomposition and reconstruction) be submitted on queues.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">local_mpi</span></code></p></td>
+<td><p>No scheduler, submit locally</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">slurm</span></code></p></td>
+<td><p>Use SLURM commands to submit jobs</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.system.always_use_scheduler">
+<span class="sig-name descname"><span class="pre">caelus.system.always_use_scheduler</span></span><a class="headerlink" href="#confval-caelus.system.always_use_scheduler" title="Link to this definition">¶</a></dt>
+<dd><p>A Boolean flag indicating whether even serial jobs (e.g., mesh generation)
+should use the queue system. This flag is useful when the user intends to
+generate large meshes and requires access to the high-memory compute nodes on
+the HPC system.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.system.scheduler_defaults">
+<span class="sig-name descname"><span class="pre">caelus.system.scheduler_defaults</span></span><a class="headerlink" href="#confval-caelus.system.scheduler_defaults" title="Link to this definition">¶</a></dt>
+<dd><p>This section contains options that are used by default when submitting jobs
+to an HPC queue system.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">queue</span></code></p></td>
+<td><p>Default queue for submitting jobs</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">account</span></code></p></td>
+<td><p>Account for charging core hours</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stdout</span></code></p></td>
+<td><p>Default file pattern for redirecting standard output</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stdout</span></code></p></td>
+<td><p>Default file pattern for redirecting standard error</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">join_outputs</span></code></p></td>
+<td><p>Join <code class="docutils literal notranslate"><span class="pre">stdout</span></code> and <code class="docutils literal notranslate"><span class="pre">stderr</span></code> (queue specific)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mail_options</span></code></p></td>
+<td><p>A string indicating mail options for queue</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">email_address</span></code></p></td>
+<td><p>Address where notifications should be sent</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">time_limit</span></code></p></td>
+<td><p>Wall clock time limit</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">machinefile</span></code></p></td>
+<td><p>File used in <code class="docutils literal notranslate"><span class="pre">mpirun</span> <span class="pre">-machinefile</span> <span class="pre">&lt;FILE&gt;</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently, these options accept strings and are specific to the queue
+system (e.g., SLURM or PBS Torque). So the user must consult their queue
+system manuals for appropriate values to these options.</p>
+</div>
+</dd></dl>
+
+</section>
+<section id="cpl-logging-options">
+<h4>CPL logging options<a class="headerlink" href="#cpl-logging-options" title="Link to this heading">¶</a></h4>
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.logging">
+<span class="sig-name descname"><span class="pre">caelus.logging</span></span><a class="headerlink" href="#confval-caelus.logging" title="Link to this definition">¶</a></dt>
+<dd><p>This section of the configuration file controls the logging options for the
+CPL library. By default, CPL only outputs messages to the standard output.
+Users can optionally save all messages from CPL into a log file of their
+choice. This is useful for tracking and troubleshooting, or providing
+additional information regarding bugs observed by the user.</p>
+<p>Internally, CPL uses the <a class="extlink-pythonlib reference external" href="http://docs.python.org/library/logging">logging</a> module. For brevity, messages
+output to console are usually at log levels <code class="docutils literal notranslate"><span class="pre">INFO</span></code> or higher. However,
+all messages <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> and above are captured in log files.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.logging.log_to_file">
+<span class="sig-name descname"><span class="pre">caelus.logging.log_to_file</span></span><a class="headerlink" href="#confval-caelus.logging.log_to_file" title="Link to this definition">¶</a></dt>
+<dd><p>A Boolean value indicating whether CPL should output messages to the log
+file. The default value is <code class="docutils literal notranslate"><span class="pre">false</span></code>. If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, then the log
+messages will also be saved to the file indicated by <a class="reference internal" href="#confval-caelus.logging.log_file"><code class="xref std std-confval docutils literal notranslate"><span class="pre">log_file</span></code></a> as well as output to the console.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.logging.log_file">
+<span class="sig-name descname"><span class="pre">caelus.logging.log_file</span></span><a class="headerlink" href="#confval-caelus.logging.log_file" title="Link to this definition">¶</a></dt>
+<dd><p>Filename where the log messages are saved if <a class="reference internal" href="#confval-caelus.logging.log_to_file"><code class="xref std std-confval docutils literal notranslate"><span class="pre">log_to_file</span></code></a> evaluates to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="cml-version-configuration">
+<h3>CML version configuration<a class="headerlink" href="#cml-version-configuration" title="Link to this heading">¶</a></h3>
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.caelus_cml">
+<span class="sig-name descname"><span class="pre">caelus.caelus_cml</span></span><a class="headerlink" href="#confval-caelus.caelus_cml" title="Link to this definition">¶</a></dt>
+<dd><p>The primary purpose of CPL is to interact with OpenFOAM and CML executables
+and utilities. This section informs CPL of the various OpenFOAM/CML
+installations available on a system and the desired <em>version</em> used by CPL
+when invoking OpenFOAM or CML executables.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.caelus_cml.default">
+<span class="sig-name descname"><span class="pre">caelus.caelus_cml.default</span></span><a class="headerlink" href="#confval-caelus.caelus_cml.default" title="Link to this definition">¶</a></dt>
+<dd><p>A string parameter indicating default version used when invoking OpenFOAM or
+CML executables. It must be one of the <a class="reference internal" href="#confval-caelus.caelus_cml.versions.version"><code class="xref std std-confval docutils literal notranslate"><span class="pre">version</span></code></a> entries provided in the file.
+Alternately, the user can specify <code class="docutils literal notranslate"><span class="pre">latest</span></code> to indicate that the latest
+version must be used. If users rely on auto-discovery of Caelus versions in
+default install locations, then it is recommended that this value be
+<code class="docutils literal notranslate"><span class="pre">latest</span></code> so that CPL picks the latest CML version. For example, with the
+following configuration, CPL will choose version <code class="docutils literal notranslate"><span class="pre">10.04</span></code> when attempting to
+execute programs like <code class="docutils literal notranslate"><span class="pre">pisoSolver</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caelus</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">caelus_cml</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;latest&quot;</span>
+
+<span class="w">    </span><span class="nt">versions</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;9.04&quot;</span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/Caelus/caelus-9.04</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;10.04&quot;</span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/Caelus/caelus-10.04</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;v2012&quot;</span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/OpenFOAM/OpenFOAM-v2012</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.caelus_cml.versions">
+<span class="sig-name descname"><span class="pre">caelus.caelus_cml.versions</span></span><a class="headerlink" href="#confval-caelus.caelus_cml.versions" title="Link to this definition">¶</a></dt>
+<dd><p>A list of configuration mapping listing various versions available for use
+with CPL. It is recommended that the users only provide <a class="reference internal" href="#confval-caelus.caelus_cml.versions.version"><code class="xref std std-confval docutils literal notranslate"><span class="pre">version</span></code></a> and <a class="reference internal" href="#confval-caelus.caelus_cml.versions.path"><code class="xref std std-confval docutils literal notranslate"><span class="pre">path</span></code></a> entries, the remaining entries are
+optional. CPL will auto-detect remaining parmeters.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.caelus_cml.versions.version">
+<span class="sig-name descname"><span class="pre">caelus.caelus_cml.versions.version</span></span><a class="headerlink" href="#confval-caelus.caelus_cml.versions.version" title="Link to this definition">¶</a></dt>
+<dd><p>A unique string identifier that is used to tag this specific instance of
+OpenFOAM or CML installation. Typically, this is the version number of the
+OpenFOAM or Caelus CML release, e.g., <code class="docutils literal notranslate"><span class="pre">10.04</span></code>. However, as indicated in
+the example CPL configuration file, users can use any unique tag to identify
+a specific version. If this identifier does not follow the conventional
+version number format, then it is recommended that the user provide a
+specific version in <a class="reference internal" href="#confval-caelus.caelus_cml.default"><code class="xref std std-confval docutils literal notranslate"><span class="pre">caelus.caelus_cml.default</span></code></a> instead of using
+<code class="docutils literal notranslate"><span class="pre">latest</span></code>.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.caelus_cml.versions.path">
+<span class="sig-name descname"><span class="pre">caelus.caelus_cml.versions.path</span></span><a class="headerlink" href="#confval-caelus.caelus_cml.versions.path" title="Link to this definition">¶</a></dt>
+<dd><p>The path to the C++ code/executables install. This is equivalent to the
+directory pointed by the <span class="target" id="index-2"></span><code class="xref std std-envvar docutils literal notranslate"><span class="pre">WM_PROJECT_DIR</span></code> or
+<span class="target" id="index-3"></span><code class="xref std std-envvar docutils literal notranslate"><span class="pre">CAELUS_PROJECT_DIR</span></code> environment variable, e.g.,
+<code class="file docutils literal notranslate"><span class="pre">/home/caelus_user/projects/caelus/caelus-10.04</span></code>.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.caelus_cml.versions.build_option">
+<span class="sig-name descname"><span class="pre">caelus.caelus_cml.versions.build_option</span></span><a class="headerlink" href="#confval-caelus.caelus_cml.versions.build_option" title="Link to this definition">¶</a></dt>
+<dd><p>A string parameter identifying the OpenFOAM or Caelus build, if multiple
+builds are present within a CML install, to be used with CPL. This is an
+<strong>expert</strong> only option used by developers who are testing multiple compilers
+and build options. It is recommended that the normal users let CPL autodetect
+the build option.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.caelus_cml.versions.mpi_root">
+<span class="sig-name descname"><span class="pre">caelus.caelus_cml.versions.mpi_root</span></span><a class="headerlink" href="#confval-caelus.caelus_cml.versions.mpi_root" title="Link to this definition">¶</a></dt>
+<dd><p>Path to the MPI installation used to compile OpenFOAM or Caelus for parallel
+execution. By default, CPL expects the MPI library to be present within the
+project directory.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.caelus_cml.versions.mpi_bin_path">
+<span class="sig-name descname"><span class="pre">caelus.caelus_cml.versions.mpi_bin_path</span></span><a class="headerlink" href="#confval-caelus.caelus_cml.versions.mpi_bin_path" title="Link to this definition">¶</a></dt>
+<dd><p>Directory containing MPI binaries used for <strong class="program">mpiexec</strong> when executing
+in parallel mode. If absent, CPL will assume that the binaries are located
+within the subdirectory <code class="file docutils literal notranslate"><span class="pre">bin</span></code> in the path pointed by <a class="reference internal" href="#confval-caelus.caelus_cml.versions.mpi_root"><code class="xref std std-confval docutils literal notranslate"><span class="pre">mpi_root</span></code></a>.</p>
+</dd></dl>
+
+<dl class="std confval">
+<dt class="sig sig-object std" id="confval-caelus.caelus_cml.versions.mpi_lib_path">
+<span class="sig-name descname"><span class="pre">caelus.caelus_cml.versions.mpi_lib_path</span></span><a class="headerlink" href="#confval-caelus.caelus_cml.versions.mpi_lib_path" title="Link to this definition">¶</a></dt>
+<dd><p>Directory containing MPI libraries used for <strong class="program">mpiexec</strong> when executing
+in parallel mode. If absent, CPL will assume that the libraries are located
+within the subdirectory <code class="file docutils literal notranslate"><span class="pre">lib</span></code> in the path pointed by <a class="reference internal" href="#confval-caelus.caelus_cml.versions.mpi_root"><code class="xref std std-confval docutils literal notranslate"><span class="pre">mpi_root</span></code></a>.</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cli_apps.html" title="Command-line Applications"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installing Caelus Python Library (CPL)"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Configuring Caelus Python Library</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

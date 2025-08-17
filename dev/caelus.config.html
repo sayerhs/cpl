@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>caelus.config – Caelus Configuration Infrastructure &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="caelus.utils – Basic utilities" href="caelus.utils.html" />
+    <link rel="prev" title="Caelus Python API" href="caelus.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../index.html">
+<!--      <img src="../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus.utils.html" title="caelus.utils – Basic utilities"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="caelus.html" title="Caelus Python API"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="caelus.html" accesskey="U">Caelus Python API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.config – Caelus Configuration Infrastructure</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">caelus.config – Caelus Configuration Infrastructure</a><ul>
+<li><a class="reference internal" href="#caelus-python-configuration">Caelus Python Configuration</a></li>
+<li><a class="reference internal" href="#caelus.config.config.CaelusCfg"><code class="docutils literal notranslate"><span class="pre">CaelusCfg</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.config.config.CaelusCfg.yaml_decoder"><code class="docutils literal notranslate"><span class="pre">CaelusCfg.yaml_decoder</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.config.CaelusCfg.yaml_encoder"><code class="docutils literal notranslate"><span class="pre">CaelusCfg.yaml_encoder</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.config.CaelusCfg.write_config"><code class="docutils literal notranslate"><span class="pre">CaelusCfg.write_config()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.config.config.configure_logging"><code class="docutils literal notranslate"><span class="pre">configure_logging()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.config.get_appdata_dir"><code class="docutils literal notranslate"><span class="pre">get_appdata_dir()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.config.get_caelus_root"><code class="docutils literal notranslate"><span class="pre">get_caelus_root()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.config.get_config"><code class="docutils literal notranslate"><span class="pre">get_config()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.config.get_cpl_root"><code class="docutils literal notranslate"><span class="pre">get_cpl_root()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.config.get_default_config"><code class="docutils literal notranslate"><span class="pre">get_default_config()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.config.rcfiles_loaded"><code class="docutils literal notranslate"><span class="pre">rcfiles_loaded()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.config.reload_config"><code class="docutils literal notranslate"><span class="pre">reload_config()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.config.reset_default_config"><code class="docutils literal notranslate"><span class="pre">reset_default_config()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.config.search_cfg_files"><code class="docutils literal notranslate"><span class="pre">search_cfg_files()</span></code></a></li>
+<li><a class="reference internal" href="#caelus-cml-environment-manager">Caelus CML Environment Manager</a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv"><code class="docutils literal notranslate"><span class="pre">CMLEnv</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.etc_file"><code class="docutils literal notranslate"><span class="pre">CMLEnv.etc_file()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.from_modules"><code class="docutils literal notranslate"><span class="pre">CMLEnv.from_modules()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.bin_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.bin_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.build_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.build_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.environ"><code class="docutils literal notranslate"><span class="pre">CMLEnv.environ</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.etc_dirs"><code class="docutils literal notranslate"><span class="pre">CMLEnv.etc_dirs</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.lib_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.lib_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.module_list"><code class="docutils literal notranslate"><span class="pre">CMLEnv.module_list</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.mpi_bindir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.mpi_bindir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.mpi_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.mpi_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.mpi_libdir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.mpi_libdir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.project_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.project_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.root"><code class="docutils literal notranslate"><span class="pre">CMLEnv.root</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.user_bindir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.user_bindir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.user_dir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.user_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.user_libdir"><code class="docutils literal notranslate"><span class="pre">CMLEnv.user_libdir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv.version"><code class="docutils literal notranslate"><span class="pre">CMLEnv.version</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv"><code class="docutils literal notranslate"><span class="pre">FOAMEnv</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.etc_file"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.etc_file()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.from_modules"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.from_modules()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.bin_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.bin_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.build_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.build_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.build_option"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.build_option</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.environ"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.environ</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.etc_dirs"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.etc_dirs</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.foam_api_info"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.foam_api_info</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.foam_bashrc"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.foam_bashrc</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.foam_version"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.foam_version</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.lib_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.lib_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.module_list"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.module_list</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.mpi_bindir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.mpi_bindir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.mpi_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.mpi_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.mpi_libdir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.mpi_libdir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.project_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.project_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.root"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.root</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.site_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.site_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.site_libdir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.site_libdir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.user_bindir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.user_bindir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.user_dir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.user_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.user_libdir"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.user_libdir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.version"><code class="docutils literal notranslate"><span class="pre">FOAMEnv.version</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv"><code class="docutils literal notranslate"><span class="pre">HelyxEnv</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.etc_file"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.etc_file()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.bin_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.bin_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.build_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.build_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.build_option"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.build_option</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.environ"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.environ</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.etc_dirs"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.etc_dirs</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.foam_bashrc"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.foam_bashrc</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.lib_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.lib_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.module_list"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.module_list</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.mpi_bindir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.mpi_bindir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.mpi_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.mpi_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.mpi_libdir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.mpi_libdir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.project_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.project_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.site_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.site_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.site_libdir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.site_libdir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.user_bindir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.user_bindir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.user_dir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.user_dir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.user_libdir"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.user_libdir</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.HelyxEnv.version"><code class="docutils literal notranslate"><span class="pre">HelyxEnv.version</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.cml_get_latest_version"><code class="docutils literal notranslate"><span class="pre">cml_get_latest_version()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.cml_get_version"><code class="docutils literal notranslate"><span class="pre">cml_get_version()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.discover_versions"><code class="docutils literal notranslate"><span class="pre">discover_versions()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.get_cmlenv_instance"><code class="docutils literal notranslate"><span class="pre">get_cmlenv_instance()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.config.cmlenv.is_foam_var"><code class="docutils literal notranslate"><span class="pre">is_foam_var()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="caelus.html"
+                          title="previous chapter">Caelus Python API</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="caelus.utils.html"
+                          title="next chapter">caelus.utils – Basic utilities</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/dev/caelus.config.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-caelus.config">
+<span id="caelus-config-caelus-configuration-infrastructure"></span><h1>caelus.config – Caelus Configuration Infrastructure<a class="headerlink" href="#module-caelus.config" title="Link to this heading">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">caelus.config</span></code> performs the following tasks:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Configure the behavior of the Caelus python library using YAML based
+configuration files.</p></li>
+<li><p>Provide an interface to Caelus CML installations and also aid in automated
+discovery of installed Caelus versions.</p></li>
+</ul>
+</div></blockquote>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#caelus.config.config.get_config" title="caelus.config.config.get_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config</span></code></a></p></td>
+<td><p>Get the configuration object</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#caelus.config.config.reload_config" title="caelus.config.config.reload_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reload_config</span></code></a></p></td>
+<td><p>Reset the configuration object</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#caelus.config.config.reset_default_config" title="caelus.config.config.reset_default_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_default_config</span></code></a></p></td>
+<td><p>Reset to default configuration</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#caelus.config.cmlenv.cml_get_version" title="caelus.config.cmlenv.cml_get_version"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cml_get_version</span></code></a></p></td>
+<td><p>Get the CML environment for the version requested</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#caelus.config.cmlenv.cml_get_latest_version" title="caelus.config.cmlenv.cml_get_latest_version"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cml_get_latest_version</span></code></a></p></td>
+<td><p>Get the CML environment for the latest version available.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv" title="caelus.config.cmlenv.CMLEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CMLEnv</span></code></a></p></td>
+<td><p>CML Environment Interface.</p></td>
+</tr>
+</tbody>
+</table>
+<section id="caelus-python-configuration">
+<span id="module-caelus.config.config"></span><h2>Caelus Python Configuration<a class="headerlink" href="#caelus-python-configuration" title="Link to this heading">¶</a></h2>
+<p>The <a class="reference internal" href="#module-caelus.config.config" title="caelus.config.config"><code class="xref py py-mod docutils literal notranslate"><span class="pre">config</span></code></a> module provides functions and classes for
+loading user configuration via YAML files and a central location to configure
+the behavior of the Caelus python library. The user configuration is stored in
+a dictionary format within the <a class="reference internal" href="#caelus.config.config.CaelusCfg" title="caelus.config.config.CaelusCfg"><code class="xref py py-class docutils literal notranslate"><span class="pre">CaelusCfg</span></code></a> and can
+be modified during runtime by user scripts. Access to the configuration object
+is by calling the <a class="reference internal" href="#caelus.config.config.get_config" title="caelus.config.config.get_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_config()</span></code></a> method defined within this module which
+returns a fully populated instance of the configuration dictionary. This module
+also sets up logging (to both console as well as log files) during the
+initialization phase.</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.config.config.CaelusCfg">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.config.config.</span></span><span class="sig-name descname"><span class="pre">CaelusCfg</span></span><a class="reference internal" href="../_modules/caelus/config/config.html#CaelusCfg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.config.CaelusCfg" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="caelus.utils.html#caelus.utils.struct.Struct" title="caelus.utils.struct.Struct"><code class="xref py py-class docutils literal notranslate"><span class="pre">Struct</span></code></a></p>
+<p>Caelus Configuration Object</p>
+<p>A (key, value) dictionary containing all the configuration data parsed from
+the user configuration files. It is recommended that users obtain an
+instance of this class via the <a class="reference internal" href="#caelus.config.config.get_config" title="caelus.config.config.get_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_config()</span></code></a> function instead of
+directly instantiating this class.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.config.config.CaelusCfg.yaml_decoder">
+<span class="sig-name descname"><span class="pre">yaml_decoder</span></span><a class="headerlink" href="#caelus.config.config.CaelusCfg.yaml_decoder" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">StructYAMLLoader</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.config.config.CaelusCfg.yaml_encoder">
+<span class="sig-name descname"><span class="pre">yaml_encoder</span></span><a class="headerlink" href="#caelus.config.config.CaelusCfg.yaml_encoder" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">StructYAMLDumper</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.config.config.CaelusCfg.write_config">
+<span class="sig-name descname"><span class="pre">write_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh=&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/config.html#CaelusCfg.write_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.config.CaelusCfg.write_config" title="Link to this definition">¶</a></dt>
+<dd><p>Write configuration to file or standard output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fh</strong> (<em>handle</em>) – An open file handle</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.config.configure_logging">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.config.</span></span><span class="sig-name descname"><span class="pre">configure_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/config.html#configure_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.config.configure_logging" title="Link to this definition">¶</a></dt>
+<dd><p>Configure python logging.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">log_cfg</span></code> is None, then the basic configuration of python logging
+module is used.</p>
+<p>See <a class="reference external" href="https://docs.python.org/3.6/library/logging.config.html#logging-config-dictschema">Python Logging Documentation</a> for more information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>log_cfg</strong> – Instance of <a class="reference internal" href="#caelus.config.config.CaelusCfg" title="caelus.config.config.CaelusCfg"><code class="xref py py-class docutils literal notranslate"><span class="pre">CaelusCfg</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.config.get_appdata_dir">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.config.</span></span><span class="sig-name descname"><span class="pre">get_appdata_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/config.html#get_appdata_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.config.get_appdata_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the path to the Windows <code class="docutils literal notranslate"><span class="pre">APPDATA</span></code> directory</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.config.get_caelus_root">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.config.</span></span><span class="sig-name descname"><span class="pre">get_caelus_root</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/config.html#get_caelus_root"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.config.get_caelus_root" title="Link to this definition">¶</a></dt>
+<dd><p>Get Caelus root directory</p>
+<p>In Unix-y systems this returns <code class="docutils literal notranslate"><span class="pre">${HOME}/Caelus</span></code> and on Windows it returns
+<code class="docutils literal notranslate"><span class="pre">C:\Caelus</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path to Caelus root directory</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.config.get_config">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.config.</span></span><span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_logging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#caelus.config.config.get_config" title="Link to this definition">¶</a></dt>
+<dd><p>Get the configuration object</p>
+<p>On the first call, initializes the configuration object by parsing all
+available configuration files. Successive invocations return the same
+object that can be mutated by the user. The config dictionary can be
+reset by invoking <a class="reference internal" href="#caelus.config.config.reload_config" title="caelus.config.config.reload_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">reload_config()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_cfg</strong> (<a class="reference internal" href="#caelus.config.config.CaelusCfg" title="caelus.config.config.CaelusCfg"><em>CaelusCfg</em></a>) – A base configuration object that is updated</p></li>
+<li><p><strong>init_logging</strong> (<em>bool</em>) – If True, initializes logging</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The configuration dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#caelus.config.config.CaelusCfg" title="caelus.config.config.CaelusCfg">CaelusCfg</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.config.get_cpl_root">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.config.</span></span><span class="sig-name descname"><span class="pre">get_cpl_root</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/config.html#get_cpl_root"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.config.get_cpl_root" title="Link to this definition">¶</a></dt>
+<dd><p>Return the root path for CPL</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.config.get_default_config">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.config.</span></span><span class="sig-name descname"><span class="pre">get_default_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/config.html#get_default_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.config.get_default_config" title="Link to this definition">¶</a></dt>
+<dd><p>Return a fresh instance of the default configuration</p>
+<p>This function does not read the <code class="docutils literal notranslate"><span class="pre">caelus.yaml</span></code> files on the system, and
+returns the configurations shipped with CPL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The default configuration</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#caelus.config.config.CaelusCfg" title="caelus.config.config.CaelusCfg">CaelusCfg</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.config.rcfiles_loaded">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.config.</span></span><span class="sig-name descname"><span class="pre">rcfiles_loaded</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.config.config.rcfiles_loaded" title="Link to this definition">¶</a></dt>
+<dd><p>Return a list of the configuration files that were loaded</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.config.reload_config">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.config.</span></span><span class="sig-name descname"><span class="pre">reload_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#caelus.config.config.reload_config" title="Link to this definition">¶</a></dt>
+<dd><p>Reset the configuration object</p>
+<p>Forces reloading of all the available configuration files and resets
+the modifications made by user scripts.</p>
+<p>See also: <a class="reference internal" href="#caelus.config.config.reset_default_config" title="caelus.config.config.reset_default_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">reset_default_config()</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>base_cfg</strong> – A CMLEnv object to use instead of default</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The configuration dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#caelus.config.config.CaelusCfg" title="caelus.config.config.CaelusCfg">CaelusCfg</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.config.reset_default_config">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.config.</span></span><span class="sig-name descname"><span class="pre">reset_default_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.config.config.reset_default_config" title="Link to this definition">¶</a></dt>
+<dd><p>Reset to default configuration</p>
+<p>Resets to library default configuration. Unlike
+<a class="reference internal" href="#caelus.config.config.reload_config" title="caelus.config.config.reload_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">reload_config()</span></code></a>, this function does not
+load the configuration files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The configuration dictionary</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#caelus.config.config.CaelusCfg" title="caelus.config.config.CaelusCfg">CaelusCfg</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.config.search_cfg_files">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.config.</span></span><span class="sig-name descname"><span class="pre">search_cfg_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/config.html#search_cfg_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.config.search_cfg_files" title="Link to this definition">¶</a></dt>
+<dd><p>Search locations and return all possible configuration files.</p>
+<p>The following locations are searched:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The path pointed by <span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal notranslate"><span class="pre">CAELUSRC_SYSTEM</span></code></p></li>
+<li><p>The user’s home directory <code class="file docutils literal notranslate"><span class="pre">~/.caelus/caelus.yaml</span></code> on Unix-like
+systems, and <code class="file docutils literal notranslate"><span class="pre">%APPDATA%/caelus/caelus.yaml</span></code> on Windows systems.</p></li>
+<li><p>The path pointed by <span class="target" id="index-1"></span><code class="xref std std-envvar docutils literal notranslate"><span class="pre">CAELUSRC</span></code>, if defined.</p></li>
+<li><p>The file <code class="file docutils literal notranslate"><span class="pre">caelus.yaml</span></code> in the current working directory</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of configuration files available</p>
+</dd>
+</dl>
+</dd></dl>
+
+<section id="caelus-cml-environment-manager">
+<span id="module-caelus.config.cmlenv"></span><h2>Caelus CML Environment Manager<a class="headerlink" href="#caelus-cml-environment-manager" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="#module-caelus.config.cmlenv" title="caelus.config.cmlenv"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmlenv</span></code></a> serves as a replacement for Caelus/OpenFOAM bashrc
+files, providing ways to discover installed versions as well as interact with
+the installed Caelus CML versions. By default, <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmlenv</span></code> attempts to locate
+installed Caelus versions in standard locations:
+<code class="file docutils literal notranslate"><span class="pre">~/Caelus/caelus-VERSION</span></code> on Unix-like systems, and in <code class="file docutils literal notranslate"><span class="pre">C:Caelus</span></code>
+in Windows systems. Users can override the default behavior and point to
+non-standard locations by customizing their Caelus Python configuration file.</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.config.cmlenv.</span></span><span class="sig-name descname"><span class="pre">CMLEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/cmlenv.html#CMLEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>CML Environment Interface.</p>
+<p>This class provides an interface to an installed Caelus CML version.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<a class="reference internal" href="#caelus.config.config.CaelusCfg" title="caelus.config.config.CaelusCfg"><em>CaelusCfg</em></a>) – The CML configuration object</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.etc_file">
+<span class="sig-name descname"><span class="pre">etc_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/cmlenv.html#CMLEnv.etc_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.etc_file" title="Link to this definition">¶</a></dt>
+<dd><p>Return the first configuration file from etc directories</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.from_modules">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_modules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/cmlenv.html#CMLEnv.from_modules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.from_modules" title="Link to this definition">¶</a></dt>
+<dd><p>Instantiate an environment from modules</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.bin_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bin_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.bin_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the bin directory for executable</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.build_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.build_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the build platform directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.environ">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">environ</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.environ" title="Link to this definition">¶</a></dt>
+<dd><p>Return an environment for running Caelus CML binaries</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.etc_dirs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">etc_dirs</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.etc_dirs" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of etc directories</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.lib_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lib_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.lib_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the bin directory for executable</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.module_list">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">module_list</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.module_list" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of modules</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.mpi_bindir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mpi_bindir</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.mpi_bindir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the MPI executables path for this installation</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.mpi_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mpi_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.mpi_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the MPI directory for this installation</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.mpi_libdir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mpi_libdir</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.mpi_libdir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the MPI library path for this installation</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.project_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">project_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.project_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the project directory path</p>
+<p>Typically <code class="file docutils literal notranslate"><span class="pre">~/Caelus/caelus-VERSION</span></code></p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.root">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">root</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.root" title="Link to this definition">¶</a></dt>
+<dd><p>Return the root path for the Caelus install</p>
+<p>Typically on Linux/OSX this is the <code class="file docutils literal notranslate"><span class="pre">~/Caelus</span></code> directory.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.user_bindir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user_bindir</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.user_bindir" title="Link to this definition">¶</a></dt>
+<dd><p>Return path to user bin directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.user_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.user_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the user directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.user_libdir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user_libdir</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.user_libdir" title="Link to this definition">¶</a></dt>
+<dd><p>Return path to user lib directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.CMLEnv.version">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version</span></span><a class="headerlink" href="#caelus.config.cmlenv.CMLEnv.version" title="Link to this definition">¶</a></dt>
+<dd><p>Return the Caelus version</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.config.cmlenv.</span></span><span class="sig-name descname"><span class="pre">FOAMEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/cmlenv.html#FOAMEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>OpenFOAM environment interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<em>CaleusCfg</em>) – The CML configuration object</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.etc_file">
+<span class="sig-name descname"><span class="pre">etc_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/cmlenv.html#FOAMEnv.etc_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.etc_file" title="Link to this definition">¶</a></dt>
+<dd><p>Return the first configuration file from etc directories</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.from_modules">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_modules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/cmlenv.html#FOAMEnv.from_modules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.from_modules" title="Link to this definition">¶</a></dt>
+<dd><p>Instantiate an environment from modules</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.bin_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bin_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.bin_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the bin directory for executables</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.build_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.build_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the build platform directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.build_option">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_option</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.build_option" title="Link to this definition">¶</a></dt>
+<dd><p>Return the build option</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.environ">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">environ</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.environ" title="Link to this definition">¶</a></dt>
+<dd><p>Return the environment</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.etc_dirs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">etc_dirs</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.etc_dirs" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of etc directories</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.foam_api_info">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">foam_api_info</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.foam_api_info" title="Link to this definition">¶</a></dt>
+<dd><p>Get API information</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.foam_bashrc">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">foam_bashrc</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.foam_bashrc" title="Link to this definition">¶</a></dt>
+<dd><p>Return the path to the bashrc file</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.foam_version">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">foam_version</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.foam_version" title="Link to this definition">¶</a></dt>
+<dd><p>Return the OpenFOAM version</p>
+<p>Unlike <code class="docutils literal notranslate"><span class="pre">version</span></code> this reports the version from <code class="docutils literal notranslate"><span class="pre">WM_PROJECT_VERSION</span></code></p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.lib_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lib_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.lib_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the lib directory for executables</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.module_list">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">module_list</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.module_list" title="Link to this definition">¶</a></dt>
+<dd><p>Return modules to be activated</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.mpi_bindir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mpi_bindir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.mpi_bindir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the path to MPI binraries</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.mpi_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mpi_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.mpi_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the path to MPI dir</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.mpi_libdir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mpi_libdir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.mpi_libdir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the path to MPI libraries</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.project_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">project_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.project_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the project directory path</p>
+<p>Typically <code class="file docutils literal notranslate"><span class="pre">~/Caelus/caelus-VERSION</span></code></p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.root">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">root</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.root" title="Link to this definition">¶</a></dt>
+<dd><p>Return the root path for the OpenFOAM install</p>
+<p>Typically on Linux/OSX this is the <code class="file docutils literal notranslate"><span class="pre">~/OpenFOAM</span></code> directory.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.site_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">site_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.site_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return site directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.site_libdir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">site_libdir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.site_libdir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the site lib directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.user_bindir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user_bindir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.user_bindir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the user binary directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.user_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.user_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the user directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.user_libdir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user_libdir</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.user_libdir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the user lib directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.FOAMEnv.version">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version</span></span><a class="headerlink" href="#caelus.config.cmlenv.FOAMEnv.version" title="Link to this definition">¶</a></dt>
+<dd><p>Return the project version</p>
+<p>This is the project version as defined in the Caelus configuration
+file. For the exact version reported in OpenFOAM WMake use
+<a class="reference internal" href="#caelus.config.cmlenv.FOAMEnv.foam_version" title="caelus.config.cmlenv.FOAMEnv.foam_version"><code class="xref py py-meth docutils literal notranslate"><span class="pre">foam_version()</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.config.cmlenv.</span></span><span class="sig-name descname"><span class="pre">HelyxEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/cmlenv.html#HelyxEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Engys Helyx environment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<a class="reference internal" href="#caelus.config.config.CaelusCfg" title="caelus.config.config.CaelusCfg"><em>CaelusCfg</em></a>) – The CML configuration object</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.etc_file">
+<span class="sig-name descname"><span class="pre">etc_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/cmlenv.html#HelyxEnv.etc_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.etc_file" title="Link to this definition">¶</a></dt>
+<dd><p>Return the first configuration file from etc directories</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.bin_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bin_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.bin_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the bin directory for executables</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.build_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.build_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the build platform directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.build_option">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_option</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.build_option" title="Link to this definition">¶</a></dt>
+<dd><p>Return the build option</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.environ">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">environ</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.environ" title="Link to this definition">¶</a></dt>
+<dd><p>Return the environment</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.etc_dirs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">etc_dirs</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.etc_dirs" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of etc directories</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.foam_bashrc">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">foam_bashrc</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.foam_bashrc" title="Link to this definition">¶</a></dt>
+<dd><p>Return the path to the bashrc file</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.lib_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lib_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.lib_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the lib directory for executables</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.module_list">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">module_list</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.module_list" title="Link to this definition">¶</a></dt>
+<dd><p>Return modules to be activated</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.mpi_bindir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mpi_bindir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.mpi_bindir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the path to MPI binraries</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.mpi_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mpi_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.mpi_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the path to MPI dir</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.mpi_libdir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mpi_libdir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.mpi_libdir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the path to MPI libraries</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.project_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">project_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.project_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the project directory path</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.site_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">site_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.site_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return site directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.site_libdir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">site_libdir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.site_libdir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the site lib directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.user_bindir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user_bindir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.user_bindir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the user binary directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.user_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user_dir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.user_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the user directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.user_libdir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user_libdir</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.user_libdir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the user lib directory</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.HelyxEnv.version">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version</span></span><a class="headerlink" href="#caelus.config.cmlenv.HelyxEnv.version" title="Link to this definition">¶</a></dt>
+<dd><p>Return the helyxcore project version</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.cml_get_latest_version">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.cmlenv.</span></span><span class="sig-name descname"><span class="pre">cml_get_latest_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#caelus.config.cmlenv.cml_get_latest_version" title="Link to this definition">¶</a></dt>
+<dd><p>Get the CML environment for the latest version available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The environment object</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv" title="caelus.config.cmlenv.CMLEnv">CMLEnv</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.cml_get_version">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.cmlenv.</span></span><span class="sig-name descname"><span class="pre">cml_get_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#caelus.config.cmlenv.cml_get_version" title="Link to this definition">¶</a></dt>
+<dd><p>Get the CML environment for the version requested</p>
+<p>If version is None, then it returns the version set as default in the
+configuration file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>version</strong> (<em>str</em>) – Version string</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The environment object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#caelus.config.cmlenv.CMLEnv" title="caelus.config.cmlenv.CMLEnv">CMLEnv</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.discover_versions">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.cmlenv.</span></span><span class="sig-name descname"><span class="pre">discover_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/cmlenv.html#discover_versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.cmlenv.discover_versions" title="Link to this definition">¶</a></dt>
+<dd><p>Discover Caelus versions if no configuration is provided.</p>
+<p>If no root directory is provided, then the function attempts to search in
+path provided by <a class="reference internal" href="#caelus.config.config.get_caelus_root" title="caelus.config.config.get_caelus_root"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_caelus_root()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root</strong> (<em>path</em>) – Absolute path to root directory to be searched</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.get_cmlenv_instance">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.cmlenv.</span></span><span class="sig-name descname"><span class="pre">get_cmlenv_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cml</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/cmlenv.html#get_cmlenv_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.cmlenv.get_cmlenv_instance" title="Link to this definition">¶</a></dt>
+<dd><p>Return a Caelus or OpenFOAM instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cml</strong> (<em>dict</em>) – A configuration dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.config.cmlenv.is_foam_var">
+<span class="sig-prename descclassname"><span class="pre">caelus.config.cmlenv.</span></span><span class="sig-name descname"><span class="pre">is_foam_var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/config/cmlenv.html#is_foam_var"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.config.cmlenv.is_foam_var" title="Link to this definition">¶</a></dt>
+<dd><p>Test if the variable is an OpenFOAM variable</p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus.utils.html" title="caelus.utils – Basic utilities"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="caelus.html" title="Caelus Python API"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="caelus.html" >Caelus Python API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.config – Caelus Configuration Infrastructure</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

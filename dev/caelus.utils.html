@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>caelus.utils – Basic utilities &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="caelus.run – CML Execution Utilities" href="caelus.run.html" />
+    <link rel="prev" title="caelus.config – Caelus Configuration Infrastructure" href="caelus.config.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../index.html">
+<!--      <img src="../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus.run.html" title="caelus.run – CML Execution Utilities"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="caelus.config.html" title="caelus.config – Caelus Configuration Infrastructure"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="caelus.html" accesskey="U">Caelus Python API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.utils – Basic utilities</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">caelus.utils – Basic utilities</a><ul>
+<li><a class="reference internal" href="#struct-module">Struct Module</a></li>
+<li><a class="reference internal" href="#caelus.utils.struct.Struct"><code class="docutils literal notranslate"><span class="pre">Struct</span></code></a><ul>
+<li><a class="reference internal" href="#caelus.utils.struct.Struct.yaml_decoder"><code class="docutils literal notranslate"><span class="pre">Struct.yaml_decoder</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.struct.Struct.yaml_encoder"><code class="docutils literal notranslate"><span class="pre">Struct.yaml_encoder</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.struct.Struct.from_yaml"><code class="docutils literal notranslate"><span class="pre">Struct.from_yaml()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.struct.Struct.load_yaml"><code class="docutils literal notranslate"><span class="pre">Struct.load_yaml()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.struct.Struct.merge"><code class="docutils literal notranslate"><span class="pre">Struct.merge()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.struct.Struct.pget"><code class="docutils literal notranslate"><span class="pre">Struct.pget()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.struct.Struct.pset"><code class="docutils literal notranslate"><span class="pre">Struct.pset()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.struct.Struct.to_yaml"><code class="docutils literal notranslate"><span class="pre">Struct.to_yaml()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#caelus.utils.struct.StructMeta"><code class="docutils literal notranslate"><span class="pre">StructMeta</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.struct.gen_yaml_decoder"><code class="docutils literal notranslate"><span class="pre">gen_yaml_decoder()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.struct.gen_yaml_encoder"><code class="docutils literal notranslate"><span class="pre">gen_yaml_encoder()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.struct.merge"><code class="docutils literal notranslate"><span class="pre">merge()</span></code></a></li>
+<li><a class="reference internal" href="#miscellaneous-utilities">Miscellaneous utilities</a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.abspath"><code class="docutils literal notranslate"><span class="pre">abspath()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.backup_file"><code class="docutils literal notranslate"><span class="pre">backup_file()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.clean_directory"><code class="docutils literal notranslate"><span class="pre">clean_directory()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.copy_tree"><code class="docutils literal notranslate"><span class="pre">copy_tree()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.ensure_directory"><code class="docutils literal notranslate"><span class="pre">ensure_directory()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.ostype"><code class="docutils literal notranslate"><span class="pre">ostype()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.path_exists"><code class="docutils literal notranslate"><span class="pre">path_exists()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.path_or_cwd"><code class="docutils literal notranslate"><span class="pre">path_or_cwd()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.remove_files_dirs"><code class="docutils literal notranslate"><span class="pre">remove_files_dirs()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.set_work_dir"><code class="docutils literal notranslate"><span class="pre">set_work_dir()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.split_path"><code class="docutils literal notranslate"><span class="pre">split_path()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.timestamp"><code class="docutils literal notranslate"><span class="pre">timestamp()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.user_home_dir"><code class="docutils literal notranslate"><span class="pre">user_home_dir()</span></code></a></li>
+<li><a class="reference internal" href="#caelus.utils.osutils.username"><code class="docutils literal notranslate"><span class="pre">username()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="caelus.config.html"
+                          title="previous chapter">caelus.config – Caelus Configuration Infrastructure</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="caelus.run.html"
+                          title="next chapter">caelus.run – CML Execution Utilities</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/dev/caelus.utils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-caelus.utils">
+<span id="caelus-utils-basic-utilities"></span><h1>caelus.utils – Basic utilities<a class="headerlink" href="#module-caelus.utils" title="Link to this heading">¶</a></h1>
+<p>Collection of low-level utilities that are accessed by other packages within
+CPL, and other code snippets that do not fit elsewhere within CPL. The modules
+present within utils package must only depend on external libraries or other
+modules within util, they must not import modules from other packages within
+CPL.</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#caelus.utils.struct.Struct" title="caelus.utils.struct.Struct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Struct</span></code></a></p></td>
+<td><p>Dictionary that supports both key and attribute access.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#module-caelus.utils.osutils" title="caelus.utils.osutils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">osutils</span></code></a></p></td>
+<td><p>Miscellaneous utilities</p></td>
+</tr>
+</tbody>
+</table>
+<section id="struct-module">
+<span id="module-caelus.utils.struct"></span><h2>Struct Module<a class="headerlink" href="#struct-module" title="Link to this heading">¶</a></h2>
+<p>Implements <a class="reference internal" href="#caelus.utils.struct.Struct" title="caelus.utils.struct.Struct"><code class="xref py py-class docutils literal notranslate"><span class="pre">Struct</span></code></a>.</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.utils.struct.Struct">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.utils.struct.</span></span><span class="sig-name descname"><span class="pre">Struct</span></span><a class="reference internal" href="../_modules/caelus/utils/struct.html#Struct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.struct.Struct" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">OrderedDict</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">MutableMapping</span></code></p>
+<p>Dictionary that supports both key and attribute access.</p>
+<p>Struct is inspired by Matlab <code class="docutils literal notranslate"><span class="pre">struct</span></code> data structure that is intended to
+support both key and attribute access. It has the following features:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Preserves ordering of members as initialized</p></li>
+<li><p>Provides attribute and dictionary-style lookups</p></li>
+<li><p>Read/write YAML formatted data</p></li>
+</ol>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.utils.struct.Struct.yaml_decoder">
+<span class="sig-name descname"><span class="pre">yaml_decoder</span></span><a class="headerlink" href="#caelus.utils.struct.Struct.yaml_decoder" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">StructYAMLLoader</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="caelus.utils.struct.Struct.yaml_encoder">
+<span class="sig-name descname"><span class="pre">yaml_encoder</span></span><a class="headerlink" href="#caelus.utils.struct.Struct.yaml_encoder" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">StructYAMLDumper</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.utils.struct.Struct.from_yaml">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stream</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/struct.html#Struct.from_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.struct.Struct.from_yaml" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize mapping from a YAML string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stream</strong> – A string or valid file handle</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>YAML data as a python object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#caelus.utils.struct.Struct" title="caelus.utils.struct.Struct">Struct</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.utils.struct.Struct.load_yaml">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/struct.html#Struct.load_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.struct.Struct.load_yaml" title="Link to this definition">¶</a></dt>
+<dd><p>Load a YAML file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Absolute path to YAML file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>YAML data as python object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#caelus.utils.struct.Struct" title="caelus.utils.struct.Struct">Struct</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.utils.struct.Struct.merge">
+<span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/struct.html#Struct.merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.struct.Struct.merge" title="Link to this definition">¶</a></dt>
+<dd><p>Recursively update dictionary</p>
+<p>Merge entries from maps provided such that new entries are added and
+existing entries are updated.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.utils.struct.Struct.pget">
+<span class="sig-name descname"><span class="pre">pget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/struct.html#Struct.pget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.struct.Struct.pget" title="Link to this definition">¶</a></dt>
+<dd><p>Get value from a nested dictionary entry.</p>
+<p>A convenience method that serves various purposes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Access values from a deeply nested dictionary if any of the keys
+are not valid python variable names.</p></li>
+<li><p>Return None if any of the intermediate keys are missing. Does not
+raise AttributeError.</p></li>
+</ul>
+</div></blockquote>
+<p>By default, the method uses the <code class="docutils literal notranslate"><span class="pre">.</span></code> character to split keys similar
+to attribute access. However, this can be overridden by providing and
+extra <code class="docutils literal notranslate"><span class="pre">sep</span></code> argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The keys in individual dictionarys separated by sep</p></li>
+<li><p><strong>sep</strong> (<em>str</em>) – Separator for splitting keys (default: “.”)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Value corresponding to the key, or None if any of the keys</dt><dd><p>don’t exist.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.utils.struct.Struct.pset">
+<span class="sig-name descname"><span class="pre">pset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/struct.html#Struct.pset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.struct.Struct.pset" title="Link to this definition">¶</a></dt>
+<dd><p>Set value for a nested dictionary entry.</p>
+<p>A convenience method to set values in a nested mapping hierarchy
+without individually creating the intermediate dictionaries. Missing
+intermediate dictionaries will automatically be created with the same
+mapping class as the class of <code class="docutils literal notranslate"><span class="pre">self</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The keys in individual dictionarys separated by sep</p></li>
+<li><p><strong>value</strong> (<em>object</em>) – Object assigned to innermost key</p></li>
+<li><p><strong>sep</strong> (<em>str</em>) – Separator for splitting keys (default: “.”)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AttributeError</strong> – If the object assigned to is a non-mapping type
+    and not the final key.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="caelus.utils.struct.Struct.to_yaml">
+<span class="sig-name descname"><span class="pre">to_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stream</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_flow_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/struct.html#Struct.to_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.struct.Struct.to_yaml" title="Link to this definition">¶</a></dt>
+<dd><p>Convert mapping to YAML format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stream</strong> (<em>file</em>) – A file handle where YAML is output</p></li>
+<li><p><strong>default_flow_style</strong> (<em>bool</em>) – <ul>
+<li><p>False - pretty printing</p></li>
+<li><p>True  - No pretty printing</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="caelus.utils.struct.StructMeta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">caelus.utils.struct.</span></span><span class="sig-name descname"><span class="pre">StructMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/struct.html#StructMeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.struct.StructMeta" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABCMeta</span></code></p>
+<p>YAML interface registration</p>
+<p>Simplify the registration of custom yaml loader/dumper classes for Struct
+class hierarchy.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.struct.gen_yaml_decoder">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.struct.</span></span><span class="sig-name descname"><span class="pre">gen_yaml_decoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/struct.html#gen_yaml_decoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.struct.gen_yaml_decoder" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a custom YAML decoder with non-default mapping class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cls</strong> – Class used for mapping</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.struct.gen_yaml_encoder">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.struct.</span></span><span class="sig-name descname"><span class="pre">gen_yaml_encoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/struct.html#gen_yaml_encoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.struct.gen_yaml_encoder" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a custom YAML encoder with non-default mapping class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cls</strong> – Class used for mapping</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.struct.merge">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.struct.</span></span><span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/struct.html#merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.struct.merge" title="Link to this definition">¶</a></dt>
+<dd><p>Recursively merge mappings and return consolidated dict.</p>
+<p>Accepts a variable number of dictionary mappings and returns a new
+dictionary that contains the merged entries from all dictionaries. Note
+that the update occurs left to right, i.e., entries from later dictionaries
+overwrite entries from preceeding ones.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The consolidated map</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<section id="miscellaneous-utilities">
+<span id="module-caelus.utils.osutils"></span><h2>Miscellaneous utilities<a class="headerlink" href="#miscellaneous-utilities" title="Link to this heading">¶</a></h2>
+<p>This module implements functions that are utilized throughout CPL. They mostly
+provide a higher-level interface to various <code class="docutils literal notranslate"><span class="pre">os.path</span></code> functions to make it
+easier to perform some tasks.</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#caelus.utils.osutils.set_work_dir" title="caelus.utils.osutils.set_work_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_work_dir</span></code></a></p></td>
+<td><p>A with-block to execute code in a given directory.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#caelus.utils.osutils.ensure_directory" title="caelus.utils.osutils.ensure_directory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_directory</span></code></a></p></td>
+<td><p>Check if directory exists, if not, create it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#caelus.utils.osutils.abspath" title="caelus.utils.osutils.abspath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abspath</span></code></a></p></td>
+<td><p>Return the absolute path of the directory.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#caelus.utils.osutils.ostype" title="caelus.utils.osutils.ostype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ostype</span></code></a></p></td>
+<td><p>String indicating the operating system type</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#caelus.utils.osutils.timestamp" title="caelus.utils.osutils.timestamp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">timestamp</span></code></a></p></td>
+<td><p>Return a formatted timestamp for embedding in files</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.abspath">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">abspath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#abspath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.abspath" title="Link to this definition">¶</a></dt>
+<dd><p>Return the absolute path of the directory.</p>
+<p>This function expands the user home directory as well as any shell
+variables found in the path provided and returns an absolute path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pname</strong> (<em>path</em>) – Pathname to be expanded</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Absolute path after all substitutions</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.backup_file">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">backup_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_format=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_zone=&lt;UTC&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#backup_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.backup_file" title="Link to this definition">¶</a></dt>
+<dd><p>Given a filename return a timestamp based backup filename</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_format</strong> – A time formatter suitable for strftime</p></li>
+<li><p><strong>time_zone</strong> – Time zone used to generate timestamp (Default: UTC)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A timestamped filename suitable for creating backups</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.clean_directory">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">clean_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_patterns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#clean_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.clean_directory" title="Link to this definition">¶</a></dt>
+<dd><p>Utility function to remove files and directories from a given directory.</p>
+<p>User can specify a list of filename patterns to preserve with the
+<code class="docutils literal notranslate"><span class="pre">preserve_patterns</span></code> argument. These patterns can contain shell wildcards
+to glob multiple files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dirname</strong> (<em>path</em>) – Absolute path to the directory whose entries are purged.</p></li>
+<li><p><strong>preserve_patterns</strong> (<em>list</em>) – A list of shell wildcard patterns</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.copy_tree">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">copy_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">srcdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symlinks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#copy_tree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.copy_tree" title="Link to this definition">¶</a></dt>
+<dd><p>Enchanced version of shutil.copytree</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>removes the output directory if it already exists.</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>srcdir</strong> (<em>path</em>) – path to source directory to be copied.</p></li>
+<li><p><strong>destdir</strong> (<em>path</em>) – path (or new name) of destination directory.</p></li>
+<li><p><strong>symlinks</strong> (<em>bool</em>) – as in shutil.copytree</p></li>
+<li><p><strong>ignore_func</strong> (<em>func</em>) – as in shutil.copytree</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.ensure_directory">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">ensure_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#ensure_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.ensure_directory" title="Link to this definition">¶</a></dt>
+<dd><p>Check if directory exists, if not, create it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dname</strong> (<em>path</em>) – Directory name to check for</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Absolute path to the directory</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.ostype">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">ostype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#ostype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.ostype" title="Link to this definition">¶</a></dt>
+<dd><p>String indicating the operating system type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>One of [“linux”, “darwin”, “windows”]</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.path_exists">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">path_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#path_exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.path_exists" title="Link to this definition">¶</a></dt>
+<dd><p>Check path of the directory exists.</p>
+<p>This function expands the user home directory as well as any shell
+variables found in the path provided and checks if that path exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pname</strong> (<em>path</em>) – Pathname to be checked</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if path exists</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.path_or_cwd">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">path_or_cwd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#path_or_cwd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.path_or_cwd" title="Link to this definition">¶</a></dt>
+<dd><p>Sanitize the given path. If None, return current workding directory</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.remove_files_dirs">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">remove_files_dirs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basedir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#remove_files_dirs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.remove_files_dirs" title="Link to this definition">¶</a></dt>
+<dd><p>Remove files and/or directories</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> (<em>list</em>) – A list of file paths to delete (no patterns allowed)</p></li>
+<li><p><strong>basedir</strong> (<em>path</em>) – Base directory to search</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.set_work_dir">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">set_work_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#set_work_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.set_work_dir" title="Link to this definition">¶</a></dt>
+<dd><p>A with-block to execute code in a given directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dname</strong> (<em>path</em>) – Path to the working directory.</p></li>
+<li><p><strong>create</strong> (<em>bool</em>) – If true, directory is created prior to execution</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Absolute path to the execution directory</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>path</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">osutils</span><span class="o">.</span><span class="n">set_work_dir</span><span class="p">(</span><span class="s2">&quot;results_dir&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">wdir</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="s2">&quot;results.dat&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Data&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.split_path">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">split_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#split_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.split_path" title="Link to this definition">¶</a></dt>
+<dd><p>Split a path into directory, basename, extension</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(directory, basename, extension)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.timestamp">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">timestamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_format=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_zone=&lt;UTC&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#timestamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.timestamp" title="Link to this definition">¶</a></dt>
+<dd><p>Return a formatted timestamp for embedding in files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_format</strong> – A time formatter suitable for strftime</p></li>
+<li><p><strong>time_zone</strong> – Time zone used to generate timestamp (Default: UTC)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A formatted time string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.user_home_dir">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">user_home_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#user_home_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.user_home_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the absolute path of the user’s home directory</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="caelus.utils.osutils.username">
+<span class="sig-prename descclassname"><span class="pre">caelus.utils.osutils.</span></span><span class="sig-name descname"><span class="pre">username</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/caelus/utils/osutils.html#username"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#caelus.utils.osutils.username" title="Link to this definition">¶</a></dt>
+<dd><p>Return the username of the current user</p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="caelus.run.html" title="caelus.run – CML Execution Utilities"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="caelus.config.html" title="caelus.config – Caelus Configuration Infrastructure"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="caelus.html" >Caelus Python API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.utils – Basic utilities</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.config.cmlenv &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../index.html">
+<!--      <img src="../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.config.cmlenv</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.config.cmlenv</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># pylint: disable=attribute-defined-outside-init,no-else-return</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">Caelus CML Environment Manager</span>
+<span class="sd">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">:mod:`~caelus.config.cmlenv` serves as a replacement for Caelus/OpenFOAM bashrc</span>
+<span class="sd">files, providing ways to discover installed versions as well as interact with</span>
+<span class="sd">the installed Caelus CML versions. By default, :mod:`cmlenv` attempts to locate</span>
+<span class="sd">installed Caelus versions in standard locations:</span>
+<span class="sd">:file:`~/Caelus/caelus-VERSION` on Unix-like systems, and in :file:`C:\\Caelus`</span>
+<span class="sd">in Windows systems. Users can override the default behavior and point to</span>
+<span class="sd">non-standard locations by customizing their Caelus Python configuration file.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">packaging.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse</span> <span class="k">as</span> <span class="n">pkg_version</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">distutils.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">LooseVersion</span> <span class="k">as</span> <span class="n">pkg_version</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Struct</span><span class="p">,</span> <span class="n">env_module</span><span class="p">,</span> <span class="n">osutils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+
+<span class="n">_lgr</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="is_foam_var">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.cmlenv.is_foam_var">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_foam_var</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test if the variable is an OpenFOAM variable&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;WM_&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;FOAM_&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="discover_versions">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.cmlenv.discover_versions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">discover_versions</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Discover Caelus versions if no configuration is provided.</span>
+
+<span class="sd">    If no root directory is provided, then the function attempts to search in</span>
+<span class="sd">    path provided by :func:`~caelus.config.config.get_caelus_root`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        root (path): Absolute path to root directory to be searched</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">path_to_cfg</span><span class="p">(</span><span class="n">caelus_dirs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert Caelus directories to configuration objects&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cpath</span> <span class="ow">in</span> <span class="n">caelus_dirs</span><span class="p">:</span>
+            <span class="n">bname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">cpath</span><span class="p">)</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">bname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tmp</span><span class="p">:</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">yield</span> <span class="n">config</span><span class="o">.</span><span class="n">CaelusCfg</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">cpath</span><span class="p">)</span>
+
+    <span class="n">rpath</span> <span class="o">=</span> <span class="n">root</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">get_caelus_root</span><span class="p">()</span>
+    <span class="n">cdirs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rpath</span><span class="p">,</span> <span class="s2">&quot;[Cc]aelus-*&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">path_to_cfg</span><span class="p">(</span><span class="n">cdirs</span><span class="p">))</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_filter_invalid_versions</span><span class="p">(</span><span class="n">cml_cfg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process user configuration and filter invalid versions</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cml_cfg (list): List of CML configuration entries</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">root_default</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_caelus_root</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">ver</span> <span class="ow">in</span> <span class="n">cml_cfg</span><span class="p">:</span>
+        <span class="n">vid</span> <span class="o">=</span> <span class="n">ver</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># Ensure that the version is not interpreted as a number by YAML</span>
+        <span class="n">ver</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">vid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;modules&#39;</span> <span class="ow">in</span> <span class="n">ver</span><span class="p">:</span>
+            <span class="c1"># If the user has specified modules, always yield this version</span>
+            <span class="k">yield</span> <span class="n">ver</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pdir</span> <span class="o">=</span> <span class="n">ver</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_default</span><span class="p">,</span> <span class="s2">&quot;caelus-</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">vid</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">osutils</span><span class="o">.</span><span class="n">path_exists</span><span class="p">(</span><span class="n">pdir</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">ver</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_determine_platform_dir</span><span class="p">(</span><span class="n">root_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine the build type platform option&quot;&quot;&quot;</span>
+    <span class="n">basepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="s2">&quot;platforms&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">osutils</span><span class="o">.</span><span class="n">path_exists</span><span class="p">(</span><span class="n">basepath</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">ostype</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ostype</span><span class="p">()</span>
+    <span class="n">arch_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;64&#39;</span><span class="p">,</span> <span class="s1">&#39;32&#39;</span><span class="p">]</span>
+    <span class="n">compilers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;g++&#39;</span><span class="p">,</span> <span class="s1">&#39;icpc&#39;</span><span class="p">,</span> <span class="s1">&#39;clang++&#39;</span><span class="p">]</span>
+    <span class="n">prec_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DP&#39;</span><span class="p">,</span> <span class="s1">&#39;SP&#39;</span><span class="p">]</span>
+    <span class="n">opt_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Opt&#39;</span><span class="p">,</span> <span class="s1">&#39;Prof&#39;</span><span class="p">,</span> <span class="s1">&#39;Debug&#39;</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">at</span><span class="p">,</span> <span class="n">pt</span><span class="p">,</span> <span class="n">ot</span><span class="p">,</span> <span class="n">ct</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span>
+        <span class="n">arch_types</span><span class="p">,</span> <span class="n">prec_types</span><span class="p">,</span> <span class="n">opt_types</span><span class="p">,</span> <span class="n">compilers</span>
+    <span class="p">):</span>
+        <span class="n">bdir_name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s%s%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ostype</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">ct</span><span class="p">,</span> <span class="n">pt</span><span class="p">,</span> <span class="n">ot</span><span class="p">)</span>
+        <span class="n">bdir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="n">bdir_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">osutils</span><span class="o">.</span><span class="n">path_exists</span><span class="p">(</span><span class="n">bdir_path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">bdir_path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_determine_mpi_dir</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="n">mpi_type</span><span class="o">=</span><span class="s2">&quot;openmpi&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine the installed MPI path&quot;&quot;&quot;</span>
+    <span class="n">basepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="s2">&quot;external&quot;</span><span class="p">,</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ostype</span><span class="p">())</span>
+    <span class="n">mpidirs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basepath</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">-*&quot;</span> <span class="o">%</span> <span class="n">mpi_type</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">mpidirs</span><span class="p">:</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cannot find MPI directory in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">basepath</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">mpidirs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Multiple MPI installations found: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mpidirs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mpidirs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">mpidirs</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="CMLEnv">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.cmlenv.CMLEnv">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CMLEnv</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;CML Environment Interface.</span>
+
+<span class="sd">    This class provides an interface to an installed Caelus CML version.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_root_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Root directory</span>
+    <span class="n">_project_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Project directory</span>
+    <span class="n">_version</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Version</span>
+
+<div class="viewcode-block" id="CMLEnv.from_modules">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.from_modules">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_modules</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate an environment from modules&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;Module initialization only supported for OpenFOAM&quot;</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            cfg (CaelusCfg): The CML configuration object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span> <span class="o">=</span> <span class="n">cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_version</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">,</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get_caelus_root</span><span class="p">(),</span> <span class="s2">&quot;caelus-</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_root_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span><span class="p">)</span>
+
+        <span class="c1"># Determine build dir</span>
+        <span class="n">build_option</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;build_option&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">build_dir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">build_option</span><span class="p">:</span>
+            <span class="n">build_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span><span class="p">,</span> <span class="s2">&quot;platforms&quot;</span><span class="p">,</span> <span class="n">build_option</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">build_dir</span> <span class="o">=</span> <span class="n">_determine_platform_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">build_dir</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Cannot find platform directory: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_build_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_build_option</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_build_dir</span> <span class="o">=</span> <span class="n">build_dir</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_build_option</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">build_dir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_process_scons_env_file</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;CMLEnv v</span><span class="si">%s</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Caleus CML version </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the root path for the Caelus install</span>
+
+<span class="sd">        Typically on Linux/OSX this is the :file:`~/Caelus` directory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_dir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">project_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the project directory path</span>
+
+<span class="sd">        Typically :file:`~/Caelus/caelus-VERSION`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the Caelus version&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the build platform directory&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_dir</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">osutils</span><span class="o">.</span><span class="n">path_exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_dir</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot find Caelus platform directory: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_dir</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_dir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bin_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the bin directory for executable&quot;&quot;&quot;</span>
+        <span class="n">ostype</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ostype</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">ostype</span> <span class="o">==</span> <span class="s2">&quot;windows&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lib_dir</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_libdir</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">build_dir</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">build_dir</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lib_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the bin directory for executable&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">build_dir</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mpi_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the MPI directory for this installation&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_mpi_dir&quot;</span><span class="p">):</span>
+            <span class="n">mpi_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mpi_root&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">mpi_dir</span><span class="p">:</span>
+                <span class="n">mpi_dir</span> <span class="o">=</span> <span class="n">_determine_mpi_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span> <span class="o">=</span> <span class="n">mpi_dir</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mpi_libdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the MPI library path for this installation&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_mpi_libdir&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_libdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;mpi_lib_path&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpi_dir</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_libdir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mpi_bindir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the MPI executables path for this installation&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_mpi_bindir&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_bindir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;mpi_bin_path&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpi_dir</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_bindir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the user directory&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_user_dir&quot;</span><span class="p">):</span>
+            <span class="n">udir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user_dir&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">udir</span><span class="p">:</span>
+                <span class="n">udir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">-</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">osutils</span><span class="o">.</span><span class="n">username</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user_dir</span> <span class="o">=</span> <span class="n">udir</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user_build_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">udir</span><span class="p">,</span> <span class="s2">&quot;platforms&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_option</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_dir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_libdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return path to user lib directory&quot;&quot;&quot;</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_dir</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_user_build_dir</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_bindir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return path to user bin directory&quot;&quot;&quot;</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_dir</span>
+        <span class="k">if</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ostype</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;windows&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_libdir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_user_build_dir</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_user_build_dir</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">etc_dirs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return list of etc directories&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;etc&quot;</span><span class="p">),</span>
+        <span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">module_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return list of modules&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="CMLEnv.etc_file">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.cmlenv.CMLEnv.etc_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">etc_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the first configuration file from etc directories&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">edir</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">etc_dirs</span><span class="p">:</span>
+            <span class="n">efile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">edir</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">efile</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">efile</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_environment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return an environment suitable for executing programs&quot;&quot;&quot;</span>
+        <span class="n">ostype</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ostype</span><span class="p">()</span>
+        <span class="n">senv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+        <span class="n">senv</span><span class="p">[</span><span class="s1">&#39;PROJECT_DIR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+        <span class="n">senv</span><span class="p">[</span><span class="s1">&#39;PROJECT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;caelus-</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span>
+        <span class="n">senv</span><span class="p">[</span><span class="s1">&#39;CAELUS_PROJECT_DIR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span>
+        <span class="n">senv</span><span class="p">[</span><span class="s1">&#39;BUILD_OPTION&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_option</span>
+        <span class="n">senv</span><span class="p">[</span><span class="s1">&#39;EXTERNAL_DIR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;external&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ostype</span> <span class="o">==</span> <span class="s2">&quot;windows&quot;</span><span class="p">:</span>
+            <span class="n">win_ext_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;external&quot;</span><span class="p">,</span> <span class="s2">&quot;windows&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">mingw_bin_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">win_ext_dir</span><span class="p">,</span> <span class="s2">&quot;mingw64&quot;</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">term_bin_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">win_ext_dir</span><span class="p">,</span> <span class="s2">&quot;terminal&quot;</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">ansicon_bin_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">win_ext_dir</span><span class="p">,</span> <span class="s2">&quot;ansicon&quot;</span><span class="p">,</span> <span class="s2">&quot;x64&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">senv</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bin_dir</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_bindir</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_bindir</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+                <span class="o">+</span> <span class="n">mingw_bin_dir</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+                <span class="o">+</span> <span class="n">term_bin_dir</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+                <span class="o">+</span> <span class="n">ansicon_bin_dir</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PATH&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">senv</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bin_dir</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_bindir</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_bindir</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+                <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PATH&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">senv</span><span class="p">[</span><span class="s1">&#39;MPI_BUFFER_SIZE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scons_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s1">&#39;MPI_BUFFER_SIZE&#39;</span><span class="p">,</span> <span class="s2">&quot;20000000&quot;</span>
+        <span class="p">)</span>
+        <span class="n">senv</span><span class="p">[</span><span class="s1">&#39;OPAL_PREFIX&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scons_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;OPAL_PREFIX&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_dir</span><span class="p">)</span>
+
+        <span class="n">lib_var</span> <span class="o">=</span> <span class="s1">&#39;LD_LIBRARY_PATH&#39;</span>
+        <span class="k">if</span> <span class="n">ostype</span> <span class="o">==</span> <span class="s2">&quot;darwin&quot;</span><span class="p">:</span>
+            <span class="n">lib_var</span> <span class="o">=</span> <span class="s1">&#39;DYLD_FALLBACK_LIBRARY_PATH&#39;</span>
+        <span class="n">senv</span><span class="p">[</span><span class="n">lib_var</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lib_dir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_libdir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_libdir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">lib_var</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">senv</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">environ</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return an environment for running Caelus CML binaries&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_environ&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_environ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_environment</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_environ</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_scons_env_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the CML json file and determine configuration&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scons_env</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">env_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;etc&quot;</span><span class="p">,</span> <span class="s2">&quot;cml_env.json&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">osutils</span><span class="o">.</span><span class="n">path_exists</span><span class="p">(</span><span class="n">env_file</span><span class="p">):</span>
+            <span class="n">env_all</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">env_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">))</span>
+            <span class="n">env</span> <span class="o">=</span> <span class="n">env_all</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_option</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">env</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_scons_env</span> <span class="o">=</span> <span class="n">env</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_libdir</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s1">&#39;MPI_LIB_PATH&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mpi_libdir</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_user_dir</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s1">&#39;CAELUS_USER_DIR&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_user_build_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span>
+                    <span class="n">env</span><span class="p">[</span><span class="s1">&#39;CAELUS_USER_APPBIN&#39;</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;CML build environment loaded from SCons: </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
+                    <span class="n">env_file</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_build_option</span><span class="p">,</span>
+                <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="FOAMEnv">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FOAMEnv</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;OpenFOAM environment interface&quot;&quot;&quot;</span>
+
+    <span class="n">_root_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">_project_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">_version</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<div class="viewcode-block" id="FOAMEnv.from_modules">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.from_modules">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_modules</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate an environment from modules&quot;&quot;&quot;</span>
+        <span class="n">mod_list</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">modules</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mod_list</span><span class="p">,</span> <span class="s1">&#39;join&#39;</span><span class="p">):</span>
+            <span class="n">mod_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">mod_list</span><span class="p">]</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">modules</span> <span class="o">=</span> <span class="n">mod_list</span>
+        <span class="k">with</span> <span class="n">env_module</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">with_modules</span><span class="p">(</span><span class="o">*</span><span class="n">mod_list</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;WM_PROJECT_DIR&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot determine OpenFOAM path from modules&quot;</span>
+                <span class="p">)</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;WM_PROJECT_DIR&#39;</span><span class="p">]</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">obj</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            cfg (CaleusCfg): The CML configuration object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span> <span class="o">=</span> <span class="n">cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_version</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_root_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_has_modules</span> <span class="o">=</span> <span class="s1">&#39;modules&#39;</span> <span class="ow">in</span> <span class="n">cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_foam_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_modules</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_option</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;WM_OPTIONS&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;FOAMEnv </span><span class="si">%s</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;OpenFOAM version </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the root path for the OpenFOAM install</span>
+
+<span class="sd">        Typically on Linux/OSX this is the :file:`~/OpenFOAM` directory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_dir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">project_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the project directory path</span>
+
+<span class="sd">        Typically :file:`~/Caelus/caelus-VERSION`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;WM_PROJECT_DIR&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the project version</span>
+
+<span class="sd">        This is the project version as defined in the Caelus configuration</span>
+<span class="sd">        file. For the exact version reported in OpenFOAM WMake use</span>
+<span class="sd">        :meth:`foam_version`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">foam_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the OpenFOAM version</span>
+
+<span class="sd">        Unlike ``version`` this reports the version from ``WM_PROJECT_VERSION``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;WM_PROJECT_VERSION&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_option</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the build option&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;WM_OPTIONS&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the build platform directory&quot;&quot;&quot;</span>
+        <span class="n">bdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;platforms&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_option</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">osutils</span><span class="o">.</span><span class="n">path_exists</span><span class="p">(</span><span class="n">bdir</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Cannot find OpenFOAM platform directory: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">bdir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bdir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bin_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the bin directory for executables&quot;&quot;&quot;</span>
+        <span class="n">bindir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;FOAM_APPBIN&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">bindir</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Cannot find OpenFOAM bin directory: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">bindir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bindir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lib_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the lib directory for executables&quot;&quot;&quot;</span>
+        <span class="n">libdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;FOAM_LIBBIN&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">libdir</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Cannot find OpenFOAM lib directory: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">libdir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">libdir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the user directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;WM_PROJECT_USER_DIR&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_libdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the user lib directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;FOAM_USER_LIBBIN&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_bindir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the user binary directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;FOAM_USER_APPBIN&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mpi_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the path to MPI dir&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_mpi_dir&quot;</span><span class="p">):</span>
+            <span class="n">cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span>
+            <span class="k">if</span> <span class="s2">&quot;mpi_root&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;mpi_root&quot;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s2">&quot;mpi_lib_path&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;mpi_lib_path&quot;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="s2">&quot;mpi_bin_path&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;mpi_bin_path&quot;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MPI_ARCH_PATH&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+            <span class="n">check_mpi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;check_mpi_path&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">check_mpi</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot determine OpenFOAM MPI installation. &quot;</span>
+                    <span class="s2">&quot;Please specify &#39;mpi_root&#39; in Caelus configuration.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mpi_libdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the path to MPI libraries&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_mpi_libdir&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_libdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;mpi_lib_path&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpi_dir</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_libdir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mpi_bindir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the path to MPI binraries&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_mpi_bindir&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_bindir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;mpi_bin_path&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpi_dir</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_bindir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">site_libdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the site lib directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;FOAM_SITE_LIBBIN&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">environ</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the environment&quot;&quot;&quot;</span>
+        <span class="n">senv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span>
+        <span class="n">senv</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bin_dir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_bindir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_bindir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PATH&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">lib_var</span> <span class="o">=</span> <span class="s1">&#39;LD_LIBRARY_PATH&#39;</span>
+        <span class="k">if</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ostype</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;darwin&quot;</span><span class="p">:</span>
+            <span class="n">lib_var</span> <span class="o">=</span> <span class="s1">&#39;DYLD_FALLBACK_LIBRARY_PATH&#39;</span>
+        <span class="n">senv</span><span class="p">[</span><span class="n">lib_var</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lib_dir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_libdir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_libdir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">lib_var</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">senv</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">foam_bashrc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the path to the bashrc file&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bashrc_file</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">site_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return site directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;WM_PROJECT_SITE&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;site&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">foam_api_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get API information&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_foam_api_info&quot;</span><span class="p">):</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;META-INFO&quot;</span><span class="p">,</span> <span class="s2">&quot;api-info&quot;</span><span class="p">)</span>
+            <span class="n">contents</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_foam_api_info</span> <span class="o">=</span> <span class="n">Struct</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">ll</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">ll</span> <span class="ow">in</span> <span class="n">contents</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_foam_api_info</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">etc_dirs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return list of etc directories&quot;&quot;&quot;</span>
+        <span class="n">homedir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">user_home_dir</span><span class="p">()</span>
+        <span class="n">api</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">foam_api_info</span><span class="o">.</span><span class="n">api</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">homedir</span><span class="p">,</span> <span class="s2">&quot;.OpenFOAM&quot;</span><span class="p">,</span> <span class="n">api</span><span class="p">),</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">homedir</span><span class="p">,</span> <span class="s2">&quot;.OpenFOAM&quot;</span><span class="p">),</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">site_dir</span><span class="p">,</span> <span class="n">api</span><span class="p">,</span> <span class="s2">&quot;etc&quot;</span><span class="p">),</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">site_dir</span><span class="p">,</span> <span class="s2">&quot;etc&quot;</span><span class="p">),</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;etc&quot;</span><span class="p">),</span>
+        <span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">module_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return modules to be activated&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;modules&#39;</span><span class="p">,</span> <span class="p">[])</span>
+
+<div class="viewcode-block" id="FOAMEnv.etc_file">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.cmlenv.FOAMEnv.etc_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">etc_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the first configuration file from etc directories&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">edir</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">etc_dirs</span><span class="p">:</span>
+            <span class="n">efile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">edir</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">efile</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">efile</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_foam_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_dir</span><span class="p">,</span> <span class="n">use_full_env</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the bashrc file and get all necessary variables&quot;&quot;&quot;</span>
+        <span class="n">extra_vars</span> <span class="o">=</span> <span class="s2">&quot;PATH LD_LIBRARY_PATH MPI_ARCH_PATH&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">bashrc_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;etc&quot;</span><span class="p">,</span> <span class="s2">&quot;bashrc&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">bashrc_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot find OpenFOAM config file: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">bashrc_path</span>
+            <span class="p">)</span>
+        <span class="n">bash_cmd</span> <span class="o">=</span> <span class="s2">&quot;bash --noprofile --norc -c &#39;source </span><span class="si">%s</span><span class="s2"> &amp;&amp; env&#39;&quot;</span> <span class="o">%</span> <span class="n">bashrc_path</span>
+        <span class="n">cmd_env</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="s2">&quot;HOME USER&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()}</span>
+        <span class="n">pp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+            <span class="n">bash_cmd</span><span class="p">,</span>
+            <span class="n">env</span><span class="o">=</span><span class="n">cmd_env</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">use_full_env</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">retcode</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">retcode</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="s2">&quot;Error initializing OpenFOAM environment: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span>
+            <span class="p">)</span>
+
+        <span class="c1"># No errors... process the bash variables</span>
+        <span class="n">outbuf</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
+        <span class="n">bash_vars</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">outbuf</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">l</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">foam_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">bash_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">is_foam_var</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">bash_vars</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">foam_keys</span><span class="p">}</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">update</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">bash_vars</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">extra_vars</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">bash_vars</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_library_path</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bashrc_file</span> <span class="o">=</span> <span class="n">bashrc_path</span>
+        <span class="k">return</span> <span class="n">env</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_adjust_library_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adjust the LD_LIBRARY_PATH variable</span>
+
+<span class="sd">        Make sure that the paths from the OpenFOAM bashrc file as well as the</span>
+<span class="sd">        default environment are properly handled in the environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ld_foam</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LD_LIBRARY_PATH&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">ld_osenv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LD_LIBRARY_PATH&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">ld_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ff</span> <span class="k">for</span> <span class="n">ff</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ld_foam</span><span class="p">,</span> <span class="n">ld_osenv</span><span class="p">]</span> <span class="k">if</span> <span class="n">ff</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ld_path</span><span class="p">:</span>
+            <span class="n">env</span><span class="p">[</span><span class="s1">&#39;LD_LIBRARY_PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ld_path</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span> <span class="o">+</span> <span class="s2">&quot;$</span><span class="si">{LD_LIBRARY_PATH}</span><span class="s2">&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="HelyxEnv">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HelyxEnv</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Engys Helyx environment&quot;&quot;&quot;</span>
+
+    <span class="n">_root_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">_project_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">_version</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            cfg (CaelusCfg): The CML configuration object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span> <span class="o">=</span> <span class="n">cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_version</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_root_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_has_models</span> <span class="o">=</span> <span class="s2">&quot;modules&quot;</span> <span class="ow">in</span> <span class="n">cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_helyx_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_option</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;WM_OPTIONS&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;HelyxEnv </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;HelyxCore-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">project_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the project directory path&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HELYX_PROJECT_DIR&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project_dir</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the helyxcore project version&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_option</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the build option&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HELYX_OPTIONS&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the build platform directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;platforms&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_option</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bin_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the bin directory for executables&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;HELYX_RUNTIME_OUTPUT_DIRECTORY&quot;</span><span class="p">,</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">build_dir</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lib_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the lib directory for executables&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;HELYX_LIBRARY_OUTPUT_DIRECTORY&quot;</span><span class="p">,</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">build_dir</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the user directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HELYX_PROJECT_USER_DIR&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_libdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the user lib directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HELYX_USER_LIBBIN&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_bindir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the user binary directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HELYX_USER_APPBIN&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mpi_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the path to MPI dir&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_mpi_dir&quot;</span><span class="p">):</span>
+            <span class="n">cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span>
+            <span class="k">if</span> <span class="s2">&quot;mpi_root&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;mpi_root&quot;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s2">&quot;mpi_lib_path&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;mpi_lib_path&quot;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="s2">&quot;mpi_bin_path&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;mpi_bin_path&quot;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MPI_ARCH_PATH&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+            <span class="n">check_mpi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;check_mpi_path&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">check_mpi</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot determine OpenFOAM MPI installation. &quot;</span>
+                    <span class="s2">&quot;Please specify &#39;mpi_root&#39; in Caelus configuration.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_dir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mpi_libdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the path to MPI libraries&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_mpi_libdir&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_libdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;mpi_lib_path&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpi_dir</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_libdir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mpi_bindir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the path to MPI binraries&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_mpi_bindir&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_bindir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;mpi_bin_path&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpi_dir</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mpi_bindir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">site_libdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the site lib directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HELYX_SITE_LIBBIN&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">environ</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the environment&quot;&quot;&quot;</span>
+        <span class="n">senv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span>
+        <span class="n">senv</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bin_dir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_bindir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_bindir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PATH&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">lib_var</span> <span class="o">=</span> <span class="s1">&#39;LD_LIBRARY_PATH&#39;</span>
+        <span class="k">if</span> <span class="n">osutils</span><span class="o">.</span><span class="n">ostype</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;darwin&quot;</span><span class="p">:</span>
+            <span class="n">lib_var</span> <span class="o">=</span> <span class="s1">&#39;DYLD_FALLBACK_LIBRARY_PATH&#39;</span>
+        <span class="n">senv</span><span class="p">[</span><span class="n">lib_var</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lib_dir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_libdir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_libdir</span>
+            <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">lib_var</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">senv</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">foam_bashrc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the path to the bashrc file&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;platforms&quot;</span><span class="p">,</span> <span class="s2">&quot;activeBuild.shrc&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">site_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return site directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;HELYX_PROJECT_SITE&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;site&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">etc_dirs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return list of etc directories&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;etc&quot;</span><span class="p">)]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">module_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return modules to be activated&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;modules&#39;</span><span class="p">,</span> <span class="p">[])</span>
+
+<div class="viewcode-block" id="HelyxEnv.etc_file">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.cmlenv.HelyxEnv.etc_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">etc_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the first configuration file from etc directories&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">edir</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">etc_dirs</span><span class="p">:</span>
+            <span class="n">efile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">edir</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">efile</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">efile</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_helyx_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_dir</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the bashrc file and return the environment variables&quot;&quot;&quot;</span>
+        <span class="n">extra_vars</span> <span class="o">=</span> <span class="s2">&quot;PATH LD_LIBRARY_PATH MPI_ARCH_PATH&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">script_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;platforms&quot;</span><span class="p">,</span> <span class="s2">&quot;activeBuild.shrc&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">script_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot find Helyx config file: </span><span class="si">{</span><span class="n">script_path</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">bash_cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;bash --noprofile -norc -c &#39;source </span><span class="si">{</span><span class="n">script_path</span><span class="si">}</span><span class="s2"> &amp;&amp; env&#39;&quot;</span>
+        <span class="n">pp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+            <span class="n">bash_cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">_err</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="n">retcode</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">retcode</span><span class="p">:</span>
+            <span class="n">_lgr</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="s2">&quot;Error initializing Helyx environment: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">outbuf</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
+        <span class="n">bash_vars</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">ll</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">ll</span> <span class="ow">in</span> <span class="n">outbuf</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">ll</span>
+        <span class="p">)</span>
+        <span class="n">helyx_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">bash_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="s2">&quot;HELYX_&quot;</span> <span class="ow">in</span> <span class="n">k</span><span class="p">]</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">bash_vars</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">helyx_keys</span><span class="p">}</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">update</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">bash_vars</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">extra_vars</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">bash_vars</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">env</span></div>
+
+
+
+<div class="viewcode-block" id="get_cmlenv_instance">
+<a class="viewcode-back" href="../../../dev/caelus.config.html#caelus.config.cmlenv.get_cmlenv_instance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_cmlenv_instance</span><span class="p">(</span><span class="n">cml</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a Caelus or OpenFOAM instance</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cml (dict): A configuration dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">variant_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;caelus&quot;</span><span class="p">:</span> <span class="n">CMLEnv</span><span class="p">,</span>
+        <span class="s2">&quot;openfoam&quot;</span><span class="p">:</span> <span class="n">FOAMEnv</span><span class="p">,</span>
+        <span class="s2">&quot;helyx&quot;</span><span class="p">:</span> <span class="n">HelyxEnv</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="s1">&#39;modules&#39;</span> <span class="ow">in</span> <span class="n">cml</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">FOAMEnv</span><span class="o">.</span><span class="n">from_modules</span><span class="p">(</span><span class="n">cml</span><span class="p">)</span>
+
+    <span class="n">version</span> <span class="o">=</span> <span class="n">cml</span><span class="o">.</span><span class="n">version</span>
+    <span class="n">project_dir</span> <span class="o">=</span> <span class="n">cml</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get_caelus_root</span><span class="p">(),</span> <span class="s2">&quot;caelus-</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">version</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">project_dir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">project_dir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;variant&quot;</span> <span class="ow">in</span> <span class="n">cml</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">variant_map</span><span class="p">[</span><span class="n">cml</span><span class="o">.</span><span class="n">variant</span><span class="p">](</span><span class="n">cml</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;SConstruct&quot;</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">CMLEnv</span><span class="p">(</span><span class="n">cml</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;wmake&quot;</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">FOAMEnv</span><span class="p">(</span><span class="n">cml</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="s2">&quot;CMakeLists.txt&quot;</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">HelyxEnv</span><span class="p">(</span><span class="n">cml</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+            <span class="s2">&quot;Cannot find a proper OpenFOAM version: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">version</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cml_env_mgr</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Caelus CML versions manager&quot;&quot;&quot;</span>
+    <span class="n">cml_versions</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">did_init</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_cml_versions</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize versions based on user configuration&quot;&quot;&quot;</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">cml_opts</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">caelus</span><span class="o">.</span><span class="n">caelus_cml</span><span class="o">.</span><span class="n">versions</span>
+        <span class="k">if</span> <span class="n">cml_opts</span><span class="p">:</span>
+            <span class="n">cml_filtered</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_filter_invalid_versions</span><span class="p">(</span><span class="n">cml_opts</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">cml_opts</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">cml_filtered</span><span class="p">:</span>
+                <span class="n">_lgr</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;No valid versions provided; check configuration file.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">cml</span> <span class="ow">in</span> <span class="n">cml_filtered</span><span class="p">:</span>
+                <span class="n">cenv</span> <span class="o">=</span> <span class="n">get_cmlenv_instance</span><span class="p">(</span><span class="n">cml</span><span class="p">)</span>
+                <span class="n">cml_versions</span><span class="p">[</span><span class="n">cenv</span><span class="o">.</span><span class="n">version</span><span class="p">]</span> <span class="o">=</span> <span class="n">cenv</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cml_discovered</span> <span class="o">=</span> <span class="n">discover_versions</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">cml</span> <span class="ow">in</span> <span class="n">cml_discovered</span><span class="p">:</span>
+                <span class="n">cenv</span> <span class="o">=</span> <span class="n">get_cmlenv_instance</span><span class="p">(</span><span class="n">cml</span><span class="p">)</span>
+                <span class="n">cml_versions</span><span class="p">[</span><span class="n">cenv</span><span class="o">.</span><span class="n">version</span><span class="p">]</span> <span class="o">=</span> <span class="n">cenv</span>
+        <span class="n">did_init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_latest_version</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the CML environment for the latest version available.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CMLEnv: The environment object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cml_versions</span> <span class="ow">and</span> <span class="n">did_init</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No valid OpenFOAM/CML versions found&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_init_cml_versions</span><span class="p">()</span>
+
+        <span class="c1"># Maintain backwards compatibility and search CML versions first</span>
+        <span class="n">vkeys</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">pkg_version</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cml_versions</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cml_versions</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">CMLEnv</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">vkeys</span><span class="p">:</span>
+            <span class="n">vlist</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">vkeys</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cml_versions</span><span class="p">[</span><span class="n">vlist</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+
+        <span class="c1"># If only OpenFOAM versions are found return latest</span>
+        <span class="n">vkeys</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">pkg_version</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cml_versions</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cml_versions</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">FOAMEnv</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">vlist</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">vkeys</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cml_versions</span><span class="p">[</span><span class="n">vlist</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_version</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the CML environment for the version requested</span>
+
+<span class="sd">        If version is None, then it returns the version set as default in the</span>
+<span class="sd">        configuration file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            version (str): Version string</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CMLEnv: The environment object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cml_versions</span> <span class="ow">and</span> <span class="n">did_init</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No valid OpenFOAM/CML versions found&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_init_cml_versions</span><span class="p">()</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">vkey</span> <span class="o">=</span> <span class="n">version</span> <span class="ow">or</span> <span class="n">cfg</span><span class="o">.</span><span class="n">caelus</span><span class="o">.</span><span class="n">caelus_cml</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="s2">&quot;latest&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vkey</span> <span class="o">==</span> <span class="s2">&quot;latest&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_get_latest_version</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">vkey</span> <span class="ow">in</span> <span class="n">cml_versions</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Invalid OpenFOAM/CML version requested&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cml_versions</span><span class="p">[</span><span class="n">vkey</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cml_reset_versions</span><span class="p">():</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cml_versions</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">cml_versions</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">did_init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">_get_latest_version</span><span class="p">,</span> <span class="n">_get_version</span><span class="p">,</span> <span class="n">_cml_reset_versions</span>
+
+
+<span class="p">(</span><span class="n">cml_get_latest_version</span><span class="p">,</span> <span class="n">cml_get_version</span><span class="p">,</span> <span class="n">cml_reset_versions</span><span class="p">)</span> <span class="o">=</span> <span class="n">_cml_env_mgr</span><span class="p">()</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.config.cmlenv</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>

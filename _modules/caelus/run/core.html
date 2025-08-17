@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caelus.run.core &#8212; Caelus Python Library (CPL) v5.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx13.css?v=bcebad1a" />
+    <script src="../../../_static/documentation_options.js?v=35c0298d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700'
+          rel='stylesheet' type='text/css' />
+ 
+    <style type="text/css">
+      table.right { float: right; margin-left: 20px; }
+      table.right td { border: 1px solid #ccc; }
+      
+    </style>
+    <script type="text/javascript">
+      // intelligent scrolling of the sidebar content
+      $(window).scroll(function() {
+        var sb = $('.sphinxsidebarwrapper');
+        var win = $(window);
+        var sbh = sb.height();
+        var offset = $('.sphinxsidebar').position()['top'];
+        var wintop = win.scrollTop();
+        var winbot = wintop + win.innerHeight();
+        var curtop = sb.position()['top'];
+        var curbot = curtop + sbh;
+        // does sidebar fit in window?
+        if (sbh < win.innerHeight()) {
+          // yes: easy case -- always keep at the top
+          sb.css('top', $u.min([$u.max([0, wintop - offset - 10]),
+                                $(document).height() - sbh - 200]));
+        } else {
+          // no: only scroll if top/bottom edge of sidebar is at
+          // top/bottom edge of window
+          if (curtop > wintop && curbot > winbot) {
+            sb.css('top', $u.max([wintop - offset - 10, 0]));
+          } else if (curtop < wintop && curbot < winbot) {
+            sb.css('top', $u.min([winbot - sbh - offset - 20,
+                                  $(document).height() - sbh - 200]));
+          }
+        }
+      });
+    </script>
+
+  </head><body>
+<div class="pageheader">
+  <div>
+    <a href="../../../index.html">
+<!--      <img src="../../../_static/sphinxheader.png" alt="SPHINX" />-->
+    </a>
+  </div>
+</div>
+
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.run.core</a></li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for caelus.run.core</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">CML Execution Utilities</span>
+<span class="sd">-----------------------</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">osutils</span>
+
+<span class="n">_lgr</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="is_caelus_casedir">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.core.is_caelus_casedir">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_caelus_casedir</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the path provided looks like a case directory.</span>
+
+<span class="sd">    A directory is determined to be an OpenFOAM/Caelus case directory if the</span>
+<span class="sd">    ``system``, ``constant``, and ``system/controlDict`` exist. No check is</span>
+<span class="sd">    performed to determine whether the case directory will actually run or if a</span>
+<span class="sd">    mesh is present.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        root (path): Top directory to start traversing (default: CWD)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">casedir_entries</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;system&quot;</span><span class="p">,</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;controlDict&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">cdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">root</span>
+    <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cdir</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">casedir_entries</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="find_case_dirs">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.core.find_case_dirs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_case_dirs</span><span class="p">(</span><span class="n">basedir</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursively search for case directories existing in a path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        basedir (path): Top-level directory to traverse</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Absolute path to the case directory</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">absdir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">basedir</span><span class="p">)</span>
+    <span class="c1"># is the root directory itself a case directory?</span>
+    <span class="k">if</span> <span class="n">is_caelus_casedir</span><span class="p">(</span><span class="n">absdir</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">absdir</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">absdir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
+                <span class="n">cdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">is_caelus_casedir</span><span class="p">(</span><span class="n">cdir</span><span class="p">):</span>
+                    <span class="n">dirs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+                    <span class="k">yield</span> <span class="n">cdir</span></div>
+
+
+
+<div class="viewcode-block" id="find_caelus_recipe_dirs">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.core.find_caelus_recipe_dirs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_caelus_recipe_dirs</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="n">action_file</span><span class="o">=</span><span class="s2">&quot;caelus_tasks.yaml&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return case directories that contain action files.</span>
+
+<span class="sd">    A case directory with action file is determined if the directory succeeds</span>
+<span class="sd">    checks in :func:`is_caelus_dir` and also contains the action file specified</span>
+<span class="sd">    by the user.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        basedir (path): Top-level directory to traverse</span>
+<span class="sd">        action_file (filename): Default is ``caelus_tasks.yaml``</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Path to the case directory with action files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">cdir</span> <span class="ow">in</span> <span class="n">find_case_dirs</span><span class="p">(</span><span class="n">basedir</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cdir</span><span class="p">,</span> <span class="n">action_file</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="n">cdir</span></div>
+
+
+
+<div class="viewcode-block" id="find_recipe_dirs">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.core.find_recipe_dirs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_recipe_dirs</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="n">action_file</span><span class="o">=</span><span class="s2">&quot;caelus_tasks.yaml&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return directories that contain the action files</span>
+
+<span class="sd">    This behaves differently than :func:`find_caelus_recipe_dirs` in that it</span>
+<span class="sd">    doesn&#39;t require a valid case directory. It assumes that the case</span>
+<span class="sd">    directories are sub-directories and this task file acts on multiple</span>
+<span class="sd">    directories.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        basedir (path): Top-level directory to traverse</span>
+<span class="sd">        action_file (filename): Default is ``caelus_tasks.yaml``</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Path to the case directory with action files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">absdir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">basedir</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">absdir</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">action_file</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">dname</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
+                <span class="n">dirs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">dname</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">root</span></div>
+
+
+
+<div class="viewcode-block" id="clean_polymesh">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.core.clean_polymesh">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">clean_polymesh</span><span class="p">(</span><span class="n">casedir</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">preserve_patterns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean the polyMesh from the given case directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        casedir (path): Path to the case directory</span>
+<span class="sd">        region (str): Mesh region to delete</span>
+<span class="sd">        preserve_patterns (list): Shell wildcard patterns of files to preserve</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ppatterns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;blockMeshDict&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">preserve_patterns</span><span class="p">:</span>
+        <span class="n">ppatterns</span> <span class="o">+=</span> <span class="n">preserve_patterns</span>
+    <span class="n">absdir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">casedir</span><span class="p">)</span>
+    <span class="n">meshdir</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">absdir</span><span class="p">,</span> <span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="s2">&quot;polyMesh&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">region</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">absdir</span><span class="p">,</span> <span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="s2">&quot;polyMesh&quot;</span><span class="p">))</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">meshdir</span><span class="p">):</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Cleaning polyMesh in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">absdir</span><span class="p">)</span>
+        <span class="n">osutils</span><span class="o">.</span><span class="n">clean_directory</span><span class="p">(</span><span class="n">meshdir</span><span class="p">,</span> <span class="n">ppatterns</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_lgr</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No polyMesh directory </span><span class="si">%s</span><span class="s2">; skipping clean_mesh&quot;</span><span class="p">,</span> <span class="n">meshdir</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="clean_casedir">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.core.clean_casedir">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">clean_casedir</span><span class="p">(</span>
+    <span class="n">casedir</span><span class="p">,</span>
+    <span class="n">preserve_extra</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">preserve_zero</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">preserve_times</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">preserve_processors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">purge_mesh</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean a Caelus case directory.</span>
+
+<span class="sd">    Cleans files generated by a run. By default, this function will always</span>
+<span class="sd">    preserve ``system``, ``constant``, and ``0`` directories as well as any</span>
+<span class="sd">    YAML or python files. Additional files and directories can be preserved by</span>
+<span class="sd">    using the ``preserve_extra`` option that accepts a list of shell wildcard</span>
+<span class="sd">    patterns of files/directories that must be preserved.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        casedir (path): Absolute path to a case directory.</span>
+<span class="sd">        preserve_extra (list): List of shell wildcard patterns to preserve</span>
+<span class="sd">        purge_mesh (bool): If true, also removes mesh from constant/polyMesh</span>
+<span class="sd">        preserve_zero (bool): If False, removes the 0 directory</span>
+<span class="sd">        preserve_times (bool): If False, removes the time directories</span>
+<span class="sd">        preserve_processors (bool): If False, removes processor directories</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        IOError: ``clean_casedir`` will refuse to remove files from a directory</span>
+<span class="sd">                 that is not a valid Caelus case directory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base_patterns</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;system&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;*.yaml&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;*.yml&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;*.py&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;*.job&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;README*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;readme*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cmlControls&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">zero_pat</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">preserve_zero</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="n">time_pat</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;[1-9]*&quot;</span><span class="p">,</span> <span class="s2">&quot;0.[0-9]*&quot;</span><span class="p">,</span> <span class="s2">&quot;-[0-9]*&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">preserve_times</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="n">proc_pat</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;processor*&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">preserve_processors</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="n">extra_pat</span> <span class="o">=</span> <span class="n">preserve_extra</span> <span class="k">if</span> <span class="n">preserve_extra</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="n">ppatterns</span> <span class="o">=</span> <span class="n">base_patterns</span> <span class="o">+</span> <span class="n">zero_pat</span> <span class="o">+</span> <span class="n">extra_pat</span> <span class="o">+</span> <span class="n">time_pat</span> <span class="o">+</span> <span class="n">proc_pat</span>
+
+    <span class="n">absdir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">casedir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_caelus_casedir</span><span class="p">(</span><span class="n">absdir</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
+            <span class="s2">&quot;Not a valid case directory; refusing to perform destructive &quot;</span>
+            <span class="s2">&quot;clean operation on </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">absdir</span>
+        <span class="p">)</span>
+    <span class="n">_lgr</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Cleaning case directory: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">absdir</span><span class="p">)</span>
+    <span class="n">osutils</span><span class="o">.</span><span class="n">clean_directory</span><span class="p">(</span><span class="n">absdir</span><span class="p">,</span> <span class="n">ppatterns</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">purge_mesh</span><span class="p">:</span>
+        <span class="n">clean_polymesh</span><span class="p">(</span><span class="n">absdir</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="clone_case">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.core.clone_case">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">clone_case</span><span class="p">(</span>
+    <span class="n">casedir</span><span class="p">,</span>
+    <span class="n">template_dir</span><span class="p">,</span>
+    <span class="n">copy_polymesh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">copy_zero</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">copy_scripts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">extra_patterns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clone a Caelus case directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        casedir (path): Absolute path to new case directory.</span>
+<span class="sd">        template_dir (path): Case directory to be cloned</span>
+<span class="sd">        copy_polymesh (bool): Copy contents of constant/polyMesh to new case</span>
+<span class="sd">        copy_zero (bool): Copy time=0 directory to new case</span>
+<span class="sd">        copy_scripts (bool): Copy python and YAML files</span>
+<span class="sd">        extra_patterns (list): List of shell wildcard patterns for copying</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        path: Absolute path to the newly cloned directory</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        IOError: If either the ``casedir`` exists or if the ``template_dir``</span>
+<span class="sd">                 does not exist or is not a valid Caelus case directory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">absdir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">casedir</span><span class="p">)</span>
+    <span class="n">tmpl_dir</span> <span class="o">=</span> <span class="n">osutils</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">template_dir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">absdir</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot overwrite existing file/directory: </span><span class="si">{</span><span class="n">absdir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tmpl_dir</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_caelus_casedir</span><span class="p">(</span><span class="n">tmpl_dir</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid Caelus case directory provided as template: </span><span class="si">{</span><span class="n">template_dir</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">default_ignore</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;[1-9]*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;0.[0-9]*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-[0-9]*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;processor*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;VTK&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;*.foam&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;surfaceSampling&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;postProcessing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;*.log&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;log.*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;*logs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;*.job&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;*.pdf&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;*.png&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">copy_zero</span><span class="p">:</span>
+        <span class="n">default_ignore</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">copy_scripts</span><span class="p">:</span>
+        <span class="n">default_ignore</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;*.py&quot;</span><span class="p">,</span> <span class="s2">&quot;*.yaml&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">copy_polymesh</span><span class="p">:</span>
+        <span class="n">default_ignore</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;polyMesh&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">extra_patterns</span><span class="p">:</span>
+        <span class="n">default_ignore</span> <span class="o">+=</span> <span class="n">extra_patterns</span>
+    <span class="n">ignore_func</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">ignore_patterns</span><span class="p">(</span><span class="o">*</span><span class="n">default_ignore</span><span class="p">)</span>
+    <span class="n">osutils</span><span class="o">.</span><span class="n">copy_tree</span><span class="p">(</span><span class="n">tmpl_dir</span><span class="p">,</span> <span class="n">absdir</span><span class="p">,</span> <span class="n">ignore_func</span><span class="o">=</span><span class="n">ignore_func</span><span class="p">)</span>
+    <span class="n">_lgr</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Cloned directory: </span><span class="si">%s</span><span class="s2">; template directory: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">absdir</span><span class="p">,</span> <span class="n">tmpl_dir</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">absdir</span></div>
+
+
+
+<div class="viewcode-block" id="get_mpi_size">
+<a class="viewcode-back" href="../../../dev/caelus.run.html#caelus.run.core.get_mpi_size">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_mpi_size</span><span class="p">(</span><span class="n">casedir</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine the number of MPI ranks to run&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">osutils</span><span class="o">.</span><span class="n">set_work_dir</span><span class="p">(</span><span class="n">casedir</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;processor*&quot;</span><span class="p">))</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">Home</a>&nbsp;|</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">caelus.run.core</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2017, Applied CCM.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>
