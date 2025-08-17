@@ -22,6 +22,7 @@ pytestmark = pytest.mark.skipif(
 
 
 @pytest.mark.filterwarnings("ignore: `np.bool`")
+@pytest.mark.skip(reason="Disabling pyvista dependency")
 def test_fvmesh(test_casedir):
     casedir = str(test_casedir)
     mesh = FVMesh(casedir)
